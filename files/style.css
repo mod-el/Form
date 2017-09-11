@@ -1,0 +1,101 @@
+.rob-field-cont{
+	font-size: 0;
+	overflow: hidden;
+}
+
+.rob-field-cont > *{
+	display: inline-block;
+	font-size: 1rem;
+	vertical-align: top;
+	box-sizing: border-box;
+}
+
+.rob-field, .rob-field-label{
+	padding: 5px 3px;
+	position: relative;
+}
+
+.rob-field-label{
+	text-align: right;
+}
+
+.rob-field-label:first-of-type{
+	text-align: left;
+}
+
+.rob-field input:not([type=checkbox]):not([type=radio]), .rob-field select, .rob-field textarea{
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.multilang-field-container{
+	position: relative;
+}
+
+.multilang-field-lang-container{
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 10;
+	padding: 1px 3px;
+	border: solid transparent 1px;
+	background-color: transparent;
+	opacity: 0.3;
+
+	transition: opacity 0.4s ease-out, background-color 0.4s ease-out, border-color 0.4s ease-out;
+}
+
+.multilang-field-container:hover .multilang-field-lang-container{
+	opacity: 1;
+}
+
+.multilang-field-lang-container:hover{
+	background-color: #FFFFFF;
+	border-color: #333;
+}
+
+.multilang-field-other-langs-container{
+	transform: scale(0);
+	transition: transform 0.2s ease-in;
+}
+
+.multilang-field-lang-container:hover .multilang-field-other-langs-container{
+	transform: scale(1);
+}
+
+.multilang-field-lang-container img{
+	display: block;
+	height: 28px;
+	margin-bottom: 2px;
+}
+
+.file-box-cont{
+	border: solid #CCC 1px;
+	padding: 5px;
+	margin: 5px 0;
+	cursor: pointer;
+}
+
+.file-box{
+	width: 100%;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	text-align: center;
+	font-size: 18px;
+	color: #8AA5C2;
+	margin: auto;
+}
+
+.file-box img{
+	max-height: 40px;
+}
+
+.file-tools > a{
+	white-space: nowrap;
+	margin-right: 5px;
+}
+
+.file-tools img{
+	height: 16px;
+}
