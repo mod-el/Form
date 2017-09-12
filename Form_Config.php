@@ -4,10 +4,6 @@ namespace Model;
 class Form_Config extends Module_Config {
 	public $configurable = true;
 
-	public function install(array $data = []){
-		return true;
-	}
-
 	public function makeCache(){
 		if(!is_dir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'))
 			mkdir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data');
@@ -24,7 +20,7 @@ class Form_Config extends Module_Config {
 	 * @return string
 	 */
 	public function getTemplate(array $request){
-		return INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'config';
+		return $request[2]=='config' ? INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'config' : null;
 	}
 
 	/**
