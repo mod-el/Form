@@ -325,7 +325,13 @@ class MField_file extends MField{
 	public function getPaths(){
 		$paths = [];
 		foreach($this->paths as $i => $p){
-			$paths[$i] = $this->getPath($i);
+			if($this->options['multilang']){
+				foreach($this->model->_Multilang->langs as $lang){
+					$paths[$i.'-'.$lang] = $this->getPath($i, $lang);
+				}
+			}else{
+				$paths[$i] = $this->getPath($i);
+			}
 		}
 		return $paths;
 	}
