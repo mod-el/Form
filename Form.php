@@ -80,14 +80,14 @@ class Form implements \ArrayAccess{
 						$options['multilang'] = false;
 				}
 
-				if($options['multilang'] and !isset($this->model->_Multilang->tables[$this->options['table']]))
+				if($options['multilang'] and $this->options['table'] and !isset($this->model->_Multilang->tables[$this->options['table']]))
 					$options['multilang'] = false;
 			}else{
 				if($options['multilang'])
 					$options['multilang'] = false;
 			}
 
-			if($options['multilang']){
+			if($this->options['table'] and $options['multilang']){
 				$table = $this->options['table'].$this->model->_Multilang->tables[$this->options['table']]['suffix'];
 			}else{
 				$table = $this->options['table'];
