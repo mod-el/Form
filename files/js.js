@@ -161,10 +161,14 @@ Element.prototype.setValues = function(values, trigger_onchange){
 	for (var i = 0, f; f = elements[i++];) {
 		if(f.getAttribute('data-multilang') && f.getAttribute('data-lang') && typeof values[f.getAttribute('data-multilang')]==='object'){
 			var name = f.getAttribute('data-multilang');
-			var value = values[f.getAttribute('data-multilang')][f.getAttribute('data-lang')];
+			if(typeof values[name]==='undefined')
+				continue;
+			var value = values[name][f.getAttribute('data-lang')];
 		}else{
 			var name = f.name;
-			var value = values[f.name];
+			if(typeof values[name]==='undefined')
+				continue;
+			var value = values[name];
 		}
 
 		if(!name)
