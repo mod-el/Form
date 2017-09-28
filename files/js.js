@@ -151,14 +151,21 @@ Element.prototype.getValues = function(){
 	return ret;
 }
 
-Element.prototype.setValues = function(values, trigger_onchange){
+Element.prototype.setValues = function(values, trigger_onchange, mark){
 	if(this.nodeName.toLowerCase()!=='form')
 		return false;
 	if(typeof trigger_onchange==='undefined')
 		trigger_onchange = true;
+	if(typeof mark==='undefined')
+		mark = null;
 
 	var elements = this.elements;
 	for (var i = 0, f; f = elements[i++];) {
+		if(mark){
+			if(f.getAttribute('data-'+mark))
+				continue;
+		}
+
 		if(f.getAttribute('data-multilang') && f.getAttribute('data-lang') && typeof values[f.getAttribute('data-multilang')]==='object'){
 			var name = f.getAttribute('data-multilang');
 			if(typeof values[name]==='undefined')
@@ -182,6 +189,9 @@ Element.prototype.setValues = function(values, trigger_onchange){
 		}else{
 			f.setValue(value, trigger_onchange);
 		}
+
+		if(mark)
+			f.setAttribute('data-'+mark, '1');
 	}
 	return true;
 }
