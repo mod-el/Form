@@ -66,7 +66,7 @@ class Form implements \ArrayAccess{
 
                 'table' => false,
                 'id-field' => false,
-                'text-field' => false,
+                'text-field' => null,
                 'where' => [],
 
 				'group' => '',
@@ -114,31 +114,30 @@ class Form implements \ArrayAccess{
 						case 'real':
 							if($column['foreign_key']){
 								$fk = $tableModel->foreign_keys[$column['foreign_key']];
-//								if($this->model->_Db->count($fk['ref_table'], $options['where'])>50 and !$options['dependsOn'] and class_exists('InstantSearch')){
-									/*$options['type'] = 'instant-search';
-									$options['ra_options'] = array_merge([
-										'table'=>$fk['ref_table'],
-										'field'=>false,
-									], isset($options['ra_options']) ? $options['ra_options'] : array());
+								if($this->model->_Db->count($fk['ref_table'], $options['where'])>50 and !$options['dependsOn'] and $this->model->moduleExists('InstantSearch')){
+									$options['type'] = 'instant-search';
 
-									if($options['ra_options']['field']===false){
+									$options['table'] = $fk['ref_table'];
+
+									if($options['text-field']===null){
 										$ref_table = $this->model->_Db->getTable($fk['ref_table']);
 										foreach($ref_table->columns as $ref_ck=>$ref_cc){
 											if(in_array($ref_cc['type'], array('char', 'varchar', 'tinytext'))){
-												$options['ra_options']['field'] = $ref_ck;
+												$options['text-field'] = $ref_ck;
 												break;
 											}
 										}
-										if(($options['ra_options']['field']=='nome' and isset($ref_table->columns['cognome']))
-											or ($options['ra_options']['field']=='cognome' and isset($ref_table->columns['nome']))){
-											$options['ra_options']['field'] = array('nome', 'cognome');
+
+										if($options['text-field']){
+											$options['text-field'] = $this->checkFieldsPairing($options['text-field'], $ref_table->columns);
 										}
 									}
-									if($options['ra_options']['field']===false)
-										$options['ra_options']['field'] = 'id';*/
-//								}else{
+
+									if($options['text-field']===null)
+										$options['text-field'] = 'id';
+								}else{
 									$options['type'] = 'select';
-//								}
+								}
 							}else{
 								$options['type'] = 'number';
 							}
@@ -184,7 +183,7 @@ class Form implements \ArrayAccess{
     					$options['id-field'] = $fk['ref_column'];
 
 					if(!$options['text-field']){
-						$options['text-field'] = false;
+						$options['text-field'] = null;
 						$ref_table = $this->model->_Db->getTable($options['table']);
 						$refTable_columns = $ref_table->columns;
 
@@ -196,7 +195,7 @@ class Form implements \ArrayAccess{
 
 						foreach($refTable_columns as $ref_ck=>$ref_cc){
 							if(in_array($ref_cc['type'], ['char', 'varchar', 'tinytext'])){
-								$options['text-field'] = $this->checkFieldsPairing($ref_ck, $refTable_columns, ['char', 'varchar', 'tinytext']);
+								$options['text-field'] = $this->checkFieldsPairing($ref_ck, $refTable_columns);
 								break;
 							}
 						}
@@ -237,21 +236,20 @@ class Form implements \ArrayAccess{
 	 *
 	 * @param string $f
 	 * @param array $columns
-	 * @param array $acceptedTypes
-	 * @return array|string
+	 * @return array
 	 */
-	private function checkFieldsPairing($f, array $columns, array $acceptedTypes){
+	private function checkFieldsPairing($f, array $columns){
 	    foreach($this->options['pair-fields'] as $pairing){
 	        if(in_array($f, $pairing)){
 	            foreach($pairing as $pf){
-	                if(!array_key_exists($pf, $columns) or !in_array($columns[$pf]['type'], $acceptedTypes))
+	                if(!array_key_exists($pf, $columns) or !in_array($columns[$pf]['type'], ['char', 'varchar', 'tinytext']))
 	                    continue 2;
                 }
                 return $pairing;
             }
         }
 
-        return $f;
+        return [$f];
     }
 
 	/* ArrayAccess implementations */

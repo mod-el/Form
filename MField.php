@@ -33,7 +33,7 @@ class MField{
 
 			'table' => false,
 			'id-field' => 'id',
-			'text-field' => false,
+			'text-field' => null,
 			'where' => [],
 			'order_by' => false,
 			'if-null' => '',
@@ -114,17 +114,27 @@ class MField{
 	}
 
 	/**
+	 * Some types of field can return different values if they are needed for JavaScript
+	 *
+	 * @param string|bool $lang
+	 * @return mixed
+	 */
+	public function getJsValue($lang = null){
+		return $this->getValue($lang);
+	}
+
+	/**
 	 * Returns the current text value (the text content of a select, for example)
 	 *
 	 * @param array $options
 	 * @return string
 	 */
-	public function getText(array $options=array()){
+	public function getText(array $options = []){
 		$options = array_merge([
 			'priceFormat' => 'vd',
 			'dateFormat' => 'd/m/Y',
 			'lang' => null,
-		]);
+		], $options);
 
 		$value = $this->getValue($options['lang']);
 		if($value===null)
@@ -163,13 +173,6 @@ class MField{
 			case 'checkbox':
 				return $this->getValue() ? 'Sì' : 'No';
 				break;
-			/*case 'instant-search':
-				$options = $this->options['ra_options'];
-				$options['v'] = $value;
-				$options['model'] = $this->model;
-				$ra = new InstantSearch($this->options['name'], $options);
-				return $ra->getText();
-				break;*/
 			default:
 				return $value;
 				break;
@@ -220,7 +223,7 @@ class MField{
 				$qry_options['order_by'] = $this->options['order_by'];
 			}else{
 				if(is_array($this->options['text-field'])){
-					$qry_options['order_by'] = implode(',', $options['text-field']);
+					$qry_options['order_by'] = implode(',', $this->options['text-field']);
 				}elseif(is_string($this->options['text-field'])){
 					$qry_options['order_by'] = $this->options['text-field'];
 				}
@@ -345,9 +348,6 @@ class MField{
 				$value = $value ? $value->format('Y-m-d') : '';
 				echo '<input type="date" value="'.entities($value).'" '.$this->implodeAttributes($attributes).' />';
 				break;
-			case 'instant-search':
-				echo 'Instant Search da fare';
-				break;
 			case 'checkbox':
 				if(!isset($attributes['id']))
 					$attributes['id'] = 'checkbox-'.$attributes['name'];
@@ -418,9 +418,6 @@ class MField{
 				break;
 			case 'datetime':
 				return 250;
-				break;
-			case 'instant-search':
-				return 180;
 				break;
 			case 'textarea':
 				return 200;

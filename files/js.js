@@ -26,7 +26,7 @@ var setElementValue = function(v, trigger_onchange){
 		var func = this.getAttribute('data-setvalue-function');
 		if(typeof window[func]==='undefined')
 			return null;
-		window[func].call(this, v);
+		window[func].call(this, v, trigger_onchange);
 	}else if(this.type=='checkbox' || this.type=='radio'){
 		if(v==1 || v==true) this.checked = true;
 		else this.checked = false;
@@ -77,16 +77,20 @@ var setElementValue = function(v, trigger_onchange){
 		this.value = v;
 	}
 
-	if(trigger_onchange && v!=currentValue){
-		if ("createEvent" in document) {
-			var evt = document.createEvent("HTMLEvents");
-			evt.initEvent("change", false, true);
-			this.dispatchEvent(evt);
-		}else{
-			this.fireEvent("onchange");
-		}
+	if(trigger_onchange && v!=currentValue) {
+		triggerOnChange(this);
 	}
 };
+
+function triggerOnChange(field){
+	if ("createEvent" in document) {
+		var evt = document.createEvent("HTMLEvents");
+		evt.initEvent("change", false, true);
+		field.dispatchEvent(evt);
+	}else{
+		field.fireEvent("onchange");
+	}
+}
 
 var getElementValue = function(){
 	if(this instanceof NodeList){ // Radio
