@@ -3,7 +3,9 @@ namespace Model;
 
 class MField_custom extends MField{
 	public function renderWithLang(array $attributes, $lang = null){
+		echo '<div data-custom="'.$this->options['name'].'">';
 		echo $this->getText(['lang' => $lang]);
+		echo '</div>';
 	}
 
 	public function getText(array $options = []){
