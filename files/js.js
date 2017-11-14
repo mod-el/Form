@@ -251,7 +251,7 @@ function switchFieldLang(name, lang){
 	main.querySelectorAll('.multilang-field-container > [data-lang]').forEach(function(el){
 		if(el.getAttribute('data-lang')===lang){
 			el.style.display = 'block';
-			if(fileBox = el.querySelector('.file-box[data-natural-width][data-natural-height]')){
+			if(fileBox = el.querySelector('[data-file-cont][data-natural-width][data-natural-height]')){
 				resizeFileBox(fileBox);
 			}
 		}else{
@@ -289,19 +289,26 @@ function fileGetValue(){
 
 function fileSetValue(v){
 	var mainBox = this.parentNode;
-	var fileBox = mainBox.querySelector('.file-box');
+	var fileBoxCont = mainBox.querySelector('.file-box-cont');
+	var fileBox = mainBox.querySelector('[data-file-cont]');
+	var fileTools = mainBox.querySelector('.file-tools');
 
 	if(v){
+		fileBoxCont.style.display = 'block';
+		fileTools.style.display = 'block';
+		this.style.display = 'none';
+
+		var isImage = false;
+
 		if(typeof v==='string'){
 			var filename = v.split('.');
-			var isImage = false;
 			if(filename.length>1){
 				var ext = filename.pop().toLowerCase();
 				if(ext==='jpg' || ext==='jpeg' || ext==='bmp' || ext==='png' || ext==='gif')
 					isImage = true;
 			}
 
-			if(isImage){
+			if(isImage && !this.getAttribute('data-only-text')){
 				setFileImage(fileBox, base_path+v);
 			}else{
 				var filename = v.split('/').pop();
@@ -310,23 +317,24 @@ function fileSetValue(v){
 			}
 		}else{
 			var reader = new FileReader();
-			reader.onload = (function(box, file) {
+			reader.onload = (function(box, file, field) {
 				return function(e){
 					var mime = e.target.result.match(/^data:(.*);/)[1];
-					var fileBox = box.querySelector('.file-box');
+					var fileBox = box.querySelector('[data-file-cont]');
 
-					if(in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg'])){
+					if(in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg']) && !field.getAttribute('data-only-text')){
 						setFileImage(fileBox, e.target.result);
 					}else{
 						setFileText(fileBox, file.name);
 					}
 				};
-			})(mainBox, v);
+			})(mainBox, v, this);
 			reader.readAsDataURL(v);
 		}
 	}else{
-		setFileText(fileBox, '<img src="'+base_path+'model/Form/files/img/upload.png" alt="Upload" title="Upload" /> Click to upload');
-		fileBox.setAttribute('onclick', 'document.getElementById(\'file-input-'+mainBox.getAttribute('data-file-box')+'\').click(); return false');
+		fileTools.style.display = 'none';
+		fileBoxCont.style.display = 'none';
+		this.style.display = 'inline-block';
 	}
 }
 

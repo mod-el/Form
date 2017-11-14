@@ -71,15 +71,30 @@ class MField_file extends MField{
 			unset($attributes['class']);
 		}
 
+		$is_image = $this->isImage();
+
 		echo '<div data-file-box="'.$name.'">';
-		echo '<input type="file" name="' . $name . '" style="display: none" id="file-input-' . $name . '" '.$this->implodeAttributes($attributes).' onchange="if(typeof this.files[0]!=\'undefined\') fileSetValue.call(this, this.files[0])" data-getvalue-function="fileGetValue" data-setvalue-function="fileSetValue" />';
-		echo '<div class="file-box-cont" '.$this->implodeAttributes($attributesBox).'><div class="file-box"></div></div>';
-		echo '<div class="file-tools">
+		echo '<input type="file" name="' . $name . '" '.($is_image ? 'style="display: none"' : '').' id="file-input-' . $name . '" '.$this->implodeAttributes($attributes).' onchange="if(typeof this.files[0]!=\'undefined\') fileSetValue.call(this, this.files[0])" data-getvalue-function="fileGetValue" data-setvalue-function="fileSetValue" />';
+		echo '<div class="file-box-cont" '.(!$is_image ? 'style="display: none"' : '').' '.$this->implodeAttributes($attributesBox).'><div class="file-box" data-file-cont></div></div>';
+		echo '<div class="file-tools" style="display: none">
 				<a href="#" onclick="document.getElementById(\'file-input-'.$name.'\').click(); return false"><img src="'.PATH.'model/Form/files/img/upload.png" alt="" /> Carica nuovo</a>
 				<a href="#" onclick="document.getElementById(\'file-input-'.$name.'\').setValue(null); return false"><img src="'.PATH.'model/Form/files/img/delete.png" alt="" /> Elimina</a>
 			</div>';
 
 		echo '</div>';
+	}
+
+	private function isImage(){
+		$path = $this->getPath();
+		$mime = false;
+		if(file_exists(INCLUDE_PATH.$path)){
+			$mime = mime_content_type(INCLUDE_PATH.$path);
+		}else{
+			$path = reset($this->paths);
+			if(isset($path['mime']))
+				$mime = $path['mime'];
+		}
+		return in_array($mime, ['image/jpeg', 'image/png', 'image/gif']);
 	}
 
 	/**
@@ -305,9 +320,9 @@ class MField_file extends MField{
 				if(array_key_exists($k, $data)){
 					$rep = (string) $data[$k];
 				}elseif($this->form->options['element']){
-					if($lang===$this->model->_Multilang->lang) // In case of multilang fields, I have to retrieve the correct field from the database
+					if($lang===null or $lang===$this->model->_Multilang->lang) // In case of multilang fields, I have to retrieve the correct field from the database
 						$rep = (string) $this->form->options['element'][$k]; // If the language is the current one, than I just need the element
-					else // Otherwise, I'll have to make another query to find out the info in the correct language
+					else // If it's not the current language, I'll have to make another query to find out the info in the correct language
 						$rep = (string) $this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['field' => $k, 'lang' => $lang]);
 				}else{
 					$rep = '';
