@@ -215,17 +215,31 @@ class Form implements \ArrayAccess{
 					$options['type'] = 'text';
 			}
 
-			$checkClassExists = preg_replace('/[^a-z0-9_]/', '', strtolower($options['type']));
-			if(class_exists('\\Model\\MField_'.$checkClassExists))
-				$className = '\\Model\\MField_'.$checkClassExists;
-			else
-				$className = '\\Model\\MField';
-
-			$datum = new $className($name, $options);
+			$datum = $this->makeField($name, $options);
+		}else{
+			$options = array_merge($datum->options, $options);
+			$new_datum = $this->makeField($name, $options);
+			$new_datum->setValue($datum->getValue());
+			$datum = $new_datum;
 		}
 
 		$this->dataset[$name] = $datum;
 
+		return $datum;
+	}
+
+	private function getFieldClassName($type){
+		$checkClassExists = preg_replace('/[^a-z0-9_]/', '', strtolower($type));
+		if(class_exists('\\Model\\MField_'.$checkClassExists))
+			$className = '\\Model\\MField_'.$checkClassExists;
+		else
+			$className = '\\Model\\MField';
+		return $className;
+	}
+
+	private function makeField($name, $options){
+		$className = $this->getFieldClassName($options['type']);
+		$datum = new $className($name, $options);
 		return $datum;
 	}
 
