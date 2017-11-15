@@ -172,7 +172,7 @@ class MField_file extends MField{
 			$temp_file = $file['tmp_name'];
 			$method = 'file';
 		}elseif(isset($file['file'])){
-			$temp_file = INCLUDE_PATH.'app-data/'.$this->model->_User_Admin->id.($fileext ? '.'.$fileext : '');
+			$temp_file = INCLUDE_PATH.'app-data'.DIRECTORY_SEPARATOR.$this->model->_User_Admin->id.($fileext ? '.'.$fileext : '');
 			$scrittura = file_put_contents($temp_file, base64_decode($file['file']));
 			if($scrittura===false)
 				return false;
