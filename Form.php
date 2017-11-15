@@ -346,8 +346,8 @@ class Form implements \ArrayAccess{
 
 		$cacheKey = $this->getCacheKey($options);
 
-		if($options['cache'] and file_exists(INCLUDE_PATH.'model/Form/data/cache/'.$cacheKey.'.php')){
-			require(INCLUDE_PATH.'model/Form/data/cache/'.$cacheKey.'.php');
+		if($options['cache'] and file_exists(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$cacheKey.'.php')){
+			require(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$cacheKey.'.php');
 			if(!isset($template))
 				$this->model->error('Couldn\'t file form template in the cache file.');
 		}else{
@@ -400,7 +400,7 @@ class Form implements \ArrayAccess{
 	 * @return bool
 	 */
 	private function cacheTemplate($cacheKey, array $template){
-		return (bool) file_put_contents(INCLUDE_PATH.'model/Form/data/cache/'.$cacheKey.'.php', '<?php
+		return (bool) file_put_contents(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$cacheKey.'.php', '<?php
 $template = '.var_export($template, true).';
 ');
 	}
