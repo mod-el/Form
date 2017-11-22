@@ -320,7 +320,7 @@ class MField_file extends MField{
 				if(array_key_exists($k, $data)){
 					$rep = (string) $data[$k];
 				}elseif($this->form->options['element']){
-					if($lang===null or $lang===$this->model->_Multilang->lang) // In case of multilang fields, I have to retrieve the correct field from the database
+					if($lang===null or !$this->model->isLoaded('Multilang') or $lang===$this->model->_Multilang->lang) // In case of multilang fields, I have to retrieve the correct field from the database
 						$rep = (string) $this->form->options['element'][$k]; // If the language is the current one, than I just need the element
 					else // If it's not the current language, I'll have to make another query to find out the info in the correct language
 						$rep = (string) $this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['field' => $k, 'lang' => $lang]);
