@@ -1,5 +1,7 @@
 <?php namespace Model\Form;
 
+use Model\Core\Autoloader;
+
 class Form implements \ArrayAccess{
 	/** @var array */
 	private $dataset = array();
@@ -228,10 +230,9 @@ class Form implements \ArrayAccess{
 	}
 
 	private function getFieldClassName($type){
-		$checkClassExists = preg_replace('/[^a-z0-9_]/', '', strtolower($type));
-		if(class_exists('MField_'.$checkClassExists))
-			$className = 'MField_'.$checkClassExists;
-		else
+		$type = preg_replace('/[^a-z0-9_]/', '', strtolower($type));
+		$className = Autoloader::getRealClassName('MField_'.$type);
+		if(!class_exists($className))
 			$className = '\\Model\\Form\\MField';
 		return $className;
 	}
