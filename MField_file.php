@@ -1,5 +1,6 @@
-<?php
-namespace Model;
+<?php namespace Model\Form;
+
+use Model\ImgResize\ImgResize;
 
 class MField_file extends MField{
 	/** @var array[] */
