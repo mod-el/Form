@@ -1,19 +1,18 @@
-<?php
-namespace Model;
+<?php namespace Model\Form;
 
 class Form implements \ArrayAccess{
 	/** @var array */
 	private $dataset = array();
 	/** @var array */
 	public $options = array();
-	/** @var Core */
+	/** @var \Model\Core\Core */
 	private $model;
 
 	/**
 	 * Form constructor.
 	 *
 	 * @param array $options
-	 * @throws ZkException
+	 * @throws \Model\Core\ZkException
 	 */
 	public function __construct(array $options = []){
 		$this->options = array_merge([
@@ -28,7 +27,7 @@ class Form implements \ArrayAccess{
 
 		$this->model = $this->options['model'];
 		if($this->model===null)
-			throw new ZkException('Form class need a model reference!');
+			throw new \Model\Core\ZkException('Form class need a model reference!');
 	}
 
 	/**
@@ -40,7 +39,7 @@ class Form implements \ArrayAccess{
 	 */
 	public function add($datum, array $options = []){
 		if(is_object($datum)){
-			if(get_class($datum)=='Model\\MField' or is_subclass_of($datum, 'Model\\MField')){
+			if(get_class($datum)=='Model\\Form\\MField' or is_subclass_of($datum, 'Model\\Form\\MField')){
 				$name = $datum->options['name'];
 			}else{
 				$this->model->error('Only MField can be passed directly as objects, in Form "add" method.');
@@ -230,10 +229,10 @@ class Form implements \ArrayAccess{
 
 	private function getFieldClassName($type){
 		$checkClassExists = preg_replace('/[^a-z0-9_]/', '', strtolower($type));
-		if(class_exists('\\Model\\MField_'.$checkClassExists))
-			$className = '\\Model\\MField_'.$checkClassExists;
+		if(class_exists('MField_'.$checkClassExists))
+			$className = 'MField_'.$checkClassExists;
 		else
-			$className = '\\Model\\MField';
+			$className = '\\Model\\Form\\MField';
 		return $className;
 	}
 
