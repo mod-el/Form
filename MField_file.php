@@ -76,7 +76,7 @@ class MField_file extends MField{
 
 		echo '<div data-file-box="'.$name.'">';
 		echo '<input type="file" name="' . $name . '" '.($is_image ? 'style="display: none"' : '').' id="file-input-' . $name . '" '.$this->implodeAttributes($attributes).' onchange="if(typeof this.files[0]!=\'undefined\') fileSetValue.call(this, this.files[0])" data-getvalue-function="fileGetValue" data-setvalue-function="fileSetValue" />';
-		echo '<div class="file-box-cont" '.(!$is_image ? 'style="display: none"' : '').' '.$this->implodeAttributes($attributesBox).'><div class="file-box" data-file-cont></div></div>';
+		echo '<div class="file-box-cont" '.(!$is_image ? 'style="display: none"' : '').' '.$this->implodeAttributes($attributesBox).'><div class="file-box" data-file-cont onclick="document.getElementById(\'file-input-'.$name.'\').click(); return false">Upload</div></div>';
 		echo '<div class="file-tools" style="display: none">
 				<a href="#" onclick="document.getElementById(\'file-input-'.$name.'\').click(); return false"><img src="'.PATH.'model/Form/files/img/upload.png" alt="" /> Carica nuovo</a>
 				<a href="#" onclick="document.getElementById(\'file-input-'.$name.'\').setValue(null); return false"><img src="'.PATH.'model/Form/files/img/delete.png" alt="" /> Elimina</a>
