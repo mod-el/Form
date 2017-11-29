@@ -202,7 +202,7 @@ class Form implements \ArrayAccess{
 						}
 
 						if(!$options['text-field'])
-							$options['text-field'] = $options['id'];
+							$options['text-field'] = $options['id-field'];
                     }
                 }
 
