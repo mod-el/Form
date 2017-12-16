@@ -1,6 +1,8 @@
-<?php namespace Model\Form;
+<?php namespace Model\Form\Fields;
 
-class MField_custom extends MField{
+use Model\Form\MField;
+
+class Custom extends MField {
 	public function renderWithLang(array $attributes, $lang = null){
 		echo '<div data-custom="'.$this->options['name'].'">';
 		echo $this->getText(['lang' => $lang]);
