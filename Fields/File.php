@@ -130,6 +130,8 @@ class File extends MField {
 	/**
 	 * @param mixed $data
 	 * @return bool
+	 * @throws \Exception
+	 * @throws \Model\Core\ZkException
 	 */
 	public function save($data){
 		if($data===null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error']===0){
