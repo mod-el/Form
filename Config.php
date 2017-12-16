@@ -21,7 +21,7 @@ class Config extends Module_Config {
 	 * @return string
 	 */
 	public function getTemplate(array $request){
-		return $request[2]=='config' ? INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'config' : null;
+		return $request[2]=='config' ? 'config' : null;
 	}
 
 	/**
