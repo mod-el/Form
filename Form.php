@@ -229,16 +229,16 @@ class Form implements \ArrayAccess{
 		return $datum;
 	}
 
-	private function getFieldClassName($type){
-		$type = preg_replace('/[^a-z0-9_]/', '', strtolower($type));
-		$className = Autoloader::getRealClassName('MField_'.$type);
-		if(!class_exists($className))
-			$className = '\\Model\\Form\\MField';
-		return $className;
-	}
-
 	private function makeField($name, $options){
-		$className = $this->getFieldClassName($options['type']);
+		$type = preg_replace('/[^a-z0-9_]/', '-', strtolower($options['type']));
+		$type = implode('', array_map(function($name){
+			return ucfirst($name);
+		}, explode('-', $type)));
+
+		$className = Autoloader::searchFile('Field', $type);
+		if(!$className)
+			$className = '\\Model\\Form\\MField';
+
 		$datum = new $className($name, $options);
 		return $datum;
 	}

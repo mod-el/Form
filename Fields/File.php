@@ -1,15 +1,17 @@
-<?php namespace Model\Form;
+<?php namespace Model\Form\Fields;
 
+use Model\Form\MField;
 use Model\ImgResize\ImgResize;
 
-class MField_file extends MField{
+class File extends MField {
 	/** @var array[] */
 	protected $paths = [];
 
 	/**
-	 * MField_file constructor.
+	 * Class File constructor.
 	 * @param string $nome
 	 * @param array $options
+	 * @throws \Model\Core\ZkException
 	 */
 	public function __construct($nome, array $options = []){
 		if(!is_array($options))
@@ -128,6 +130,8 @@ class MField_file extends MField{
 	/**
 	 * @param mixed $data
 	 * @return bool
+	 * @throws \Exception
+	 * @throws \Model\Core\ZkException
 	 */
 	public function save($data){
 		if($data===null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error']===0){
@@ -152,6 +156,8 @@ class MField_file extends MField{
 	 * @param array $data
 	 * @param string $lang
 	 * @return bool
+	 * @throws \Exception
+	 * @throws \Model\Core\ZkException
 	 */
 	private function saveWithLang($data, $lang = null){
 		if(!$data){
