@@ -13,7 +13,7 @@ class MField{
 	 *
 	 * @param string $name
 	 * @param array $options
-	 * @throws \Model\Core\ZkException
+	 * @throws \Model\Core\Exception
 	 */
 	public function __construct($name, array $options=[]){
 		$this->options = array_merge([
@@ -47,7 +47,7 @@ class MField{
 
 		$this->model = $this->options['model'];
 		if($this->model===null)
-			throw new \Model\Core\ZkException('MField class need a model reference!');
+			throw new \Model\Core\Exception('MField class need a model reference!');
 		$this->form = $this->options['form'];
 
 		if($this->options['multilang'] and !$this->model->isLoaded('Multilang'))
