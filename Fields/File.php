@@ -11,7 +11,7 @@ class File extends MField {
 	 * Class File constructor.
 	 * @param string $nome
 	 * @param array $options
-	 * @throws \Model\Core\ZkException
+	 * @throws \Model\Core\Exception
 	 */
 	public function __construct($nome, array $options = []){
 		if(!is_array($options))
@@ -131,7 +131,7 @@ class File extends MField {
 	 * @param mixed $data
 	 * @return bool
 	 * @throws \Exception
-	 * @throws \Model\Core\ZkException
+	 * @throws \Model\Core\Exception
 	 */
 	public function save($data){
 		if($data===null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error']===0){
@@ -157,7 +157,7 @@ class File extends MField {
 	 * @param string $lang
 	 * @return bool
 	 * @throws \Exception
-	 * @throws \Model\Core\ZkException
+	 * @throws \Model\Core\Exception
 	 */
 	private function saveWithLang($data, $lang = null){
 		if(!$data){

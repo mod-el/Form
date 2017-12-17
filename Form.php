@@ -14,7 +14,7 @@ class Form implements \ArrayAccess{
 	 * Form constructor.
 	 *
 	 * @param array $options
-	 * @throws \Model\Core\ZkException
+	 * @throws \Model\Core\Exception
 	 */
 	public function __construct(array $options = []){
 		$this->options = array_merge([
@@ -29,7 +29,7 @@ class Form implements \ArrayAccess{
 
 		$this->model = $this->options['model'];
 		if($this->model===null)
-			throw new \Model\Core\ZkException('Form class need a model reference!');
+			throw new \Model\Core\Exception('Form class need a model reference!');
 	}
 
 	/**
@@ -38,6 +38,7 @@ class Form implements \ArrayAccess{
 	 * @param string|MField $datum
 	 * @param array $options
 	 * @return bool|MField
+	 * @throws \Model\Core\Exception
 	 */
 	public function add($datum, array $options = []){
 		if(is_object($datum)){
@@ -319,6 +320,7 @@ class Form implements \ArrayAccess{
 	 * Just two steps, retrieves the form-template and then renders it
 	 *
 	 * @param array $options
+	 * @throws \Model\Core\Exception
 	 */
 	public function render(array $options = []){
 		$template = $this->getTemplate($options);
@@ -331,6 +333,7 @@ class Form implements \ArrayAccess{
 	 *
 	 * @param array $options
 	 * @return array
+	 * @throws \Model\Core\Exception
 	 */
 	public function getTemplate(array $options = []){
 		$options = array_merge([
@@ -410,6 +413,7 @@ $template = '.var_export($template, true).';
 	 *
 	 * @param array $template
 	 * @param array $options
+	 * @throws \Model\Core\Exception
 	 */
 	private function renderTemplate(array $template, array $options){
 		if(!$template)
@@ -452,6 +456,7 @@ $template = '.var_export($template, true).';
 	 *
 	 * @param array $options
 	 * @return array
+	 * @throws \Model\Core\Exception
 	 */
 	private function getSignature(array $options){
 		$signature = [];
