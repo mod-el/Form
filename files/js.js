@@ -1,7 +1,7 @@
 function setSelect(s, v){
 	if(v==null) return false;
 	if(isNaN(v)) v = v.toLowerCase();
-	for(var cp in s.options){
+	for(let cp in s.options){
 		if(typeof s.options[cp].value!='undefined' && s.options[cp].value.toLowerCase()==v){
 			s.selectedIndex = cp;
 			return true;
@@ -12,74 +12,76 @@ function setSelect(s, v){
 }
 
 var setElementValue = function(v, trigger_onchange){
-	if(typeof trigger_onchange=='undefined')
+	if(typeof trigger_onchange==='undefined')
 		trigger_onchange = true;
-
-	var currentValue = this.getValue();
 
 	if(v===null)
 		v = '';
 
-	if(this instanceof NodeList){ // Radio
-		this.value = v;
-	}else if(this.getAttribute('data-setvalue-function')!==null){
-		var func = this.getAttribute('data-setvalue-function');
-		if(typeof window[func]==='undefined')
-			return null;
-		window[func].call(this, v, trigger_onchange);
-	}else if(this.type=='checkbox' || this.type=='radio'){
-		if(v==1 || v==true) this.checked = true;
-		else this.checked = false;
-	}else if(this.type=='select-multiple'){
-		for(var i=0;i<this.options.length;i++){
-			if(in_array(this.options[i].value, v))
-				this.options[i].selected = true;
-			else
-				this.options[i].selected = false;
-		}
-	}else if(this.type=='select-one') setSelect(this, v);
-	else if(this.type=='hidden' && this.getAttribute('data-zkra')){
-		var zkra = this.getAttribute('data-zkra');
-		var campo = ricerca_assistita_findMainTextInput(zkra);
-		if(typeof v=='object' && campo){
-			setta_ricerca_assistita(v.id, zkra, campo, v.text);
-		}else{
-			this.value = v;
-			// Possibilit� futura: si cerca in automatico il testo da inserire nelle caselle - MA ATTENZIONE alla recursione, visto che setta_ricerca_assistita utilizza anche setValue per impostare l'id!
-		}
-	}else if(this.getAttribute('type')=='date'){
-		if(isDateSupported()){
-			if(v.match(/[0-9]{2}-[0-9]{2}-[0-9]{4}/)){
-				v = v.split('-');
-				v = v[2]+'-'+v[1]+'-'+v[0];
+	return this.getValue().then((function(element, v, trigger_onchange){
+		return function(currentValue){
+			if(this instanceof NodeList){ // Radio
+				element.value = v;
+			}else if(element.getAttribute('data-setvalue-function')!==null){
+				var func = element.getAttribute('data-setvalue-function');
+				if(typeof window[func]==='undefined')
+					return null;
+				window[func].call(element, v, trigger_onchange);
+			}else if(element.type==='checkbox' || element.type==='radio'){
+				if(v==1 || v==true) element.checked = true;
+				else element.checked = false;
+			}else if(element.type==='select-multiple'){
+				for(let i=0;i<element.options.length;i++){
+					if(in_array(element.options[i].value, v))
+						element.options[i].selected = true;
+					else
+						element.options[i].selected = false;
+				}
+			}else if(element.type==='select-one') setSelect(element, v);
+			else if(element.type==='hidden' && element.getAttribute('data-zkra')){
+				var zkra = element.getAttribute('data-zkra');
+				var campo = ricerca_assistita_findMainTextInput(zkra);
+				if(typeof v==='object' && campo){
+					setta_ricerca_assistita(v.id, zkra, campo, v.text);
+				}else{
+					element.value = v;
+					// Possibilit� futura: si cerca in automatico il testo da inserire nelle caselle - MA ATTENZIONE alla recursione, visto che setta_ricerca_assistita utilizza anche setValue per impostare l'id!
+				}
+			}else if(element.getAttribute('type')==='date'){
+				if(isDateSupported()){
+					if(v.match(/[0-9]{2}-[0-9]{2}-[0-9]{4}/)){
+						v = v.split('-');
+						v = v[2]+'-'+v[1]+'-'+v[0];
+					}
+				}else{
+					if(v.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)){
+						v = v.split('-');
+						v = v[2]+'-'+v[1]+'-'+v[0];
+					}
+				}
+				element.value = v;
+			}else if(element.nodeName.toLowerCase()==='textarea' && element.nextSibling && typeof element.nextSibling.hasClass!='undefined' && element.nextSibling.hasClass('cke')){ // CK Editor
+				var found = false;
+				for(let i in CKEDITOR.instances){
+					if(!CKEDITOR.instances.hasOwnProperty(i)) continue;
+					if(CKEDITOR.instances[i].element.$==element){
+						CKEDITOR.instances[i].setData(v);
+						found = true;
+						break;
+					}
+				}
+				if(!found){
+					element.value = v;
+				}
+			}else{
+				element.value = v;
 			}
-		}else{
-			if(v.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)){
-				v = v.split('-');
-				v = v[2]+'-'+v[1]+'-'+v[0];
-			}
-		}
-		this.value = v;
-	}else if(this.nodeName.toLowerCase()=='textarea' && this.nextSibling && typeof this.nextSibling.hasClass!='undefined' && this.nextSibling.hasClass('cke')){ // CK Editor
-		var found = false;
-		for(var i in CKEDITOR.instances){
-			if(!CKEDITOR.instances.hasOwnProperty(i)) continue;
-			if(CKEDITOR.instances[i].element.$==this){
-				CKEDITOR.instances[i].setData(v);
-				found = true;
-				break;
-			}
-		}
-		if(!found){
-			this.value = v;
-		}
-	}else{
-		this.value = v;
-	}
 
-	if(trigger_onchange && v!=currentValue) {
-		triggerOnChange(this);
-	}
+			if(trigger_onchange && v!==currentValue) {
+				triggerOnChange(this);
+			}
+		};
+	})(this, v, trigger_onchange));
 };
 
 function triggerOnChange(field){
@@ -92,28 +94,30 @@ function triggerOnChange(field){
 	}
 }
 
-var getElementValue = function(){
+var basicGetElementValue = function(element){
+	var v = null;
+
 	if(this instanceof NodeList){ // Radio
-		var v = this.value;
-	}else if(this.getAttribute('data-getvalue-function')!==null){
-		var func = this.getAttribute('data-getvalue-function');
+		v = element.value;
+	}else if(element.getAttribute('data-getvalue-function')!==null){
+		var func = element.getAttribute('data-getvalue-function');
 		if(typeof window[func]==='undefined')
 			return null;
-		var v = window[func].call(this);
-	}else if(this.type==='checkbox' || this.type==='radio'){
-		if(this.checked) var v = 1;
-		else var v = 0;
-	}else if(this.type==='select-one'){
-		if(this.selectedIndex>-1)
-			var v = this.options[this.selectedIndex].value;
-		else var v = '';
-	}else if(this.type==='select-multiple'){
-		var v = [];
-		for(var i=0;i<this.options.length;i++)
-			if(this.options[i].selected)
-				v.push(this.options[i].value);
-	}else if(this.getAttribute('type')==='date'){
-		var v = this.value;
+		v = window[func].call(element);
+	}else if(element.type==='checkbox' || element.type==='radio'){
+		if(element.checked) v = 1;
+		else v = 0;
+	}else if(element.type==='select-one'){
+		if(element.selectedIndex>-1)
+			v = element.options[element.selectedIndex].value;
+		else v = '';
+	}else if(element.type==='select-multiple'){
+		v = [];
+		for(let i=0;i<element.options.length;i++)
+			if(element.options[i].selected)
+				v.push(element.options[i].value);
+	}else if(element.getAttribute('type')==='date'){
+		v = element.value;
 
 		if(!isDateSupported()){
 			if(v.match(/[0-9]{2}-[0-9]{2}-[0-9]{4}/)){
@@ -122,37 +126,57 @@ var getElementValue = function(){
 			}
 		}
 	}else{
-		var v = this.value;
+		v = element.value;
 	}
 
 	return v;
 };
 
-Element.prototype.getValues = function(){
-	if(this.nodeName.toLowerCase()!='form')
-		return [];
+var getElementValue = function(direct_value){
+	if(typeof direct_value === 'undefined')
+		direct_value = false;
 
-	var ret = {};
+	if(direct_value){
+		return basicGetElementValue(this);
+	}else{
+		return new Promise((function(element){
+			return function(resolve){
+				let v = basicGetElementValue(element);
+				resolve(v);
+			};
+		})(this));
+	}
+};
+
+Element.prototype.getValues = function(){
+	if(this.nodeName.toLowerCase()!=='form')
+		return new Promise(function(resolve){ resolve([]); });
+
+	var promises = [];
 	var elements = this.elements;
-	for (var i = 0, f; f = elements[i++];) {
+	for(let i = 0, f; f = elements[i++];) {
 		if(!f.name)
 			continue;
 
-		var type = f.type.toLowerCase();
-		var v = f.getValue();
+		promises.push(f.getValue().then((function(name, type){
+			return function(v){
+				if(type==='radio' && !v)
+					v = null;
 
-		if(type=='radio'){
-			if(v){
-				ret[f.name] = f.value;
-			}else{
-				if(typeof ret[f.name]=='undefined')
-					ret[f.name] = null;
-			}
-		}else{
-			ret[f.name] = v;
-		}
+				return [name, v];
+			};
+		})(f.name, f.type.toLowerCase())));
 	}
-	return ret;
+
+	return Promise.all(promises).then(function(data){
+		var ret = {};
+
+		data.forEach(function(v, k){
+			ret[k] = v;
+		});
+
+		return ret;
+	});
 }
 
 Element.prototype.setValues = function(values, trigger_onchange, mark){
@@ -163,41 +187,49 @@ Element.prototype.setValues = function(values, trigger_onchange, mark){
 	if(typeof mark==='undefined')
 		mark = null;
 
-	var elements = this.elements;
-	for (var i = 0, f; f = elements[i++];) {
+	let promises = [];
+
+	let elements = this.elements;
+	for(let i = 0, f; f = elements[i++];) {
 		if(mark){
 			if(f.getAttribute('data-'+mark))
 				continue;
 		}
 
+		let name;
+		let value;
+
 		if(f.getAttribute('data-multilang') && f.getAttribute('data-lang') && typeof values[f.getAttribute('data-multilang')]==='object'){
-			var name = f.getAttribute('data-multilang');
+			name = f.getAttribute('data-multilang');
 			if(typeof values[name]==='undefined')
 				continue;
-			var value = values[name][f.getAttribute('data-lang')];
+			value = values[name][f.getAttribute('data-lang')];
 		}else{
-			var name = f.name;
+			name = f.name;
 			if(typeof values[name]==='undefined')
 				continue;
-			var value = values[name];
+			value = values[name];
 		}
 
 		if(!name)
 			continue;
 
-		var type = f.type.toLowerCase();
-
-		if(type==='radio'){
+		if(f.type.toLowerCase()==='radio'){
 			if(f.value===value)
 				f.checked = true;
 		}else{
-			f.setValue(value, trigger_onchange);
-		}
+			promises.push(f.setValue(value, trigger_onchange).then(((f, mark) => {
+				return () => {
+					if(mark)
+						f.setAttribute('data-'+mark, '1');
 
-		if(mark)
-			f.setAttribute('data-'+mark, '1');
+					return f;
+				};
+			})(f, mark)));
+		}
 	}
-	return true;
+
+	return Promise.all(promises);
 }
 
 Element.prototype.fill = Element.prototype.setValues; // Alias
@@ -209,7 +241,7 @@ Object.defineProperty(NodeList.prototype, "value", {
 });
 
 function getRadioNodeListValue() {
-	for (var i = 0, len = this.length; i < len; i++) {
+	for(let i = 0, len = this.length; i < len; i++) {
 		var el = this[i];
 		if (el.checked) {
 			return el.value;
@@ -218,7 +250,7 @@ function getRadioNodeListValue() {
 }
 
 function setRadioNodeListValue(value) {
-	for (var i = 0, len = this.length; i < len; i++) {
+	for(let i = 0, len = this.length; i < len; i++) {
 		var el = this[i];
 		if (el.checked) {
 			el.value = value;
