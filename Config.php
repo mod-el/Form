@@ -5,7 +5,7 @@ use Model\Core\Module_Config;
 class Config extends Module_Config {
 	public $configurable = true;
 
-	public function makeCache(){
+	public function makeCache(): bool{
 		if(!is_dir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'))
 			mkdir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data');
 		if(!is_dir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'))
@@ -31,8 +31,9 @@ class Config extends Module_Config {
 	 * @param array $data
 	 * @return bool
 	 */
-	public function saveConfig($type, array $data){
-		if(checkCsrf() and isset($_POST['empty']) and $_POST['empty']){
+	public function saveConfig(string $type, array $data): bool
+	{
+		if($this->model->_CSRF->checkCsrf() and isset($_POST['empty']) and $_POST['empty']){
 			$files = glob(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.'*');
 			foreach($files as $f){
 				unlink($f);
