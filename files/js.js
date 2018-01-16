@@ -341,7 +341,7 @@ function fileSetValue(v){
 			}
 
 			if(isImage && !this.getAttribute('data-only-text')){
-				setFileImage(fileBox, base_path+v);
+				setFileImage(fileBox, base_path+v+"?nocache="+Math.random());
 			}else{
 				var filename = v.split('/').pop();
 				setFileText(fileBox, filename);
@@ -371,7 +371,7 @@ function fileSetValue(v){
 }
 
 function setFileImage(box, i){
-	var img = new Image();
+	let img = new Image();
 	img.onload = (function(box, i){
 		return function(){
 			box.setAttribute('data-natural-width', this.naturalWidth);
