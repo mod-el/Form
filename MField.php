@@ -1,6 +1,7 @@
 <?php namespace Model\Form;
 
-class MField{
+class MField
+{
 	/** @var array */
 	public $options = [];
 	/** @var \Model\Core\Core */
@@ -15,7 +16,8 @@ class MField{
 	 * @param array $options
 	 * @throws \Model\Core\Exception
 	 */
-	public function __construct($name, array $options=[]){
+	public function __construct(string $name, array $options = [])
+	{
 		$this->options = array_merge([
 			'name' => $name,
 			'field' => $name,
@@ -46,16 +48,16 @@ class MField{
 		], $options);
 
 		$this->model = $this->options['model'];
-		if($this->model===null)
+		if ($this->model === null)
 			throw new \Model\Core\Exception('MField class need a model reference!');
 		$this->form = $this->options['form'];
 
-		if($this->options['multilang'] and !$this->model->isLoaded('Multilang'))
+		if ($this->options['multilang'] and !$this->model->isLoaded('Multilang'))
 			$this->options['multilang'] = false;
 
-		if($this->options['value']===false and $this->options['default']!==false)
+		if ($this->options['value'] === false and $this->options['default'] !== false)
 			$this->options['value'] = $this->options['default'];
-		if($this->options['value']!==false)
+		if ($this->options['value'] !== false)
 			$this->setValue($this->options['value']);
 	}
 
@@ -65,18 +67,19 @@ class MField{
 	 * @param mixed $v
 	 * @param string $lang
 	 */
-	public function setValue($v, $lang = null){
-		if($this->options['multilang']){
-			if($lang){
+	public function setValue($v, string $lang = null)
+	{
+		if ($this->options['multilang']) {
+			if ($lang) {
 				$this->options['value'][$lang] = $v;
-			}else{
-				if(is_array($v)){
+			} else {
+				if (is_array($v)) {
 					$this->options['value'] = $v;
-				}else{
+				} else {
 					$this->options['value'][$this->model->_Multilang->lang] = $v;
 				}
 			}
-		}else{
+		} else {
 			$this->options['value'] = $v;
 		}
 
@@ -95,19 +98,20 @@ class MField{
 	 * @param string|bool $lang
 	 * @return mixed
 	 */
-	public function getValue($lang = null){
-		if($this->options['multilang']){
-			if($lang===false){
+	public function getValue($lang = null)
+	{
+		if ($this->options['multilang']) {
+			if ($lang === false) {
 				return $this->options['value'];
-			}else{
-				if($lang === null)
+			} else {
+				if ($lang === null)
 					$lang = $this->model->_Multilang->lang;
-				if(isset($this->options['value'][$lang]))
+				if (isset($this->options['value'][$lang]))
 					return $this->options['value'][$lang];
 				else
 					return null;
 			}
-		}else{
+		} else {
 			return $this->options['value'];
 		}
 	}
@@ -118,7 +122,8 @@ class MField{
 	 * @param string|bool $lang
 	 * @return mixed
 	 */
-	public function getJsValue($lang = null){
+	public function getJsValue($lang = null)
+	{
 		return $this->getValue($lang);
 	}
 
@@ -128,7 +133,8 @@ class MField{
 	 * @param array $options
 	 * @return string
 	 */
-	public function getText(array $options = []){
+	public function getText(array $options = []): string
+	{
 		$options = array_merge([
 			'priceFormat' => 'vd',
 			'dateFormat' => 'd/m/Y',
@@ -136,10 +142,10 @@ class MField{
 		], $options);
 
 		$value = $this->getValue($options['lang']);
-		if($value===null)
+		if ($value === null)
 			return '';
 
-		switch($this->options['type']){
+		switch ($this->options['type']) {
 			case 'select':
 			case 'radio':
 				$this->loadSelectOptions();
@@ -148,24 +154,24 @@ class MField{
 			case 'date':
 			case 'datetime':
 				$format = $options['dateFormat'];
-				if($this->options['type']=='datetime')
+				if ($this->options['type'] == 'datetime')
 					$format .= ' H:i';
 				$data = $value ? date_create($value) : false;
 				return $data ? $data->format($format) : '';
 				break;
 			case 'price':
-				switch($options['priceFormat']){
+				switch ($options['priceFormat']) {
 					case 'vd':
-						return number_format($value, 2, ',', '.').'€';
+						return number_format($value, 2, ',', '.') . '€';
 						break;
 					case 'vp':
-						return '€ '.number_format($value, 2, ',', '.');
+						return '€ ' . number_format($value, 2, ',', '.');
 						break;
 					case 'pd':
-						return number_format($value, 2, '.', '').'€';
+						return number_format($value, 2, '.', '') . '€';
 						break;
 					case 'pp':
-						return '€ '.number_format($value, 2, '.', '');
+						return '€ ' . number_format($value, 2, '.', '');
 						break;
 				}
 				break;
@@ -187,14 +193,15 @@ class MField{
 	 * @param $value
 	 * @return bool|string
 	 */
-	private function getTextFromSelect(array $options, $value){
-		foreach($options as $id=>$opt){
-			if(is_array($opt)){
+	private function getTextFromSelect(array $options, $value)
+	{
+		foreach ($options as $id => $opt) {
+			if (is_array($opt)) {
 				$text = $this->getTextFromSelect($opt, $value);
-				if($text!==false)
+				if ($text !== false)
 					return $text;
-			}else{
-				if((string) $id===(string) $value)
+			} else {
+				if ((string)$id === (string)$value)
 					return $opt;
 			}
 		}
@@ -207,47 +214,48 @@ class MField{
 	 *
 	 * @return bool
 	 */
-	private function loadSelectOptions(){
-		if($this->options['options']!==false)
+	private function loadSelectOptions(): bool
+	{
+		if ($this->options['options'] !== false)
 			return true;
 
 		$options = [];
 
-		if($this->options['table'] and $this->options['text-field']){
+		if ($this->options['table'] and $this->options['text-field']) {
 			$qry_options = [
-				'stream'=>true,
+				'stream' => true,
 			];
 
-			if($this->options['order_by']!==false){
+			if ($this->options['order_by'] !== false) {
 				$qry_options['order_by'] = $this->options['order_by'];
-			}else{
-				if(is_array($this->options['text-field'])){
+			} else {
+				if (is_array($this->options['text-field'])) {
 					$qry_options['order_by'] = implode(',', $this->options['text-field']);
-				}elseif(is_string($this->options['text-field'])){
+				} elseif (is_string($this->options['text-field'])) {
 					$qry_options['order_by'] = $this->options['text-field'];
 				}
 			}
 
 			$q = $this->model->_Db->select_all($this->options['table'], $this->options['where'], $qry_options);
-			foreach($q as $r){
+			foreach ($q as $r) {
 				$id = $r[$this->options['id-field']];
 
-				if(!is_string($this->options['text-field']) and is_callable($this->options['text-field'])){
+				if (!is_string($this->options['text-field']) and is_callable($this->options['text-field'])) {
 					$options[$id] = $this->options['text-field']($r);
-				}elseif(is_array($this->options['text-field'])){
+				} elseif (is_array($this->options['text-field'])) {
 					$multiple_fields = [];
-					foreach($this->options['text-field'] as $tf){
+					foreach ($this->options['text-field'] as $tf) {
 						$multiple_fields[] = $r[$tf];
 					}
 					$options[$id] = implode(' ', $multiple_fields);
-				}else{
+				} else {
 					$options[$id] = $r[$this->options['text-field']];
 				}
 			}
 		}
 
-		if($this->options['nullable'])
-			$options = [''=>$this->options['if-null']] + $options;
+		if ($this->options['nullable'])
+			$options = ['' => $this->options['if-null']] + $options;
 
 		$this->options['options'] = $options;
 
@@ -261,25 +269,26 @@ class MField{
 	 * @param bool $return
 	 * @throws \Exception
 	 */
-	public function render(array $attributes = [], $return = false){
+	public function render(array $attributes = [], bool $return = false)
+	{
 		$attributes = array_merge($this->options['attributes'], $attributes);
 
-		if(!isset($attributes['name']))
+		if (!isset($attributes['name']))
 			$attributes['name'] = $this->options['name'];
 
-		if($this->options['child_el']){
+		if ($this->options['child_el']) {
 			$child_el_name = $this->options['child_el'];
-			$attributes['name'] = 'ch-'.$attributes['name'].'-'.$child_el_name;
+			$attributes['name'] = 'ch-' . $attributes['name'] . '-' . $child_el_name;
 			/*$this->depending_children = array_map(function($n) use($child_el_name){
 				return 'ch-'.$n.'-'.$child_el_name;
 			}, $this->depending_children);*/
 		}
 
-		if($this->options['maxlength']!==false and !array_key_exists('maxlength', $attributes))
+		if ($this->options['maxlength'] !== false and !array_key_exists('maxlength', $attributes))
 			$attributes['maxlength'] = $this->options['maxlength'];
 
 		try {
-			if($return)
+			if ($return)
 				ob_start();
 
 			if ($this->options['multilang']) {
@@ -289,22 +298,22 @@ class MField{
 				$def_lang = $this->model->_Multilang->options['default'];
 				$originalName = $attributes['name'];
 
-				echo '<div class="multilang-field-container" data-name="'.entities($originalName).'">';
+				echo '<div class="multilang-field-container" data-name="' . entities($originalName) . '">';
 				foreach ($this->model->_Multilang->langs as $lang) {
-					echo '<div data-lang="'.$lang.'" style="'.($lang!==$def_lang ? 'display: none' : '').'">';
-					$attributes['name'] = $originalName.'-'.$lang;
+					echo '<div data-lang="' . $lang . '" style="' . ($lang !== $def_lang ? 'display: none' : '') . '">';
+					$attributes['name'] = $originalName . '-' . $lang;
 					$attributes['data-lang'] = $lang;
 					$attributes['data-multilang'] = $originalName;
 					$this->renderWithLang($attributes, $lang);
 					echo '</div>';
 				}
 				echo '<div class="multilang-field-lang-container">';
-				echo '<a href="#" onclick="switchFieldLang(\''.entities($originalName).'\', \''.$def_lang.'\'); return false" data-lang="'.$def_lang.'"><img src="'.PATH.'model/Form/files/img/langs/'.$def_lang.'.png" alt="" /></a>';
+				echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $def_lang . '\'); return false" data-lang="' . $def_lang . '"><img src="' . PATH . 'model/Form/files/img/langs/' . $def_lang . '.png" alt="" /></a>';
 				echo '<div class="multilang-field-other-langs-container">';
 				foreach ($this->model->_Multilang->langs as $lang) {
-					if($lang===$def_lang)
+					if ($lang === $def_lang)
 						continue;
-					echo '<a href="#" onclick="switchFieldLang(\''.entities($originalName).'\', \''.$lang.'\'); return false" data-lang="'.$lang.'"><img src="'.PATH.'model/Form/files/img/langs/'.$lang.'.png" alt="" /></a>';
+					echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $lang . '\'); return false" data-lang="' . $lang . '"><img src="' . PATH . 'model/Form/files/img/langs/' . $lang . '.png" alt="" /></a>';
 				}
 				echo '</div>';
 				echo '</div>';
@@ -316,7 +325,7 @@ class MField{
 				$this->renderWithLang($attributes);
 			}
 		} catch (\Exception $e) {
-			if($return)
+			if ($return)
 				ob_clean();
 
 			throw $e;
@@ -329,15 +338,16 @@ class MField{
 	 * @param array $attributes
 	 * @param string $lang
 	 */
-	protected function renderWithLang(array $attributes, $lang = null){
-		switch($this->options['type']){
+	protected function renderWithLang(array $attributes, string $lang = null)
+	{
+		switch ($this->options['type']) {
 			case 'textarea':
 			case 'ckeditor':
-				echo '<textarea '.$this->implodeAttributes($attributes).'>'.entities($this->getValue($lang)).'</textarea>';
+				echo '<textarea ' . $this->implodeAttributes($attributes) . '>' . entities($this->getValue($lang)) . '</textarea>';
 				break;
 			case 'select':
 				$this->loadSelectOptions();
-				echo '<select '.$this->implodeAttributes($attributes).'>';
+				echo '<select ' . $this->implodeAttributes($attributes) . '>';
 				$this->renderSelectOptions($this->options['options'], $this->getValue($lang));
 				echo '</select>';
 				break;
@@ -345,25 +355,25 @@ class MField{
 				$value = $this->getValue($lang);
 				$value = $value ? date_create($value) : '';
 				$value = $value ? $value->format('Y-m-d') : '';
-				echo '<input type="date" value="'.entities($value).'" '.$this->implodeAttributes($attributes).' />';
+				echo '<input type="date" value="' . entities($value) . '" ' . $this->implodeAttributes($attributes) . ' />';
 				break;
 			case 'checkbox':
-				if(!isset($attributes['id']))
-					$attributes['id'] = 'checkbox-'.$attributes['name'];
+				if (!isset($attributes['id']))
+					$attributes['id'] = 'checkbox-' . $attributes['name'];
 
 				$label = isset($attributes['label']) ? $attributes['label'] : $this->getLabel();
 
-				echo '<input type="checkbox" value="1"'.($this->getValue($lang) ? ' checked' : '').' '.$this->implodeAttributes($attributes).' />';
+				echo '<input type="checkbox" value="1"' . ($this->getValue($lang) ? ' checked' : '') . ' ' . $this->implodeAttributes($attributes) . ' />';
 
-				if(!isset($attributes['hide-label']) and $label){
-					echo ' <label for="'.$attributes['id'].'">'.$label.'</label>';
+				if (!isset($attributes['hide-label']) and $label) {
+					echo ' <label for="' . $attributes['id'] . '">' . $label . '</label>';
 				}
 				break;
 			default:
-				if(!isset($attributes['type']))
+				if (!isset($attributes['type']))
 					$attributes['type'] = $this->options['type'];
 
-				echo '<input value="'.entities($this->getValue($lang)).'" '.$this->implodeAttributes($attributes).' />';
+				echo '<input value="' . entities($this->getValue($lang)) . '" ' . $this->implodeAttributes($attributes) . ' />';
 				break;
 		}
 	}
@@ -372,14 +382,15 @@ class MField{
 	 * @param array $options
 	 * @param mixed $value
 	 */
-	private function renderSelectOptions(array $options, $value){
-		foreach($options as $id => $opt){
-			if(is_array($opt)){
-				echo '<optgroup label="'.entities($id).'">';
+	private function renderSelectOptions(array $options, $value)
+	{
+		foreach ($options as $id => $opt) {
+			if (is_array($opt)) {
+				echo '<optgroup label="' . entities($id) . '">';
 				$this->renderSelectOptions($opt, $value);
 				echo '</optgroup>';
-			}else{
-				echo '<option value="'.$id.'"'.(((string) $id===(string) $value) ? ' selected' : '').'>'.entities($opt).'</option>';
+			} else {
+				echo '<option value="' . $id . '"' . (((string)$id === (string)$value) ? ' selected' : '') . '>' . entities($opt) . '</option>';
 			}
 		}
 	}
@@ -388,10 +399,11 @@ class MField{
 	 * @param array $attributes
 	 * @return string
 	 */
-	protected function implodeAttributes(array $attributes){
+	protected function implodeAttributes(array $attributes): string
+	{
 		$str_attributes = array();
-		foreach($attributes as $k=>$v){
-			$str_attributes[] = $k.'="'.entities($v).'"';
+		foreach ($attributes as $k => $v) {
+			$str_attributes[] = $k . '="' . entities($v) . '"';
 		}
 
 		return implode(' ', $str_attributes);
@@ -400,15 +412,17 @@ class MField{
 	/**
 	 * @return string
 	 */
-	public function getLabel(){
-		return $this->options['label']!==false ? $this->options['label'] : ucwords(str_replace(['-', '_'], ' ', $this->options['name']));
+	public function getLabel(): string
+	{
+		return $this->options['label'] !== false ? $this->options['label'] : ucwords(str_replace(['-', '_'], ' ', $this->options['name']));
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getMinWidth(){
-		switch($this->options['type']){
+	public function getMinWidth(): int
+	{
+		switch ($this->options['type']) {
 			case 'password':
 				return 180;
 				break;
@@ -434,14 +448,15 @@ class MField{
 	 * @param array $options
 	 * @return int
 	 */
-	public function getEstimatedWidth(array $options){
-		switch($this->options['type']){
+	public function getEstimatedWidth(array $options): int
+	{
+		switch ($this->options['type']) {
 			case 'textarea':
 				$px = 300;
 				break;
 			case 'checkbox':
 			case 'radio':
-				$px = 30+(strlen($this->getLabel())*7);
+				$px = 30 + (strlen($this->getLabel()) * 7);
 				break;
 			case 'date':
 				$px = 300;
@@ -456,31 +471,32 @@ class MField{
 				$px = 100;
 				break;
 			default:
-				if($this->options['maxlength']){
-					$px = $this->options['maxlength']*5;
-					if($px>500)
+				if ($this->options['maxlength']) {
+					$px = $this->options['maxlength'] * 5;
+					if ($px > 500)
 						$px = 500;
-				}else{
+				} else {
 					$px = 300;
 				}
 				break;
 		}
 
-		if($px<$this->getMinWidth())
+		if ($px < $this->getMinWidth())
 			$px = $this->getMinWidth();
 
-		return round($px/$options['column-width']);
+		return round($px / $options['column-width']);
 	}
 
 	/**
 	 * @param array $options
 	 * @return int
 	 */
-	public function getEstimatedHeight(array $options){
-		if($options['one-row'])
+	public function getEstimatedHeight(array $options): int
+	{
+		if ($options['one-row'])
 			return 1;
 
-		switch($this->options['type']){
+		switch ($this->options['type']) {
 			case 'ckeditor':
 				return 4;
 				break;
@@ -494,17 +510,20 @@ class MField{
 	}
 
 	/**
-	 * @param mixed $data
+	 * @param array $data
 	 * @return bool
 	 */
-	public function save($data){
+	public function save(array $data = null): bool
+	{
 		return true;
 	}
 
 	/**
+	 * @param string|null $lang
 	 * @return bool
 	 */
-	public function delete(){
+	public function delete(string $lang = null): bool
+	{
 		return true;
 	}
 }

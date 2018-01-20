@@ -2,14 +2,16 @@
 
 use Model\Core\Module_Config;
 
-class Config extends Module_Config {
+class Config extends Module_Config
+{
 	public $configurable = true;
 
-	public function makeCache(): bool{
-		if(!is_dir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'))
-			mkdir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data');
-		if(!is_dir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'))
-			mkdir(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache');
+	public function makeCache(): bool
+	{
+		if (!is_dir(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data'))
+			mkdir(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data');
+		if (!is_dir(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache'))
+			mkdir(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache');
 
 		return true;
 	}
@@ -20,8 +22,9 @@ class Config extends Module_Config {
 	 * @param array $request
 	 * @return string
 	 */
-	public function getTemplate(array $request){
-		return $request[2]=='config' ? 'config' : null;
+	public function getTemplate(array $request)
+	{
+		return $request[2] == 'config' ? 'config' : null;
 	}
 
 	/**
@@ -33,9 +36,9 @@ class Config extends Module_Config {
 	 */
 	public function saveConfig(string $type, array $data): bool
 	{
-		if($this->model->_CSRF->checkCsrf() and isset($_POST['empty']) and $_POST['empty']){
-			$files = glob(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.'*');
-			foreach($files as $f){
+		if ($this->model->_CSRF->checkCsrf() and isset($_POST['empty']) and $_POST['empty']) {
+			$files = glob(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . '*');
+			foreach ($files as $f) {
 				unlink($f);
 			}
 		}

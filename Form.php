@@ -2,7 +2,8 @@
 
 use Model\Core\Autoloader;
 
-class Form implements \ArrayAccess{
+class Form implements \ArrayAccess
+{
 	/** @var array */
 	private $dataset = array();
 	/** @var array */
@@ -16,19 +17,20 @@ class Form implements \ArrayAccess{
 	 * @param array $options
 	 * @throws \Model\Core\Exception
 	 */
-	public function __construct(array $options = []){
+	public function __construct(array $options = [])
+	{
 		$this->options = array_merge([
 			'table' => null,
 			'model' => null,
-            'element' => null,
-            'pair-fields'=>[
-                ['nome', 'cognome'],
-                ['name', 'surname'],
-            ],
+			'element' => null,
+			'pair-fields' => [
+				['nome', 'cognome'],
+				['name', 'surname'],
+			],
 		], $options);
 
 		$this->model = $this->options['model'];
-		if($this->model===null)
+		if ($this->model === null)
 			throw new \Model\Core\Exception('Form class need a model reference!');
 	}
 
@@ -37,27 +39,28 @@ class Form implements \ArrayAccess{
 	 *
 	 * @param string|MField $datum
 	 * @param array $options
-	 * @return bool|MField
+	 * @return MField
 	 * @throws \Model\Core\Exception
 	 */
-	public function add($datum, array $options = []){
-		if(is_object($datum)){
-			if(get_class($datum)=='Model\\Form\\MField' or is_subclass_of($datum, 'Model\\Form\\MField')){
+	public function add($datum, array $options = []): MField
+	{
+		if (is_object($datum)) {
+			if (get_class($datum) == 'Model\\Form\\MField' or is_subclass_of($datum, 'Model\\Form\\MField')) {
 				$name = $datum->options['name'];
-			}else{
+			} else {
 				$this->model->error('Only MField can be passed directly as objects, in Form "add" method.');
 			}
-		}else{
+		} else {
 			$name = $datum;
 			$datum = false;
 		}
 
-		if($datum===false){
-			if(!is_array($options))
-				$options = ['type'=>$options];
+		if ($datum === false) {
+			if (!is_array($options))
+				$options = ['type' => $options];
 
 			$options = array_merge([
-				'field'=>$name,
+				'field' => $name,
 				'form' => $this,
 				'model' => $this->model,
 				'type' => false,
@@ -66,46 +69,46 @@ class Form implements \ArrayAccess{
 				'multilang' => null,
 				'dependsOn' => false,
 
-                'table' => false,
-                'id-field' => false,
-                'text-field' => null,
-                'where' => [],
+				'table' => false,
+				'id-field' => false,
+				'text-field' => null,
+				'where' => [],
 
 				'group' => '',
 			], $options);
 
-			if($this->model->isLoaded('Multilang')){
-				if($options['multilang']===null){
-					if(isset($this->model->_Multilang->tables[$this->options['table']]) and in_array($options['field'], $this->model->_Multilang->tables[$this->options['table']]['fields']))
+			if ($this->model->isLoaded('Multilang')) {
+				if ($options['multilang'] === null) {
+					if (isset($this->model->_Multilang->tables[$this->options['table']]) and in_array($options['field'], $this->model->_Multilang->tables[$this->options['table']]['fields']))
 						$options['multilang'] = true;
 					else
 						$options['multilang'] = false;
 				}
 
-				if($options['multilang'] and $this->options['table'] and !isset($this->model->_Multilang->tables[$this->options['table']]))
+				if ($options['multilang'] and $this->options['table'] and !isset($this->model->_Multilang->tables[$this->options['table']]))
 					$options['multilang'] = false;
-			}else{
-				if($options['multilang'])
+			} else {
+				if ($options['multilang'])
 					$options['multilang'] = false;
 			}
 
-			if($this->options['table'] and $options['multilang']){
-				$table = $this->options['table'].$this->model->_Multilang->tables[$this->options['table']]['suffix'];
-			}else{
+			if ($this->options['table'] and $options['multilang']) {
+				$table = $this->options['table'] . $this->model->_Multilang->tables[$this->options['table']]['suffix'];
+			} else {
 				$table = $this->options['table'];
 			}
 
 			$tableModel = $this->model->_Db->getTable($table);
-			if($table and $tableModel===false)
+			if ($table and $tableModel === false)
 				$this->model->error('Missing table model. Please generate cache.');
 
-			if(isset($tableModel->columns[$options['field']])){
+			if (isset($tableModel->columns[$options['field']])) {
 				$column = $tableModel->columns[$options['field']];
-				if($options['nullable']===null)
+				if ($options['nullable'] === null)
 					$options['nullable'] = $column['null'];
 
-				if($options['type']===false){
-					switch($column['type']){
+				if ($options['type'] === false) {
+					switch ($column['type']) {
 						case 'tinyint':
 						case 'smallint':
 						case 'int':
@@ -114,47 +117,47 @@ class Form implements \ArrayAccess{
 						case 'float':
 						case 'double':
 						case 'real':
-							if($column['foreign_key']){
+							if ($column['foreign_key']) {
 								$fk = $tableModel->foreign_keys[$column['foreign_key']];
-								if($this->model->_Db->count($fk['ref_table'], $options['where'])>50 and !$options['dependsOn'] and $this->model->moduleExists('InstantSearch')){
+								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['dependsOn'] and $this->model->moduleExists('InstantSearch')) {
 									$options['type'] = 'instant-search';
 
 									$options['table'] = $fk['ref_table'];
 
-									if($options['text-field']===null){
+									if ($options['text-field'] === null) {
 										$ref_table = $this->model->_Db->getTable($fk['ref_table']);
-										foreach($ref_table->columns as $ref_ck=>$ref_cc){
-											if(in_array($ref_cc['type'], array('char', 'varchar', 'tinytext'))){
+										foreach ($ref_table->columns as $ref_ck => $ref_cc) {
+											if (in_array($ref_cc['type'], array('char', 'varchar', 'tinytext'))) {
 												$options['text-field'] = $ref_ck;
 												break;
 											}
 										}
 
-										if($options['text-field']){
+										if ($options['text-field']) {
 											$options['text-field'] = $this->checkFieldsPairing($options['text-field'], $ref_table->columns);
 										}
 									}
 
-									if($options['text-field']===null)
+									if ($options['text-field'] === null)
 										$options['text-field'] = 'id';
-								}else{
+								} else {
 									$options['type'] = 'select';
 								}
-							}else{
+							} else {
 								$options['type'] = 'number';
 							}
 							break;
 						case 'decimal':
 							$length = explode(',', $column['length']);
 							$options['type'] = 'number';
-							$options['attributes']['step'] = round($length[0]>0 ? 1/pow(10, $length[1]) : 1, $length[1]);
+							$options['attributes']['step'] = round($length[0] > 0 ? 1 / pow(10, $length[1]) : 1, $length[1]);
 							break;
 						case 'enum':
 							$options['type'] = 'select';
 							$options['sel_options'] = [];
-							if($options['nullable'])
+							if ($options['nullable'])
 								$options['sel_options'][''] = '';
-							foreach($column['length'] as $v)
+							foreach ($column['length'] as $v)
 								$options['sel_options'][$v] = ucwords($v);
 							break;
 						case 'date':
@@ -175,50 +178,50 @@ class Form implements \ArrayAccess{
 					}
 				}
 
-				if(in_array($options['type'], ['select', 'instant-search']) and $column['foreign_key']){
+				if (in_array($options['type'], ['select', 'instant-search']) and $column['foreign_key']) {
 					$fk = $tableModel->foreign_keys[$column['foreign_key']];
 
-					if(!$options['table'])
-					    $options['table'] = $fk['ref_table'];
+					if (!$options['table'])
+						$options['table'] = $fk['ref_table'];
 
-					if(!$options['id-field'])
-    					$options['id-field'] = $fk['ref_column'];
+					if (!$options['id-field'])
+						$options['id-field'] = $fk['ref_column'];
 
-					if(!$options['text-field']){
+					if (!$options['text-field']) {
 						$options['text-field'] = null;
 						$ref_table = $this->model->_Db->getTable($options['table']);
 						$refTable_columns = $ref_table->columns;
 
-						if($this->model->isLoaded('Multilang') and array_key_exists($options['table'], $this->model->_Multilang->tables)){
-							$ref_ml_table = $this->model->_Db->getTable($options['table'].$this->model->_Multilang->tables[$options['table']]['suffix']);
-							foreach($this->model->_Multilang->tables[$options['table']]['fields'] as $ref_ck)
+						if ($this->model->isLoaded('Multilang') and array_key_exists($options['table'], $this->model->_Multilang->tables)) {
+							$ref_ml_table = $this->model->_Db->getTable($options['table'] . $this->model->_Multilang->tables[$options['table']]['suffix']);
+							foreach ($this->model->_Multilang->tables[$options['table']]['fields'] as $ref_ck)
 								$refTable_columns[$ref_ck] = $ref_ml_table->columns[$ref_ck];
 						}
 
-						foreach($refTable_columns as $ref_ck=>$ref_cc){
-							if(in_array($ref_cc['type'], ['char', 'varchar', 'tinytext'])){
+						foreach ($refTable_columns as $ref_ck => $ref_cc) {
+							if (in_array($ref_cc['type'], ['char', 'varchar', 'tinytext'])) {
 								$options['text-field'] = $this->checkFieldsPairing($ref_ck, $refTable_columns);
 								break;
 							}
 						}
 
-						if(!$options['text-field'])
+						if (!$options['text-field'])
 							$options['text-field'] = $options['id-field'];
-                    }
-                }
+					}
+				}
 
-				if(in_array($column['type'], ['varchar', 'char']) and $column['length']!==false)
+				if (in_array($column['type'], ['varchar', 'char']) and $column['length'] !== false)
 					$options['maxlength'] = $column['length'];
 
-				if($options['default']===false)
+				if ($options['default'] === false)
 					$options['default'] = $column['default'];
-			}else{
-				if($options['type']===false)
+			} else {
+				if ($options['type'] === false)
 					$options['type'] = 'text';
 			}
 
 			$datum = $this->makeField($name, $options);
-		}else{
+		} else {
 			$options = array_merge($datum->options, $options);
 			$new_datum = $this->makeField($name, $options);
 			$new_datum->setValue($datum->getValue());
@@ -230,14 +233,20 @@ class Form implements \ArrayAccess{
 		return $datum;
 	}
 
-	private function makeField($name, $options){
+	/**
+	 * @param string $name
+	 * @param array $options
+	 * @return MField
+	 */
+	private function makeField(string $name, array $options): MField
+	{
 		$type = preg_replace('/[^a-z0-9_]/', '-', strtolower($options['type']));
-		$type = implode('', array_map(function($name){
+		$type = implode('', array_map(function ($name) {
 			return ucfirst($name);
 		}, explode('-', $type)));
 
 		$className = Autoloader::searchFile('Field', $type);
-		if(!$className)
+		if (!$className)
 			$className = '\\Model\\Form\\MField';
 
 		$datum = new $className($name, $options);
@@ -253,36 +262,41 @@ class Form implements \ArrayAccess{
 	 * @param array $columns
 	 * @return array
 	 */
-	private function checkFieldsPairing($f, array $columns){
-	    foreach($this->options['pair-fields'] as $pairing){
-	        if(in_array($f, $pairing)){
-	            foreach($pairing as $pf){
-	                if(!array_key_exists($pf, $columns) or !in_array($columns[$pf]['type'], ['char', 'varchar', 'tinytext']))
-	                    continue 2;
-                }
-                return $pairing;
-            }
-        }
+	private function checkFieldsPairing(string $f, array $columns): array
+	{
+		foreach ($this->options['pair-fields'] as $pairing) {
+			if (in_array($f, $pairing)) {
+				foreach ($pairing as $pf) {
+					if (!array_key_exists($pf, $columns) or !in_array($columns[$pf]['type'], ['char', 'varchar', 'tinytext']))
+						continue 2;
+				}
+				return $pairing;
+			}
+		}
 
-        return [$f];
-    }
+		return [$f];
+	}
 
 	/* ArrayAccess implementations */
-	public function offsetSet($offset, $value){
+	public function offsetSet($offset, $value)
+	{
 		$this->model->error('Form array is read-only. Please use add method to add a new field.');
 	}
 
-	public function offsetExists($offset){
+	public function offsetExists($offset)
+	{
 		return isset($this->dataset[$offset]);
 	}
 
-	public function offsetUnset($offset){
+	public function offsetUnset($offset)
+	{
 		$this->model->error('Form array is read-only. Please use remove method to delete a field.');
 	}
 
-	public function offsetGet($offset){
-		if(!isset($this->dataset[$offset]))
-			$this->model->error('Index "'.$offset.'" does not exists in the form.');
+	public function offsetGet($offset)
+	{
+		if (!isset($this->dataset[$offset]))
+			$this->model->error('Index "' . $offset . '" does not exists in the form.');
 
 		return $this->dataset[$offset];
 	}
@@ -292,7 +306,8 @@ class Form implements \ArrayAccess{
 	 *
 	 * @return array
 	 */
-	public function getDataset(){
+	public function getDataset(): array
+	{
 		return $this->dataset;
 	}
 
@@ -301,7 +316,8 @@ class Form implements \ArrayAccess{
 	 *
 	 * @return bool
 	 */
-	public function clear(){
+	public function clear(): bool
+	{
 		$this->dataset = [];
 		return true;
 	}
@@ -309,8 +325,9 @@ class Form implements \ArrayAccess{
 	/**
 	 * Sets all the fields to their defaults
 	 */
-	public function reset(){
-		foreach($this->dataset as $d){
+	public function reset()
+	{
+		foreach ($this->dataset as $d) {
 			$d->setValue($d->options['default']);
 		}
 	}
@@ -322,7 +339,8 @@ class Form implements \ArrayAccess{
 	 * @param array $options
 	 * @throws \Model\Core\Exception
 	 */
-	public function render(array $options = []){
+	public function render(array $options = [])
+	{
 		$template = $this->getTemplate($options);
 		$this->renderTemplate($template, $options);
 	}
@@ -335,7 +353,8 @@ class Form implements \ArrayAccess{
 	 * @return array
 	 * @throws \Model\Core\Exception
 	 */
-	public function getTemplate(array $options = []){
+	public function getTemplate(array $options = []): array
+	{
 		$options = array_merge([
 			'width' => 1000,
 			'columns' => false,
@@ -349,25 +368,25 @@ class Form implements \ArrayAccess{
 
 		$cacheKey = $this->getCacheKey($options);
 
-		if($options['cache'] and file_exists(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$cacheKey.'.php')){
-			require(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$cacheKey.'.php');
-			if(!isset($template))
+		if ($options['cache'] and file_exists(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . $cacheKey . '.php')) {
+			require(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . $cacheKey . '.php');
+			if (!isset($template))
 				$this->model->error('Couldn\'t file form template in the cache file.');
-		}else{
-			if(!is_numeric($options['width']) or $options['width']<=0)
+		} else {
+			if (!is_numeric($options['width']) or $options['width'] <= 0)
 				$this->model->error('A width in pixel must be provided');
-			if(!$options['columns'])
-				$options['columns'] = round($options['width']/100);
-			if($options['columns']<1)
+			if (!$options['columns'])
+				$options['columns'] = round($options['width'] / 100);
+			if ($options['columns'] < 1)
 				$options['columns'] = 1;
 
-			$options['column-width'] = round($options['width']/$options['columns']);
+			$options['column-width'] = round($options['width'] / $options['columns']);
 
 			$signature = $this->getSignature($options);
 
 			$template = $this->getTemplateFromSignature($signature, $options);
 
-			if($options['cache'])
+			if ($options['cache'])
 				$this->cacheTemplate($cacheKey, $template);
 		}
 
@@ -380,9 +399,10 @@ class Form implements \ArrayAccess{
 	 * @param array $options
 	 * @return string
 	 */
-	private function getCacheKey(array $options){
+	private function getCacheKey(array $options): string
+	{
 		$arr = [];
-		foreach($this->dataset as $k => $f){
+		foreach ($this->dataset as $k => $f) {
 			$arr[$k] = [
 				'type' => $f->options['type'],
 				'label' => $f->getLabel(),
@@ -392,7 +412,7 @@ class Form implements \ArrayAccess{
 		ksort($options);
 		ksort($arr);
 
-		return sha1(json_encode($options).json_encode($arr));
+		return sha1(json_encode($options) . json_encode($arr));
 	}
 
 	/**
@@ -402,9 +422,10 @@ class Form implements \ArrayAccess{
 	 * @param array $template
 	 * @return bool
 	 */
-	private function cacheTemplate($cacheKey, array $template){
-		return (bool) file_put_contents(INCLUDE_PATH.'model'.DIRECTORY_SEPARATOR.'Form'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.$cacheKey.'.php', '<?php
-$template = '.var_export($template, true).';
+	private function cacheTemplate(string $cacheKey, array $template): bool
+	{
+		return (bool)file_put_contents(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . $cacheKey . '.php', '<?php
+$template = ' . var_export($template, true) . ';
 ');
 	}
 
@@ -415,8 +436,9 @@ $template = '.var_export($template, true).';
 	 * @param array $options
 	 * @throws \Model\Core\Exception
 	 */
-	private function renderTemplate(array $template, array $options){
-		if(!$template)
+	private function renderTemplate(array $template, array $options)
+	{
+		if (!$template)
 			return;
 
 		$options = array_merge([
@@ -425,20 +447,20 @@ $template = '.var_export($template, true).';
 		], $options);
 
 		echo '<div class="rob-field-cont">';
-		foreach($template as $div){
-			if(isset($div['field'])){
-				echo '<div class="rob-field" style="width: '.$div['w'].'%">';
-				if(!isset($this->dataset[$div['field']]))
-					$this->model->error('Error in Form rendering: field "'.$div['field'].'" was not found.');
+		foreach ($template as $div) {
+			if (isset($div['field'])) {
+				echo '<div class="rob-field" style="width: ' . $div['w'] . '%">';
+				if (!isset($this->dataset[$div['field']]))
+					$this->model->error('Error in Form rendering: field "' . $div['field'] . '" was not found.');
 
 				$label = $this[$div['field']]->getLabel();
-				if($options['show-labels'] and !$options['labels-as-placeholders'] and $this[$div['field']]->options['type']!='checkbox')
-					echo entities($label).'<br />';
-				$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder'=>$label] : []);
+				if ($options['show-labels'] and !$options['labels-as-placeholders'] and $this[$div['field']]->options['type'] != 'checkbox')
+					echo entities($label) . '<br />';
+				$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
 				echo '</div>';
-			}else{
-				echo '<div style="width: '.$div['w'].'%">';
-				if(isset($div['content'])){
+			} else {
+				echo '<div style="width: ' . $div['w'] . '%">';
+				if (isset($div['content'])) {
 					$this->renderTemplate($div['content'], $options);
 				}
 				echo '</div>';
@@ -458,11 +480,12 @@ $template = '.var_export($template, true).';
 	 * @return array
 	 * @throws \Model\Core\Exception
 	 */
-	private function getSignature(array $options){
+	private function getSignature(array $options): array
+	{
 		$signature = [];
-		foreach($this->dataset as $k=>$f){
+		foreach ($this->dataset as $k => $f) {
 			$h = $f->getEstimatedHeight($options);
-			if($h>1)
+			if ($h > 1)
 				continue;
 			$w = $f->getEstimatedWidth($options);
 			$signature[] = [
@@ -472,9 +495,9 @@ $template = '.var_export($template, true).';
 				false,
 			];
 		}
-		foreach($this->dataset as $k=>$f){
+		foreach ($this->dataset as $k => $f) {
 			$h = $f->getEstimatedHeight($options);
-			if($h==1)
+			if ($h == 1)
 				continue;
 			$w = $f->getEstimatedWidth($options);
 			$signature[] = [
@@ -485,18 +508,18 @@ $template = '.var_export($template, true).';
 			];
 		}
 
-		do{
+		do {
 			$rows = $this->getRowsFromSignature($signature, $options);
-			if($rows===false)
+			if ($rows === false)
 				$this->model->error('Error while generating the form: it looks like you started with an impossible-to-calculate fields placement. Try a different one please (pay attention to the textareas, never place them in the middle of a row).');
 
 			$currentScore = $this->scoreSignature($rows, $options);
 
 			$possibleSignatures = $this->getPossibleSignaturesFrom($signature, $options);
 			$max = false;
-			foreach($possibleSignatures as $s){
+			foreach ($possibleSignatures as $s) {
 				$newScore = $this->scoreSignature($s['rows'], $options);
-				if($max===false or $newScore<$max['score']){
+				if ($max === false or $newScore < $max['score']) {
 					$max = [
 						'score' => $newScore,
 						'signature' => $s['signature'],
@@ -505,11 +528,11 @@ $template = '.var_export($template, true).';
 			}
 
 			$found = false;
-			if($max and $max['score']<$currentScore){
+			if ($max and $max['score'] < $currentScore) {
 				$signature = $max['signature'];
 				$found = true;
 			}
-		}while($found);
+		} while ($found);
 
 		return $signature;
 	}
@@ -526,7 +549,8 @@ $template = '.var_export($template, true).';
 	 * @param array $options
 	 * @return array|bool
 	 */
-	private function getRowsFromSignature(array $signature, array $options){
+	private function getRowsFromSignature(array $signature, array $options)
+	{
 		$rows = [];
 
 		$nRow = 0;
@@ -534,11 +558,11 @@ $template = '.var_export($template, true).';
 			$currentRowWidth = 0;
 			$multiRows = false;
 			foreach ($signature as $fIdx => &$f) {
-				if(!isset($this->dataset[$f[0]])) // The field doesn't exist!
+				if (!isset($this->dataset[$f[0]])) // The field doesn't exist!
 					return false;
 
 				$minPixelWidth = $this->dataset[$f[0]]->getMinWidth();
-				if($f[1]*$options['column-width']<$minPixelWidth) // The field is shorter than its minimum width
+				if ($f[1] * $options['column-width'] < $minPixelWidth) // The field is shorter than its minimum width
 					return false;
 
 				$totalRowWidth = $options['columns'];
@@ -596,7 +620,7 @@ $template = '.var_export($template, true).';
 					$currentRowWidth += $f[1];
 				}
 
-				if(!isset($rows[$nRow])){
+				if (!isset($rows[$nRow])) {
 					$rows[$nRow] = [
 						'width' => $totalRowWidth,
 						'fields' => [],
@@ -608,7 +632,7 @@ $template = '.var_export($template, true).';
 			}
 			unset($f);
 
-			if($multiRows){
+			if ($multiRows) {
 				$multiRows = false;
 				$nRow++;
 			}
@@ -629,25 +653,26 @@ $template = '.var_export($template, true).';
 	 * @param array $options
 	 * @return float
 	 */
-	private function scoreSignature(array $rows, array $options){
+	private function scoreSignature(array $rows, array $options): float
+	{
 		$rowsNumber = count($rows);
 
 		$holes = 0;
 
 		$entropy = 0;
-		foreach($rows as $r){
+		foreach ($rows as $r) {
 			$entropy += $this->getEntropy($r);
 
 			$occupiedSpace = 0;
-			foreach($r['fields'] as $f)
+			foreach ($r['fields'] as $f)
 				$occupiedSpace += $f[1];
 
-			$holes += $r['width']-$occupiedSpace;
+			$holes += $r['width'] - $occupiedSpace;
 		}
 
 		$score = $rowsNumber * $options['score-rows'] +
-				 $entropy * $options['score-entropy'] +
-				 $holes * $options['score-shortage'];
+			$entropy * $options['score-entropy'] +
+			$holes * $options['score-shortage'];
 
 		return $score;
 	}
@@ -658,20 +683,21 @@ $template = '.var_export($template, true).';
 	 * @param array $row
 	 * @return float
 	 */
-	private function getEntropy(array $row){
+	private function getEntropy(array $row): float
+	{
 		$groups = [];
-		foreach($row['fields'] as $f){
+		foreach ($row['fields'] as $f) {
 			$group = $this->dataset[$f[0]]->options['group'];
 
-			if(!isset($groups[$group]))
+			if (!isset($groups[$group]))
 				$groups[$group] = 0;
 			$groups[$group]++;
 		}
 
 		$entropy = 0;
-		foreach($groups as $g=>$c){
-			$p = $c/count($row['fields']);
-			$entropy += $p*log($p, 2);
+		foreach ($groups as $g => $c) {
+			$p = $c / count($row['fields']);
+			$entropy += $p * log($p, 2);
 		}
 		$entropy *= -1;
 
@@ -691,14 +717,15 @@ $template = '.var_export($template, true).';
 	 * @param array $options
 	 * @return array
 	 */
-	private function getPossibleSignaturesFrom(array $signature, array $options){
+	private function getPossibleSignaturesFrom(array $signature, array $options): array
+	{
 		$possibilities = [];
-		foreach($signature as $fIdx => $f){
+		foreach ($signature as $fIdx => $f) {
 			/* Widening the field */
 			$s_wide = $signature;
 			$s_wide[$fIdx][1]++;
 			$rows = $this->getRowsFromSignature($s_wide, $options);
-			if($rows!==false){
+			if ($rows !== false) {
 				$possibilities[] = [
 					'signature' => $s_wide,
 					'rows' => $rows,
@@ -707,7 +734,7 @@ $template = '.var_export($template, true).';
 			unset($s_wide);
 
 			/* Shortening the field */
-			if($f[1]>1) {
+			if ($f[1] > 1) {
 				$s_short = $signature;
 				$s_short[$fIdx][1]--;
 				$rows = $this->getRowsFromSignature($s_short, $options);
@@ -721,12 +748,12 @@ $template = '.var_export($template, true).';
 			}
 
 			// The field is multirow
-			if($f[3]){
+			if ($f[3]) {
 				/* Higher */
 				$s_high = $signature;
 				$s_high[$fIdx][2]++;
 				$rows = $this->getRowsFromSignature($s_high, $options);
-				if($rows!==false){
+				if ($rows !== false) {
 					$possibilities[] = [
 						'signature' => $s_high,
 						'rows' => $rows,
@@ -735,7 +762,7 @@ $template = '.var_export($template, true).';
 				unset($s_high);
 
 				/* Lower */
-				if($f[2]>1) {
+				if ($f[2] > 1) {
 					$s_low = $signature;
 					$s_low[$fIdx][2]--;
 					$rows = $this->getRowsFromSignature($s_low, $options);
@@ -753,8 +780,8 @@ $template = '.var_export($template, true).';
 			array_splice($signatureForMoving, $fIdx, 1);
 
 			// In order to limit memory usage for large forms, I try to move only to the position in a range of 10 around the original positions
-			for($newPos=$fIdx-5;$newPos<=$fIdx+5;$newPos++){
-				if($newPos==$fIdx or !isset($signature[$newPos]))
+			for ($newPos = $fIdx - 5; $newPos <= $fIdx + 5; $newPos++) {
+				if ($newPos == $fIdx or !isset($signature[$newPos]))
 					continue;
 
 				$possibility = $signatureForMoving;
@@ -785,9 +812,9 @@ $template = '.var_export($template, true).';
 	 *
 	 * Given a form signature, which is a list of fields in the following format:
 	 *  [
-	 * 		[field_name, width, height, is_multiRow],
-	 * 		[field_name, width, height, is_multiRow],
-	 * 		etc...
+	 *        [field_name, width, height, is_multiRow],
+	 *        [field_name, width, height, is_multiRow],
+	 *        etc...
 	 *  ]
 	 *
 	 * And given a number of columns (in the options), the method returns a "template" array,
@@ -795,48 +822,49 @@ $template = '.var_export($template, true).';
 	 * representing what divs should be rendered in the html to render the form with the fields in that order.
 	 * The template array has the following form:
 	 * [
-			[
-				'w' => 80,
-				'content' => [
-					[
-						'w' => 66.67,
-						'field' => 'field1',
-					],
-					[
-						'w' => 33.33,
-						'field' => 'field2',
-					],
-				],
-			],
-			[
-				'w' => 20,
-				'field' => 'field3',
-			],
-	   ]
+	 * [
+	 * 'w' => 80,
+	 * 'content' => [
+	 * [
+	 * 'w' => 66.67,
+	 * 'field' => 'field1',
+	 * ],
+	 * [
+	 * 'w' => 33.33,
+	 * 'field' => 'field2',
+	 * ],
+	 * ],
+	 * ],
+	 * [
+	 * 'w' => 20,
+	 * 'field' => 'field3',
+	 * ],
+	 * ]
 	 *
 	 * @param array $signature
 	 * @param array $options
 	 * @return array
 	 */
-	private function getTemplateFromSignature(array $signature, array $options){
-		if($options['one-row']){
+	private function getTemplateFromSignature(array $signature, array $options): array
+	{
+		if ($options['one-row']) {
 			$totW = 0;
-			foreach($signature as $f){
+			foreach ($signature as $f) {
 				$totW += $f[1];
 			}
 
 			$conts = [];
-			foreach($signature as $f){
+			foreach ($signature as $f) {
 				$conts[] = [
-					'w' => floor($f[1]/$totW*10000)/100,
+					'w' => floor($f[1] / $totW * 10000) / 100,
 					'field' => $f[0],
 				];
 			}
-		}else{
+		} else {
 			$conts = $this->putFieldsInContainers($options['columns'], $signature);
 
-			if(count($signature)>0){ // If some of the fields are too large for the container, they have been ignored in putFieldsInContainer, but they still need to be rendered so I manually add 'em here
-				foreach($signature as $f){
+			if (count($signature) > 0) { // If some of the fields are too large for the container, they have been ignored in putFieldsInContainer, but they still need to be rendered so I manually add 'em here
+				foreach ($signature as $f) {
 					$conts[] = [
 						'w' => $f[1],
 						'field' => $f[0],
@@ -857,30 +885,33 @@ $template = '.var_export($template, true).';
 	 *
 	 * @param int $w
 	 * @param array $fields
-	 * @param int|bool $maxRows
+	 * @param int $maxRows
 	 * @return array
 	 */
-	private function putFieldsInContainers($w, array &$fields, $maxRows = false){
+	private function putFieldsInContainers(int $w, array &$fields, int $maxRows = null): array
+	{
 		$conts = [];
 
-		$rowsN = 0; $row = []; $currentRowWidth = 0;
-		foreach($fields as $fIdx => &$f){
-			if($f[1]>$w)
+		$rowsN = 0;
+		$row = [];
+		$currentRowWidth = 0;
+		foreach ($fields as $fIdx => &$f) {
+			if ($f[1] > $w)
 				continue;
 
-			if($currentRowWidth+$f[1]>$w){
+			if ($currentRowWidth + $f[1] > $w) {
 				$currentRowWidth = 0;
 				$conts = array_merge($conts, $row);
 				$row = [];
 				$rowsN++;
-				if($rowsN==$maxRows)
+				if ($rowsN === $maxRows)
 					break;
 			}
 
-			if($f[2]>1){
+			if ($f[2] > 1) {
 				unset($fields[$fIdx]);
 
-				if($currentRowWidth>0){
+				if ($currentRowWidth > 0) {
 					$row = [
 						[
 							'w' => $currentRowWidth,
@@ -891,26 +922,26 @@ $template = '.var_export($template, true).';
 							'field' => $f[0],
 						],
 					];
-				}else{
+				} else {
 					$row = [
 						[
 							'w' => $f[1],
 							'field' => $f[0],
 						],
 						[
-							'w' => $w-$f[1],
-							'content' => $w>$f[1] ? array_merge($row, $this->putFieldsInContainers($w-$f[1], $fields, $f[2])) : [],
+							'w' => $w - $f[1],
+							'content' => $w > $f[1] ? array_merge($row, $this->putFieldsInContainers($w - $f[1], $fields, $f[2])) : [],
 						],
 					];
 				}
 
-				if($fields){ // Some fields stayed out of the multirow grouping? I create a new row for them
+				if ($fields) { // Some fields stayed out of the multirow grouping? I create a new row for them
 					$conts = array_merge($conts, $row);
 					$row = [];
 				}
 
 				$currentRowWidth = 0;
-			}else{
+			} else {
 				$row[] = [
 					'w' => $f[1],
 					'field' => $f[0],
@@ -920,19 +951,19 @@ $template = '.var_export($template, true).';
 
 				unset($fields[$fIdx]);
 
-				if($currentRowWidth==$w){
+				if ($currentRowWidth == $w) {
 					$currentRowWidth = 0;
 					$conts = array_merge($conts, $row);
 					$row = [];
 					$rowsN++;
-					if($rowsN==$maxRows)
+					if ($rowsN === $maxRows)
 						break;
 				}
 			}
 		}
 		unset($f);
 
-		if($row)
+		if ($row)
 			$conts = array_merge($conts, $row);
 
 		return $conts;
@@ -945,12 +976,13 @@ $template = '.var_export($template, true).';
 	 * @param int $w
 	 * @return array
 	 */
-	private function normalizeWidths(array $conts, $w){
-		foreach($conts as $idx => &$c){
-			if(isset($c['content']))
+	private function normalizeWidths(array $conts, int $w): array
+	{
+		foreach ($conts as $idx => &$c) {
+			if (isset($c['content']))
 				$c['content'] = $this->normalizeWidths($c['content'], $c['w']);
 
-			$c['w'] = floor($c['w']/$w*10000)/100;
+			$c['w'] = floor($c['w'] / $w * 10000) / 100;
 		}
 		unset($c);
 
@@ -962,9 +994,10 @@ $template = '.var_export($template, true).';
 	 *
 	 * @return array
 	 */
-	public function getValues(){
+	public function getValues(): array
+	{
 		$arr = [];
-		foreach($this->dataset as $d){
+		foreach ($this->dataset as $d) {
 			$arr[$d->options['name']] = $d->getValue();
 		}
 		return $arr;
@@ -975,9 +1008,10 @@ $template = '.var_export($template, true).';
 	 *
 	 * @param array $values
 	 */
-	public function setValues(array $values){
-		foreach($this->dataset as $d){
-			if(array_key_exists($d->options['name'], $values))
+	public function setValues(array $values)
+	{
+		foreach ($this->dataset as $d) {
+			if (array_key_exists($d->options['name'], $values))
 				$d->setValue($values[$d->options['name']]);
 		}
 	}
