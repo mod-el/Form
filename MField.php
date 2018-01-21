@@ -510,10 +510,10 @@ class MField
 	}
 
 	/**
-	 * @param array $data
+	 * @param mixed $data
 	 * @return bool
 	 */
-	public function save(array $data = null): bool
+	public function save($data = null): bool
 	{
 		return true;
 	}
