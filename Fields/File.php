@@ -133,12 +133,12 @@ class File extends MField
 	}
 
 	/**
-	 * @param array $data
+	 * @param mixed $data
 	 * @return bool
 	 * @throws \Exception
 	 * @throws \Model\Core\Exception
 	 */
-	public function save(array $data = null): bool
+	public function save($data = null): bool
 	{
 		if ($data === null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error'] === 0) {
 			$data = $this->reArrayFiles($_FILES[$this->options['name']]);
