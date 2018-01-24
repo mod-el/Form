@@ -78,7 +78,7 @@ var setElementValue = function(v, trigger_onchange){
 			}
 
 			if(trigger_onchange && v!==currentValue) {
-				triggerOnChange(this);
+				triggerOnChange(element);
 			}
 		};
 	})(this, v, trigger_onchange));
