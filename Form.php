@@ -98,11 +98,11 @@ class Form implements \ArrayAccess
 				$table = $this->options['table'];
 			}
 
-			$tableModel = $this->model->_Db->getTable($table);
+			$tableModel = $table ? $this->model->_Db->getTable($table) : false;
 			if ($table and $tableModel === false)
 				$this->model->error('Missing table model. Please generate cache.');
 
-			if (isset($tableModel->columns[$options['field']])) {
+			if ($tableModel and isset($tableModel->columns[$options['field']])) {
 				$column = $tableModel->columns[$options['field']];
 				if ($options['nullable'] === null)
 					$options['nullable'] = $column['null'];
