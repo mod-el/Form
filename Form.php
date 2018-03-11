@@ -154,11 +154,11 @@ class Form implements \ArrayAccess
 							break;
 						case 'enum':
 							$options['type'] = 'select';
-							$options['sel_options'] = [];
+							$options['options'] = [];
 							if ($options['nullable'])
-								$options['sel_options'][''] = '';
+								$options['options'][''] = '';
 							foreach ($column['length'] as $v)
-								$options['sel_options'][$v] = ucwords($v);
+								$options['options'][$v] = ucwords($v);
 							break;
 						case 'date':
 							$options['type'] = 'date';
