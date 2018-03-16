@@ -20,6 +20,9 @@ var setElementValue = function (v, trigger_onchange) {
 
 	return this.getValue().then((function (element, v, trigger_onchange) {
 		return function (currentValue) {
+			if(v === true || v === false)
+				return null;
+
 			if (this instanceof NodeList) { // Radio
 				element.value = v;
 			} else if (element.getAttribute('data-setvalue-function') !== null) {
