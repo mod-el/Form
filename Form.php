@@ -234,6 +234,19 @@ class Form implements \ArrayAccess
 	}
 
 	/**
+	 * Removes a field from the form
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	public function remove(string $name): bool
+	{
+		if (array_key_exists($name, $this->dataset))
+			unset($this->dataset[$name]);
+		return true;
+	}
+
+	/**
 	 * @param string $name
 	 * @param array $options
 	 * @return MField
