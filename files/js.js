@@ -23,7 +23,7 @@ var setElementValue = function (v, trigger_onchange) {
 			if(v === true || v === false)
 				return null;
 
-			if (this instanceof NodeList) { // Radio
+			if (element instanceof NodeList) { // Radio
 				element.value = v;
 			} else if (element.getAttribute('data-setvalue-function') !== null) {
 				var func = element.getAttribute('data-setvalue-function');
