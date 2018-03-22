@@ -27,6 +27,7 @@ class Form implements \ArrayAccess
 				['nome', 'cognome'],
 				['name', 'surname'],
 			],
+			'wrap-names' => null,
 		], $options);
 
 		$this->model = $this->options['model'];

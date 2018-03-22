@@ -44,7 +44,6 @@ class MField
 			'label' => false,
 
 			'options' => false,
-			'child_el' => false,
 		], $options);
 
 		$this->model = $this->options['model'];
@@ -276,9 +275,8 @@ class MField
 		if (!isset($attributes['name']))
 			$attributes['name'] = $this->options['name'];
 
-		if ($this->options['child_el']) {
-			$child_el_name = $this->options['child_el'];
-			$attributes['name'] = 'ch-' . $attributes['name'] . '-' . $child_el_name;
+		if ($this->options['form'] and $this->options['form']->options['wrap-names']) {
+			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->options['form']->options['wrap-names']);
 			/*$this->depending_children = array_map(function($n) use($child_el_name){
 				return 'ch-'.$n.'-'.$child_el_name;
 			}, $this->depending_children);*/
