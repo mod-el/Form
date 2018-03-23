@@ -338,9 +338,12 @@ class MField
 	 */
 	protected function renderWithLang(array $attributes, string $lang = null)
 	{
+		if ($this->options['form'] and $this->options['form']->options['print']) {
+			echo entities($this->getText(['lang' => $lang]), true);
+			return;
+		}
 		switch ($this->options['type']) {
 			case 'textarea':
-			case 'ckeditor':
 				echo '<textarea ' . $this->implodeAttributes($attributes) . '>' . entities($this->getValue($lang)) . '</textarea>';
 				break;
 			case 'select':
