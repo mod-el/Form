@@ -225,6 +225,7 @@ class Form implements \ArrayAccess
 			$datum = $this->makeField($name, $options);
 		} else {
 			$options = array_merge($datum->options, $options);
+			$options['form'] = $this;
 			$new_datum = $this->makeField($name, $options);
 			$new_datum->setValue($datum->getValue());
 			$datum = $new_datum;
