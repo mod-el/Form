@@ -253,8 +253,7 @@ class MField
 			}
 		}
 
-		if ($this->options['nullable'])
-			$options = ['' => $this->options['if-null']] + $options;
+		$options = ['' => $this->options['if-null']] + $options;
 
 		$this->options['options'] = $options;
 
@@ -348,6 +347,8 @@ class MField
 				break;
 			case 'select':
 				$this->loadSelectOptions();
+				if (!$this->options['nullable'])
+					$attributes['required'] = '';
 				echo '<select ' . $this->implodeAttributes($attributes) . '>';
 				$this->renderSelectOptions($this->options['options'], $this->getValue($lang));
 				echo '</select>';
