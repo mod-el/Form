@@ -504,10 +504,10 @@ function checkField(form, name) {
 
 function markFieldAsMandatory(field) {
 	if (typeof field === 'object') {
-		if (field[0] && field[0].type.toLowerCase() === 'radio') {
+		if (field[0] && field[0].type && field[0].type.toLowerCase() === 'radio') {
 			for (var i = 0, length = field.length; i < length; i++)
 				field[i].style.outline = 'solid #F00 1px';
-		} else if (field.type.toLowerCase() === 'hidden' && field.getAttribute('data-instant-search')) {
+		} else if (field.type && field.type.toLowerCase() === 'hidden' && field.getAttribute('data-instant-search')) {
 			var textField = getInstantSearchInputs(field.getAttribute('data-instant-search'));
 			if (textField) {
 				textField.style.outline = 'solid #F00 1px';
