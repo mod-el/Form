@@ -426,7 +426,10 @@ function resizeFileBox(box) {
 function checkForm(form, mandatory) {
 	var required = form.querySelectorAll('input[required], select[required], textarea[required]');
 	for (var idx in required) {
-		if (!required.hasOwnProperty(idx)) continue;
+		if (!required.hasOwnProperty(idx))
+			continue;
+		if (required[idx].offsetParent === null)
+			continue;
 		if (mandatory.indexOf(required[idx].name) === -1)
 			mandatory.push(required[idx].name);
 	}
@@ -461,20 +464,21 @@ function checkForm(form, mandatory) {
 			console.log(missings[field]);
 
 			if (missings[field].constructor === Array) {
-				if (!alreadyFocused)
+				if (!alreadyFocused && form[missings[field][0]].offsetParent !== null) {
 					form[missings[field][0]].focus();
+					alreadyFocused = true;
+				}
 
 				missingsString.push(missings[field].join(' or '));
 			} else {
-				if (!alreadyFocused)
+				if (!alreadyFocused && form[missings[field]].offsetParent !== null) {
 					form[missings[field]].focus();
+					alreadyFocused = true;
+				}
 
 				missingsString.push(missings[field]);
 				markFieldAsMandatory(form[missings[field]]);
 			}
-
-			if (!alreadyFocused)
-				alreadyFocused = true;
 		}
 
 		alert("Required fields:\n\n" + missingsString.join("\n"))
