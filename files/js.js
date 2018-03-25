@@ -20,7 +20,7 @@ var setElementValue = function (v, trigger_onchange) {
 
 	return this.getValue().then((function (element, v, trigger_onchange) {
 		return function (currentValue) {
-			if(v === true || v === false)
+			if (v === true || v === false)
 				return null;
 
 			if (element instanceof NodeList) { // Radio
@@ -421,4 +421,129 @@ function resizeFileBox(box) {
 	var boxH = Math.round(h / w * boxW);
 	box.style.width = boxW + 'px';
 	box.style.height = boxH + 'px';
+}
+
+function checkForm(form, mandatory) {
+	var required = form.querySelectorAll('input[required], select[required], textarea[required]');
+	for (var idx in required) {
+		if (!required.hasOwnProperty(idx)) continue;
+		if (mandatory.indexOf(required[idx].name) === -1)
+			mandatory.push(required[idx].name);
+	}
+
+	var missings = [];
+	for (var idx in mandatory) {
+		if (!mandatory.hasOwnProperty(idx)) continue;
+		if (mandatory[idx].constructor === Array) {
+			var atLeastOne = false;
+			for (var sub_idx in mandatory[idx]) {
+				if (!mandatory[idx].hasOwnProperty(sub_idx)) continue;
+				if (checkField(form, mandatory[idx]))
+					atLeastOne = true;
+			}
+
+			if (!atLeastOne) {
+				missings.push(mandatory[idx]);
+			}
+		} else {
+			if (!checkField(form, mandatory[idx])) {
+				missings.push(mandatory[idx]);
+			}
+		}
+	}
+
+	if (missings.length > 0) {
+		console.log('Missing fields:');
+		var alreadyFocused = false;
+		var missingsString = [];
+		for (var field in missings) {
+			if (!missings.hasOwnProperty(field)) continue;
+			console.log(missings[field]);
+
+			if (missings[field].constructor === Array) {
+				if (!alreadyFocused)
+					form[missings[field][0]].focus();
+
+				missingsString.push(missings[field].join(' or '));
+			} else {
+				if (!alreadyFocused)
+					form[missings[field]].focus();
+
+				missingsString.push(missings[field]);
+				markFieldAsMandatory(form[missings[field]]);
+			}
+
+			if (!alreadyFocused)
+				alreadyFocused = true;
+		}
+
+		alert("Required fields:\n\n" + missingsString.join("\n"))
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function checkField(form, name) {
+	if (typeof form[name] !== 'object')
+		return false;
+
+	var v = form[name].getValue(true);
+	if (v === null)
+		v = '';
+
+	if ((form[name].type === 'select-one' || form[name].type === 'checkbox') && v == 0)
+		v = '';
+
+	if (v === '') {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function markFieldAsMandatory(field) {
+	if (typeof field === 'object') {
+		if (field[0] && field[0].type.toLowerCase() === 'radio') {
+			for (var i = 0, length = field.length; i < length; i++)
+				field[i].style.outline = 'solid #F00 1px';
+		} else if (field.type.toLowerCase() === 'hidden' && field.getAttribute('data-instant-search')) {
+			var textField = getInstantSearchInputs(field.getAttribute('data-instant-search'));
+			if (textField) {
+				textField.style.outline = 'solid #F00 1px';
+			}
+		} else {
+			field.style.outline = 'solid #F00 1px';
+		}
+	}
+}
+
+function simulateTab(current, forward) {
+	if (typeof current.form === 'undefined' || !current.form)
+		return false;
+	if (typeof forward === 'undefined')
+		forward = true;
+
+	var next = false;
+	if (forward) {
+		var start = 0;
+		var end = current.form.elements.length;
+		var step = 1;
+	} else {
+		var start = current.form.elements.length;
+		var end = 0;
+		var step = -1;
+	}
+	for (i = start; i * step < end * step; i += step) {
+		if (next && !current.form.elements[i].readOnly && !current.form.elements[i].disabled && !in_array(current.form.elements[i].type, ['hidden'])) {
+			current.form.elements[i].focus();
+			if (current.form.elements[i].type == "text" || current.form.elements[i].type == "number") {
+				current.form.elements[i].select();
+			}
+			return true;
+		}
+		if (current.form.elements[i] == current)
+			next = true;
+	}
+	return false;
 }
