@@ -4,7 +4,8 @@
 	"version": "1.4.0",
 	"dependencies": {
 		"Db": ">=1.3.0",
-		"ImgResize": ">=1.1.0"
+		"ImgResize": ">=1.1.0",
+		"RandToken": ">=0.1.0"
 	},
 	"css": [
 		"files/style.css"
