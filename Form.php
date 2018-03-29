@@ -67,7 +67,7 @@ class Form implements \ArrayAccess
 				'nullable' => null,
 				'default' => false,
 				'multilang' => null,
-				'depending-on' => false,
+				'depending-on' => null,
 
 				'table' => false,
 				'id-field' => false,
@@ -120,7 +120,7 @@ class Form implements \ArrayAccess
 							if ($column['foreign_key']) {
 								$fk = $tableModel->foreign_keys[$column['foreign_key']];
 
-								if (!$options['depending-on']) {
+								if ($options['depending-on'] === null) {
 									$refTable = $options['table'] ?: $fk['ref_table'];
 									$refTableModel = $this->model->_Db->getTable($refTable);
 									foreach ($this->dataset as $d) {
