@@ -1,12 +1,19 @@
 function setSelect(s, v) {
-	if (v == null) return false;
-	if (isNaN(v)) v = v.toLowerCase();
+	if (v == null)
+		return false;
+	if (isNaN(v))
+		v = v.toLowerCase();
+
 	for (let cp in s.options) {
-		if (typeof s.options[cp].value != 'undefined' && s.options[cp].value.toLowerCase() == v) {
+		if (typeof s.options[cp].value !== 'undefined' && s.options[cp].value.toLowerCase() == v) {
 			s.selectedIndex = cp;
+			if (s.getAttribute('data-attempted-value'))
+				s.removeAttribute('data-attempted-value');
 			return true;
 		}
 	}
+
+	s.setAttribute('data-attempted-value', v);
 	s.selectedIndex = 0;
 	return false;
 }
@@ -80,8 +87,12 @@ var setElementValue = function (v, trigger_onchange) {
 				element.value = v;
 			}
 
-			if (trigger_onchange && v !== currentValue) {
-				triggerOnChange(element);
+			if (v !== currentValue) {
+				if (trigger_onchange) {
+					triggerOnChange(element);
+				} else if (element.getAttribute('data-depending-parent')) {
+					reloadDependingSelects(element, JSON.parse(element.getAttribute('data-depending-parent')));
+				}
 			}
 		};
 	})(this, v, trigger_onchange));
@@ -550,4 +561,43 @@ function simulateTab(current, forward) {
 			next = true;
 	}
 	return false;
+}
+
+function reloadDependingSelects(parent, fields) {
+	let form = _('adminForm');
+	parent.getValue().then(parentV => {
+		fields.forEach(f => {
+			if (typeof form[f.name] === 'undefined')
+				return;
+
+			form[f.name].getValue().then(v => {
+				let img = document.createElement('img');
+				img.src = absolute_path + 'model/Output/files/loading.gif'
+				form[f.name].parentNode.insertBefore(img, form[f.name]);
+				form[f.name].style.display = 'none';
+
+				ajax(absolute_path + 'model-form', '', {
+					'field': JSON.stringify(f),
+					'v': parentV
+				}).then(r => {
+					if (typeof r !== 'object') {
+						throw r;
+					} else {
+						form[f.name].innerHTML = '';
+						r.forEach(opt => {
+							let option = document.createElement('option');
+							option.value = opt.id;
+							option.innerHTML = opt.text;
+							form[f.name].appendChild(option);
+						});
+						form[f.name].style.display = '';
+						img.parentNode.removeChild(img);
+
+						if (form[f.name].getAttribute('data-attempted-value'))
+							form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), false);
+					}
+				});
+			});
+		});
+	}).catch(err => alert(err));
 }
