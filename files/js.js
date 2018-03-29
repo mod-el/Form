@@ -564,7 +564,9 @@ function simulateTab(current, forward) {
 }
 
 function reloadDependingSelects(parent, fields) {
-	let form = _('adminForm');
+	let form = parent.form;
+	if(!form)
+		return;
 	parent.getValue().then(parentV => {
 		fields.forEach(f => {
 			if (typeof form[f.name] === 'undefined')
