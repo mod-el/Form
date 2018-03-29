@@ -16,7 +16,6 @@ class MField
 	 *
 	 * @param string $name
 	 * @param array $options
-	 * @throws \Model\Core\Exception
 	 */
 	public function __construct(string $name, array $options = [])
 	{
@@ -296,7 +295,6 @@ class MField
 	 *
 	 * @param array $attributes
 	 * @param bool $return
-	 * @throws \Exception
 	 */
 	public function render(array $attributes = [], bool $return = false)
 	{

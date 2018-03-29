@@ -15,7 +15,6 @@ class Form implements \ArrayAccess
 	 * Form constructor.
 	 *
 	 * @param array $options
-	 * @throws \Model\Core\Exception
 	 */
 	public function __construct(array $options = [])
 	{
@@ -42,7 +41,6 @@ class Form implements \ArrayAccess
 	 * @param string|MField $datum
 	 * @param array $options
 	 * @return MField
-	 * @throws \Model\Core\Exception
 	 */
 	public function add($datum, array $options = []): MField
 	{
@@ -121,27 +119,20 @@ class Form implements \ArrayAccess
 						case 'real':
 							if ($column['foreign_key']) {
 								$fk = $tableModel->foreign_keys[$column['foreign_key']];
-								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
-									$options['type'] = 'instant-search';
 
-									$options['table'] = $fk['ref_table'];
-
-									if ($options['text-field'] === null) {
-										$ref_table = $this->model->_Db->getTable($fk['ref_table']);
-										foreach ($ref_table->columns as $ref_ck => $ref_cc) {
-											if (in_array($ref_cc['type'], array('char', 'varchar', 'tinytext'))) {
-												$options['text-field'] = $ref_ck;
-												break;
-											}
-										}
-
-										if ($options['text-field']) {
-											$options['text-field'] = $this->checkFieldsPairing($options['text-field'], $ref_table->columns);
+								if (!$options['depending-on']) {
+									$refTable = $options['table'] ?: $fk['ref_table'];
+									$refTableModel = $this->model->_Db->getTable($refTable);
+									foreach ($this->dataset as $d) {
+										if ($d->options['type'] === 'select' and isset($refTableModel->columns[$d->options['name']])) {
+											$options['depending-on'] = $d->options['name'];
+											break;
 										}
 									}
+								}
 
-									if ($options['text-field'] === null)
-										$options['text-field'] = 'id';
+								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
+									$options['type'] = 'instant-search';
 								} else {
 									$options['type'] = 'select';
 								}
@@ -353,7 +344,6 @@ class Form implements \ArrayAccess
 	 * Just two steps, retrieves the form-template and then renders it
 	 *
 	 * @param array $options
-	 * @throws \Model\Core\Exception
 	 */
 	public function render(array $options = [])
 	{
@@ -367,7 +357,6 @@ class Form implements \ArrayAccess
 	 *
 	 * @param array $options
 	 * @return array
-	 * @throws \Model\Core\Exception
 	 */
 	public function getTemplate(array $options = []): array
 	{
@@ -450,7 +439,6 @@ $template = ' . var_export($template, true) . ';
 	 *
 	 * @param array $template
 	 * @param array $options
-	 * @throws \Model\Core\Exception
 	 */
 	private function renderTemplate(array $template, array $options)
 	{
@@ -494,7 +482,6 @@ $template = ' . var_export($template, true) . ';
 	 *
 	 * @param array $options
 	 * @return array
-	 * @throws \Model\Core\Exception
 	 */
 	private function getSignature(array $options): array
 	{
