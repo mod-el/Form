@@ -115,13 +115,6 @@ class MField
 		} else {
 			$this->options['value'] = $v;
 		}
-
-		/*if (!empty($this->depending_children)) {
-			foreach ($this->depending_children as $f) {
-				if (isset($this->form->getDataset()[$f]))
-					$this->form->getDataset()[$f]->loadSelectOptions();
-			}
-		}*/
 	}
 
 	/**
@@ -312,10 +305,6 @@ class MField
 		if (!isset($attributes['name']))
 			$attributes['name'] = $this->options['name'];
 
-		if ($this->form and $this->form->options['wrap-names']) {
-			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->form->options['wrap-names']);
-		}
-
 		if ($this->options['maxlength'] !== false and !array_key_exists('maxlength', $attributes))
 			$attributes['maxlength'] = $this->options['maxlength'];
 
@@ -379,6 +368,11 @@ class MField
 			echo entities($this->getText(['lang' => $lang]), true);
 			return;
 		}
+
+		if ($this->form and $this->form->options['wrap-names']) {
+			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->form->options['wrap-names']);
+		}
+
 		switch ($this->options['type']) {
 			case 'textarea':
 				echo '<textarea ' . $this->implodeAttributes($attributes) . '>' . entities($this->getValue($lang)) . '</textarea>';
@@ -397,6 +391,10 @@ class MField
 						$field = $this->form->getDataset()[$ch];
 						if (!$field->options['depending-on'])
 							continue;
+
+						if ($this->form and $this->form->options['wrap-names']) {
+							$ch = str_replace('[name]', $ch, $this->form->options['wrap-names']);
+						}
 
 						$fArr = [
 							'name' => $ch,
