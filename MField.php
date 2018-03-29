@@ -8,6 +8,8 @@ class MField
 	protected $model;
 	/** @var Form */
 	protected $form;
+	/** @var array */
+	public $depending_children = [];
 
 	/**
 	 * MField constructor.
@@ -29,7 +31,7 @@ class MField
 			'default' => false,
 			'value' => false,
 			'multilang' => false,
-			'dependsOn' => false,
+			'depending-on' => null,
 			'maxlength' => false,
 
 			'table' => false,
@@ -58,6 +60,38 @@ class MField
 			$this->options['value'] = $this->options['default'];
 		if ($this->options['value'] !== false)
 			$this->setValue($this->options['value']);
+
+		if ($this->options['depending-on']) {
+			if ($this->options['type'] !== 'select')
+				$this->model->error('Only selects can have "depending on" option');
+
+			if (!is_array($this->options['depending-on'])) {
+				$this->options['depending-on'] = [
+					'name' => $this->options['depending-on'],
+					'db' => $this->options['depending-on'],
+				];
+			}
+		}
+
+		if ($this->form) {
+			$current_dataset = $this->form->getDataset();
+			if ($this->options['depending-on'] and isset($current_dataset[$this->options['depending-on']['name']])) {
+				$current_dataset[$this->options['depending-on']['name']]->depending_children[] = $this->options['name'];
+			}
+			foreach ($current_dataset as $fName => $field) {
+				if ($field->options['depending-on'] === $this->options['name'] and !in_array($fName, $this->depending_children))
+					$this->depending_children[] = $fName;
+			}
+		}
+	}
+
+	/**
+	 * Whene clone, "depending" relationship get wiped
+	 */
+	function __clone()
+	{
+		$this->depending_children = [];
+		$this->options['depending-on'] = null;
 	}
 
 	/**
@@ -82,10 +116,10 @@ class MField
 			$this->options['value'] = $v;
 		}
 
-		/*if(!empty($this->depending_children)){
-			foreach($this->depending_children as $ch){
-				if(isset($this->form->dati[$ch]))
-					$this->form->dati[$ch]->loadSelectOptions();
+		/*if (!empty($this->depending_children)) {
+			foreach ($this->depending_children as $f) {
+				if (isset($this->form->getDataset()[$f]))
+					$this->form->getDataset()[$f]->loadSelectOptions();
 			}
 		}*/
 	}
@@ -235,7 +269,11 @@ class MField
 				}
 			}
 
-			$q = $this->model->_Db->select_all($this->options['table'], $this->options['where'], $qry_options);
+			$where = $this->options['where'];
+			if ($this->form and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
+				$where[$this->options['depending-on']['db']] = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
+			}
+			$q = $this->model->_Db->select_all($this->options['table'], $where, $qry_options);
 			foreach ($q as $r) {
 				$id = $r[$this->options['id-field']];
 
@@ -274,11 +312,8 @@ class MField
 		if (!isset($attributes['name']))
 			$attributes['name'] = $this->options['name'];
 
-		if ($this->options['form'] and $this->options['form']->options['wrap-names']) {
-			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->options['form']->options['wrap-names']);
-			/*$this->depending_children = array_map(function($n) use($child_el_name){
-				return 'ch-'.$n.'-'.$child_el_name;
-			}, $this->depending_children);*/
+		if ($this->form and $this->form->options['wrap-names']) {
+			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->form->options['wrap-names']);
 		}
 
 		if ($this->options['maxlength'] !== false and !array_key_exists('maxlength', $attributes))
@@ -291,6 +326,9 @@ class MField
 			if ($this->options['multilang']) {
 				if (!is_array($this->options['value']))
 					$this->model->error('Multilang fields needs an array of values!');
+
+				if ($this->options['depending-on'] or $this->depending_children)
+					$this->model->error('Multilang fields cannot be depending on another field, nor have children fields');
 
 				$def_lang = $this->model->_Multilang->options['default'];
 				$originalName = $attributes['name'];
@@ -337,7 +375,7 @@ class MField
 	 */
 	protected function renderWithLang(array $attributes, string $lang = null)
 	{
-		if ($this->options['form'] and $this->options['form']->options['print']) {
+		if ($this->form and $this->form->options['print']) {
 			echo entities($this->getText(['lang' => $lang]), true);
 			return;
 		}
@@ -349,6 +387,36 @@ class MField
 				$this->loadSelectOptions();
 				if (!$this->options['nullable'])
 					$attributes['required'] = '';
+
+				if ($this->form and !empty($this->depending_children)) {
+					$formToken = $this->model->_RandToken->getToken('Form');
+					$fieldsArr = [];
+					foreach ($this->depending_children as $ch) {
+						if (!isset($this->form->getDataset()[$ch]))
+							continue;
+						$field = $this->form->getDataset()[$ch];
+						if (!$field->options['depending-on'])
+							continue;
+
+						$fArr = [
+							'name' => $ch,
+							'field' => $field->options['depending-on']['db'],
+							'table' => $field->options['table'],
+							'id-field' => $field->options['id-field'],
+							'text-field' => $field->options['text-field'],
+							'order_by' => $field->options['order_by'],
+							'where' => $field->options['where'],
+						];
+						ksort($fArr);
+						$toHash = json_encode($fArr) . $formToken;
+						$fArr['hash'] = sha1($toHash);
+						$fieldsArr[] = $fArr;
+					}
+
+					$attributes['data-depending-parent'] = json_encode($fieldsArr);
+					$attributes['onchange'] = 'reloadDependingSelects(this, JSON.parse(this.getAttribute(\'data-depending-parent\'))); ' . ($attibutes['onchange'] ?? '');
+				}
+
 				echo '<select ' . $this->implodeAttributes($attributes) . '>';
 				$this->renderSelectOptions($this->options['options'], $this->getValue($lang));
 				echo '</select>';

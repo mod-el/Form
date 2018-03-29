@@ -6,9 +6,6 @@ class Config extends Module_Config
 {
 	public $configurable = true;
 
-	/**
-	 * @throws \Model\Core\Exception
-	 */
 	protected function assetsList()
 	{
 		$this->addAsset('data', 'cache');
@@ -41,5 +38,22 @@ class Config extends Module_Config
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Rules for general form actions controller
+	 *
+	 * @return array
+	 */
+	public function getRules(): array
+	{
+		return [
+			'rules' => [
+				'model-form',
+			],
+			'controllers' => [
+				'ModelForm',
+			],
+		];
 	}
 }

@@ -69,7 +69,7 @@ class Form implements \ArrayAccess
 				'nullable' => null,
 				'default' => false,
 				'multilang' => null,
-				'dependsOn' => false,
+				'depending-on' => false,
 
 				'table' => false,
 				'id-field' => false,
@@ -121,7 +121,7 @@ class Form implements \ArrayAccess
 						case 'real':
 							if ($column['foreign_key']) {
 								$fk = $tableModel->foreign_keys[$column['foreign_key']];
-								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['dependsOn'] and $this->model->moduleExists('InstantSearch')) {
+								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
 									$options['type'] = 'instant-search';
 
 									$options['table'] = $fk['ref_table'];
