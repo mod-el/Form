@@ -121,25 +121,6 @@ class Form implements \ArrayAccess
 								$fk = $tableModel->foreign_keys[$column['foreign_key']];
 								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
 									$options['type'] = 'instant-search';
-
-									$options['table'] = $fk['ref_table'];
-
-									if ($options['text-field'] === null) {
-										$ref_table = $this->model->_Db->getTable($fk['ref_table']);
-										foreach ($ref_table->columns as $ref_ck => $ref_cc) {
-											if (in_array($ref_cc['type'], array('char', 'varchar', 'tinytext'))) {
-												$options['text-field'] = $ref_ck;
-												break;
-											}
-										}
-
-										if ($options['text-field']) {
-											$options['text-field'] = $this->checkFieldsPairing($options['text-field'], $ref_table->columns);
-										}
-									}
-
-									if ($options['text-field'] === null)
-										$options['text-field'] = 'id';
 								} else {
 									$options['type'] = 'select';
 								}
