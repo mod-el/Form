@@ -124,8 +124,14 @@ class Form implements \ArrayAccess
 									$refTable = $options['table'] ?: $fk['ref_table'];
 									$refTableModel = $this->model->_Db->getTable($refTable);
 									foreach ($this->dataset as $d) {
-										if ($d->options['type'] === 'select' and isset($refTableModel->columns[$d->options['name']])) {
-											$options['depending-on'] = $d->options['name'];
+										if ($d->options['type'] === 'select' and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
+											$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
+											foreach ($refTableModel->columns as $ref_k => $ref_f) {
+												if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table']) {
+													$options['depending-on'] = $d->options['name'];
+													break 2;
+												}
+											}
 											break;
 										}
 									}
