@@ -31,7 +31,7 @@ class Config extends Module_Config
 	 */
 	public function saveConfig(string $type, array $data): bool
 	{
-		if ($this->model->_CSRF->checkCsrf() and isset($_POST['empty']) and $_POST['empty']) {
+		if (isset($_POST['empty']) and $_POST['empty']) {
 			$files = glob(INCLUDE_PATH . 'model' . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . '*');
 			foreach ($files as $f) {
 				unlink($f);
