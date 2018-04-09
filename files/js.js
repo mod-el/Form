@@ -64,19 +64,6 @@ var setElementValue = function (v, trigger_onchange) {
 					}
 				}
 				element.value = v;
-			} else if (element.nodeName.toLowerCase() === 'textarea' && element.nextSibling && typeof element.nextSibling.hasClass != 'undefined' && element.nextSibling.hasClass('cke')) { // CK Editor
-				var found = false;
-				for (let i in CKEDITOR.instances) {
-					if (!CKEDITOR.instances.hasOwnProperty(i)) continue;
-					if (CKEDITOR.instances[i].element.$ == element) {
-						CKEDITOR.instances[i].setData(v);
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					element.value = v;
-				}
 			} else {
 				element.value = v;
 			}
