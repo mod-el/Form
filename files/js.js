@@ -30,13 +30,15 @@ var setElementValue = function (v, trigger_onchange) {
 			if (v === true || v === false)
 				return null;
 
+			var ret = true;
+
 			if (element instanceof NodeList) { // Radio
 				element.value = v;
 			} else if (element.getAttribute('data-setvalue-function') !== null) {
 				var func = element.getAttribute('data-setvalue-function');
 				if (typeof window[func] === 'undefined')
 					return null;
-				window[func].call(element, v, trigger_onchange);
+				ret = window[func].call(element, v, trigger_onchange);
 			} else if (element.type === 'checkbox' || element.type === 'radio') {
 				if (v == 1 || v == true) element.checked = true;
 				else element.checked = false;
@@ -94,6 +96,8 @@ var setElementValue = function (v, trigger_onchange) {
 					reloadDependingSelects(element, JSON.parse(element.getAttribute('data-depending-parent')));
 				}
 			}
+
+			return ret;
 		};
 	})(this, v, trigger_onchange));
 };
