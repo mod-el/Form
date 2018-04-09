@@ -171,6 +171,12 @@ class Form implements \ArrayAccess
 						case 'text':
 							$options['type'] = 'textarea';
 							break;
+						case 'char':
+							if ($options['field'] === 'password' and $column['length'] == 40)
+								$options['type'] = 'password';
+							else
+								$options['type'] = 'text';
+							break;
 						default:
 							$options['type'] = 'text';
 							break;
