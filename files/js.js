@@ -30,13 +30,15 @@ var setElementValue = function (v, trigger_onchange) {
 			if (v === true || v === false)
 				return null;
 
+			var ret = true;
+
 			if (element instanceof NodeList) { // Radio
 				element.value = v;
 			} else if (element.getAttribute('data-setvalue-function') !== null) {
 				var func = element.getAttribute('data-setvalue-function');
 				if (typeof window[func] === 'undefined')
 					return null;
-				window[func].call(element, v, trigger_onchange);
+				ret = window[func].call(element, v, trigger_onchange);
 			} else if (element.type === 'checkbox' || element.type === 'radio') {
 				if (v == 1 || v == true) element.checked = true;
 				else element.checked = false;
@@ -47,16 +49,8 @@ var setElementValue = function (v, trigger_onchange) {
 					else
 						element.options[i].selected = false;
 				}
-			} else if (element.type === 'select-one') setSelect(element, v);
-			else if (element.type === 'hidden' && element.getAttribute('data-zkra')) {
-				var zkra = element.getAttribute('data-zkra');
-				var campo = ricerca_assistita_findMainTextInput(zkra);
-				if (typeof v === 'object' && campo) {
-					setta_ricerca_assistita(v.id, zkra, campo, v.text);
-				} else {
-					element.value = v;
-					// Possibilit� futura: si cerca in automatico il testo da inserire nelle caselle - MA ATTENZIONE alla recursione, visto che setta_ricerca_assistita utilizza anche setValue per impostare l'id!
-				}
+			} else if (element.type === 'select-one') {
+				ret = setSelect(element, v);
 			} else if (element.getAttribute('type') === 'date') {
 				if (isDateSupported()) {
 					if (v.match(/[0-9]{2}-[0-9]{2}-[0-9]{4}/)) {
@@ -70,19 +64,6 @@ var setElementValue = function (v, trigger_onchange) {
 					}
 				}
 				element.value = v;
-			} else if (element.nodeName.toLowerCase() === 'textarea' && element.nextSibling && typeof element.nextSibling.hasClass != 'undefined' && element.nextSibling.hasClass('cke')) { // CK Editor
-				var found = false;
-				for (let i in CKEDITOR.instances) {
-					if (!CKEDITOR.instances.hasOwnProperty(i)) continue;
-					if (CKEDITOR.instances[i].element.$ == element) {
-						CKEDITOR.instances[i].setData(v);
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					element.value = v;
-				}
 			} else {
 				element.value = v;
 			}
@@ -94,6 +75,8 @@ var setElementValue = function (v, trigger_onchange) {
 					reloadDependingSelects(element, JSON.parse(element.getAttribute('data-depending-parent')));
 				}
 			}
+
+			return ret;
 		};
 	})(this, v, trigger_onchange));
 };
@@ -357,54 +340,61 @@ function fileSetValue(v) {
 			}
 
 			if (isImage && !this.getAttribute('data-only-text')) {
-				setFileImage(fileBox, base_path + v + "?nocache=" + Math.random());
+				return setFileImage(fileBox, base_path + v + "?nocache=" + Math.random());
 			} else {
 				var filename = v.split('/').pop();
-				setFileText(fileBox, filename);
 				fileBox.setAttribute('onclick', 'window.open(\'' + base_path + v + '\')');
+				return setFileText(fileBox, filename);
 			}
 		} else {
-			var reader = new FileReader();
-			reader.onload = (function (box, file, field) {
-				return function (e) {
-					var mime = e.target.result.match(/^data:(.*);/)[1];
-					var fileBox = box.querySelector('[data-file-cont]');
+			return new Promise(function (resolve) {
+				var reader = new FileReader();
+				reader.onload = (function (box, file, field) {
+					return function (e) {
+						var mime = e.target.result.match(/^data:(.*);/)[1];
+						var fileBox = box.querySelector('[data-file-cont]');
 
-					if (in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg']) && !field.getAttribute('data-only-text')) {
-						setFileImage(fileBox, e.target.result);
-					} else {
-						setFileText(fileBox, file.name);
-					}
-				};
-			})(mainBox, v, this);
-			reader.readAsDataURL(v);
+						if (in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg']) && !field.getAttribute('data-only-text')) {
+							resolve(setFileImage(fileBox, e.target.result));
+						} else {
+							resolve(setFileText(fileBox, file.name));
+						}
+					};
+				})(mainBox, v, this);
+				reader.readAsDataURL(v);
+			});
 		}
 	} else {
 		fileTools.style.display = 'none';
 		fileBoxCont.style.display = 'none';
 		this.style.display = 'inline-block';
+		return true;
 	}
 }
 
 function setFileImage(box, i) {
-	let img = new Image();
-	img.onload = (function (box, i) {
-		return function () {
-			box.setAttribute('data-natural-width', this.naturalWidth);
-			box.setAttribute('data-natural-height', this.naturalHeight);
+	return new Promise(function (resolve) {
+		var img = new Image();
+		img.onload = (function (box, i) {
+			return function () {
+				box.setAttribute('data-natural-width', this.naturalWidth);
+				box.setAttribute('data-natural-height', this.naturalHeight);
 
-			resizeFileBox(box);
+				resizeFileBox(box);
 
-			box.style.backgroundImage = "url('" + i + "')";
-			box.innerHTML = '';
+				box.style.backgroundImage = "url('" + i + "')";
+				box.innerHTML = '';
 
-			if (i.charAt(0) === '/')
-				box.setAttribute('onclick', 'window.open(\'' + i + '\')');
-			else
-				box.removeAttribute('onclick');
-		};
-	})(box, i);
-	img.src = i;
+				if (i.charAt(0) === '/')
+					box.setAttribute('onclick', 'window.open(\'' + i + '\')');
+				else
+					box.removeAttribute('onclick');
+
+				resolve();
+			};
+		})(box, i);
+		img.src = i;
+	});
 }
 
 function setFileText(box, text) {
@@ -418,6 +408,8 @@ function setFileText(box, text) {
 	box.removeAttribute('data-natural-height');
 
 	box.removeAttribute('onclick');
+
+	return true;
 }
 
 function resizeFileBox(box) {
@@ -565,7 +557,7 @@ function simulateTab(current, forward) {
 
 function reloadDependingSelects(parent, fields) {
 	let form = parent.form;
-	if(!form)
+	if (!form)
 		return;
 	parent.getValue().then(parentV => {
 		fields.forEach(f => {
