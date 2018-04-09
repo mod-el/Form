@@ -49,16 +49,8 @@ var setElementValue = function (v, trigger_onchange) {
 					else
 						element.options[i].selected = false;
 				}
-			} else if (element.type === 'select-one') setSelect(element, v);
-			else if (element.type === 'hidden' && element.getAttribute('data-zkra')) {
-				var zkra = element.getAttribute('data-zkra');
-				var campo = ricerca_assistita_findMainTextInput(zkra);
-				if (typeof v === 'object' && campo) {
-					setta_ricerca_assistita(v.id, zkra, campo, v.text);
-				} else {
-					element.value = v;
-					// Possibilit� futura: si cerca in automatico il testo da inserire nelle caselle - MA ATTENZIONE alla recursione, visto che setta_ricerca_assistita utilizza anche setValue per impostare l'id!
-				}
+			} else if (element.type === 'select-one') {
+				ret = setSelect(element, v);
 			} else if (element.getAttribute('type') === 'date') {
 				if (isDateSupported()) {
 					if (v.match(/[0-9]{2}-[0-9]{2}-[0-9]{4}/)) {
@@ -569,7 +561,7 @@ function simulateTab(current, forward) {
 
 function reloadDependingSelects(parent, fields) {
 	let form = parent.form;
-	if(!form)
+	if (!form)
 		return;
 	parent.getValue().then(parentV => {
 		fields.forEach(f => {
