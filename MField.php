@@ -118,6 +118,7 @@ class MField
 
 	/**
 	 * Returns the current value
+	 * ("password" type fields are never showed in the form)
 	 * For multilang fields, if no $lang is passed, the current one will be used; if false is passed, an array with all languages will be returned
 	 *
 	 * @param string|bool $lang
@@ -125,6 +126,9 @@ class MField
 	 */
 	public function getValue($lang = null)
 	{
+		if ($this->options['type'] === 'password')
+			return null;
+
 		if ($this->options['multilang']) {
 			if ($lang === false) {
 				return $this->options['value'];
