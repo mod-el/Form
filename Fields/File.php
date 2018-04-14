@@ -64,10 +64,6 @@ class File extends Field
 	 */
 	public function renderWithLang(array $attributes, string $lang = null)
 	{
-		if ($this->form and $this->form->options['wrap-names']) {
-			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->form->options['wrap-names']);
-		}
-
 		$name = $attributes['name'];
 		unset($attributes['name']);
 
