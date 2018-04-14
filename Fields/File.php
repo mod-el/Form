@@ -1,9 +1,9 @@
 <?php namespace Model\Form\Fields;
 
-use Model\Form\MField;
+use Model\Form\Field;
 use Model\ImgResize\ImgResize;
 
-class File extends MField
+class File extends Field
 {
 	/** @var array[] */
 	protected $paths = [];
