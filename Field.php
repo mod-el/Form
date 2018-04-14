@@ -1,6 +1,6 @@
 <?php namespace Model\Form;
 
-class MField
+class Field
 {
 	/** @var array */
 	public $options = [];
@@ -12,7 +12,7 @@ class MField
 	public $depending_children = [];
 
 	/**
-	 * MField constructor.
+	 * Field constructor.
 	 *
 	 * @param string $name
 	 * @param array $options
@@ -49,7 +49,7 @@ class MField
 
 		$this->model = $this->options['model'];
 		if ($this->model === null)
-			throw new \Model\Core\Exception('MField class need a model reference!');
+			throw new \Model\Core\Exception('Field class need a model reference!');
 		$this->form = $this->options['form'];
 
 		if ($this->options['multilang'] and !$this->model->isLoaded('Multilang'))

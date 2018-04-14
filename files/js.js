@@ -347,22 +347,24 @@ function fileSetValue(v) {
 				return setFileText(fileBox, filename);
 			}
 		} else {
-			return new Promise(function (resolve) {
-				var reader = new FileReader();
-				reader.onload = (function (box, file, field) {
-					return function (e) {
-						var mime = e.target.result.match(/^data:(.*);/)[1];
-						var fileBox = box.querySelector('[data-file-cont]');
+			return new Promise((function (field) {
+				return function (resolve) {
+					var reader = new FileReader();
+					reader.onload = (function (box, file, field) {
+						return function (e) {
+							var mime = e.target.result.match(/^data:(.*);/)[1];
+							var fileBox = box.querySelector('[data-file-cont]');
 
-						if (in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg']) && !field.getAttribute('data-only-text')) {
-							resolve(setFileImage(fileBox, e.target.result));
-						} else {
-							resolve(setFileText(fileBox, file.name));
-						}
-					};
-				})(mainBox, v, this);
-				reader.readAsDataURL(v);
-			});
+							if (in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg']) && !field.getAttribute('data-only-text')) {
+								resolve(setFileImage(fileBox, e.target.result));
+							} else {
+								resolve(setFileText(fileBox, file.name));
+							}
+						};
+					})(mainBox, v, field);
+					reader.readAsDataURL(v);
+				};
+			})(this));
 		}
 	} else {
 		fileTools.style.display = 'none';

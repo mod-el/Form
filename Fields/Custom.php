@@ -1,8 +1,8 @@
 <?php namespace Model\Form\Fields;
 
-use Model\Form\MField;
+use Model\Form\Field;
 
-class Custom extends MField
+class Custom extends Field
 {
 	public function renderWithLang(array $attributes, string $lang = null)
 	{

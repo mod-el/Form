@@ -38,17 +38,17 @@ class Form implements \ArrayAccess
 	/**
 	 * Adds a new field to the dataset
 	 *
-	 * @param string|MField $datum
+	 * @param string|Field $datum
 	 * @param array $options
-	 * @return MField
+	 * @return Field
 	 */
-	public function add($datum, array $options = []): MField
+	public function add($datum, array $options = []): Field
 	{
 		if (is_object($datum)) {
-			if (get_class($datum) == 'Model\\Form\\MField' or is_subclass_of($datum, 'Model\\Form\\MField')) {
+			if (get_class($datum) == 'Model\\Form\\Field' or is_subclass_of($datum, 'Model\\Form\\Field')) {
 				$name = $datum->options['name'];
 			} else {
-				$this->model->error('Only MField can be passed directly as objects, in Form "add" method.');
+				$this->model->error('Only Field can be passed directly as objects, in Form "add" method.');
 			}
 		} else {
 			$name = $datum;
@@ -255,9 +255,9 @@ class Form implements \ArrayAccess
 	/**
 	 * @param string $name
 	 * @param array $options
-	 * @return MField
+	 * @return Field
 	 */
-	private function makeField(string $name, array $options): MField
+	private function makeField(string $name, array $options): Field
 	{
 		$type = preg_replace('/[^a-z0-9_]/', '-', strtolower($options['type']));
 		$type = implode('', array_map(function ($name) {
@@ -266,7 +266,7 @@ class Form implements \ArrayAccess
 
 		$className = Autoloader::searchFile('Field', $type);
 		if (!$className)
-			$className = '\\Model\\Form\\MField';
+			$className = '\\Model\\Form\\Field';
 
 		$datum = new $className($name, $options);
 		return $datum;
