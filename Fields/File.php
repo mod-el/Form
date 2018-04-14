@@ -64,6 +64,10 @@ class File extends Field
 	 */
 	public function renderWithLang(array $attributes, string $lang = null)
 	{
+		if ($this->form and $this->form->options['wrap-names']) {
+			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->form->options['wrap-names']);
+		}
+
 		$name = $attributes['name'];
 		unset($attributes['name']);
 
@@ -86,8 +90,12 @@ class File extends Field
 				<a href="#" onclick="document.getElementById(\'file-input-' . $name . '\').click(); return false"><img src="' . PATH . 'model/Form/files/img/upload.png" alt="" /> Carica nuovo</a>
 				<a href="#" onclick="document.getElementById(\'file-input-' . $name . '\').setValue(null); return false"><img src="' . PATH . 'model/Form/files/img/delete.png" alt="" /> Elimina</a>
 			</div>';
-
 		echo '</div>';
+
+		$v = $this->getValue($lang);
+		if ($v) {
+			echo '<script>document.getElementById(\'file-input-' . $name . '\').setValue(' . json_encode($v) . ', false)</script>';
+		}
 	}
 
 	private function isImage(): bool
@@ -165,8 +173,11 @@ class File extends Field
 	 * @throws \Exception
 	 * @throws \Model\Core\Exception
 	 */
-	private function saveWithLang(array $data, string $lang = null): bool
+	private function saveWithLang(array $data = null, string $lang = null): bool
 	{
+		if ($data === null)
+			return true;
+
 		if (!$data) {
 			return $this->delete($lang);
 		}
