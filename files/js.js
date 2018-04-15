@@ -369,6 +369,7 @@ function fileSetValue(v, user_triggered) {
 							if (in_array(mime, ['image/jpeg', 'image/png', 'image/gif', 'image/x-png', 'image/pjpeg']) && !field.getAttribute('data-only-text')) {
 								resolve(setFileImage(fileBox, e.target.result));
 							} else {
+								box.removeAttribute('onclick');
 								resolve(setFileText(fileBox, file.name));
 							}
 						};
@@ -432,8 +433,6 @@ function setFileText(box, text) {
 
 	box.removeAttribute('data-natural-width');
 	box.removeAttribute('data-natural-height');
-
-	box.removeAttribute('onclick');
 
 	return true;
 }
