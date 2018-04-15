@@ -38,7 +38,7 @@ var setElementValue = function (v, trigger_onchange) {
 				var func = element.getAttribute('data-setvalue-function');
 				if (typeof window[func] === 'undefined')
 					return null;
-				ret = window[func].call(element, v, trigger_onchange);
+				ret = window[func].call(element, v);
 			} else if (element.type === 'checkbox' || element.type === 'radio') {
 				if (v == 1 || v == true) element.checked = true;
 				else element.checked = false;
@@ -310,19 +310,30 @@ function fileGetValue() {
 		})(this.files[i])));
 	}
 
-	return Promise.all(promises).then(function (values) {
-		if (values.length === 0)
-			return null;
-		else
-			return values;
-	});
+	return Promise.all(promises).then((field => {
+		return values => {
+			if (values.length === 0) {
+				if (field.getAttribute('data-changed'))
+					return null;
+				else
+					return [];
+			} else
+				return values;
+		};
+	})(this));
 }
 
-function fileSetValue(v) {
+function fileSetValue(v, user_triggered) {
+	if (typeof user_triggered === 'undefined')
+		user_triggered = true;
+
 	var mainBox = this.parentNode;
 	var fileBoxCont = mainBox.querySelector('.file-box-cont');
 	var fileBox = mainBox.querySelector('[data-file-cont]');
 	var fileTools = mainBox.querySelector('.file-tools');
+
+	if (user_triggered)
+		this.setAttribute('data-changed', '1');
 
 	if (v) {
 		fileBoxCont.style.display = 'block';
@@ -370,6 +381,7 @@ function fileSetValue(v) {
 		fileTools.style.display = 'none';
 		fileBoxCont.style.display = 'none';
 		this.style.display = 'inline-block';
+		this.value = null;
 		return true;
 	}
 }
@@ -395,6 +407,18 @@ function setFileImage(box, i) {
 				resolve();
 			};
 		})(box, i);
+		img.onerror = (function (box) {
+			return function () {
+				box.removeAttribute('data-natural-width');
+				box.removeAttribute('data-natural-height');
+
+				box.removeAttribute('onclick');
+
+				box.innerHTML = 'Corrupted image';
+
+				resolve();
+			};
+		})(box);
 		img.src = i;
 	});
 }
