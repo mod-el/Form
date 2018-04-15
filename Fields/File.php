@@ -90,7 +90,7 @@ class File extends Field
 
 		$v = $this->getValue($lang);
 		if ($v) {
-			echo '<script>document.getElementById(\'file-input-' . $name . '\').setValue(' . json_encode($v) . ', false)</script>';
+			echo '<script>fileSetValue.call(document.getElementById(\'file-input-' . $name . '\'), ' . json_encode($v) . ', false)</script>';
 		}
 	}
 
@@ -171,12 +171,11 @@ class File extends Field
 	 */
 	private function saveWithLang(array $data = null, string $lang = null): bool
 	{
-		if ($data === null)
-			return true;
-
-		if (!$data) {
+		if ($data === null) {
 			return $this->delete($lang);
 		}
+		if (!$data)
+			return true;
 
 		$file = reset($data); // Multiple files upload currently not supported
 
