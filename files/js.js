@@ -335,6 +335,9 @@ function fileSetValue(v, user_triggered) {
 	if (user_triggered)
 		this.setAttribute('data-changed', '1');
 
+	if (Array.isArray(v) && v.length === 0)
+		v = null;
+
 	if (v) {
 		fileBoxCont.style.display = 'block';
 		fileTools.style.display = 'block';
