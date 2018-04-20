@@ -18,9 +18,11 @@ function setSelect(s, v) {
 	return false;
 }
 
-var setElementValue = function (v, trigger_onchange) {
+var setElementValue = function (v, trigger_onchange, use_custom_function) {
 	if (typeof trigger_onchange === 'undefined')
 		trigger_onchange = true;
+	if (typeof use_custom_function === 'undefined')
+		use_custom_function = true;
 
 	if (v === null)
 		v = '';
@@ -34,7 +36,7 @@ var setElementValue = function (v, trigger_onchange) {
 
 			if (element instanceof NodeList) { // Radio
 				element.value = v;
-			} else if (element.getAttribute('data-setvalue-function') !== null) {
+			} else if (use_custom_function && element.getAttribute('data-setvalue-function') !== null) {
 				var func = element.getAttribute('data-setvalue-function');
 				if (typeof window[func] === 'undefined')
 					return null;
