@@ -625,3 +625,16 @@ function reloadDependingSelects(parent, fields) {
 		});
 	}).catch(err => alert(err));
 }
+
+function switchAllFieldsLang(lang) {
+	document.querySelectorAll('.lang-switch-cont [data-lang]').forEach(function (el) {
+		if (el.getAttribute('data-lang') === lang)
+			el.addClass('selected');
+		else
+			el.removeClass('selected');
+	});
+
+	document.querySelectorAll('.multilang-field-container[data-name]').forEach(function (f) {
+		switchFieldLang(f.getAttribute('data-name'), lang);
+	});
+}

@@ -1,7 +1,7 @@
 {
 	"name": "Form",
 	"description": "A group of classes to manage many types of data fields",
-	"version": "1.4.3",
+	"version": "1.4.4",
 	"dependencies": {
 		"Db": ">=1.3.0",
 		"ImgResize": ">=1.1.0",
