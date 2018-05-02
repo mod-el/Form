@@ -1030,4 +1030,18 @@ $template = ' . var_export($template, true) . ';
 				$d->setValue($values[$d->options['name']]);
 		}
 	}
+
+	/**
+	 *
+	 */
+	public function renderLangSelector()
+	{
+		$def_lang = $this->model->_Multilang->options['default'];
+
+		echo '<div class="lang-switch-cont">';
+		foreach ($this->model->_Multilang->langs as $l) {
+			echo '<a href="#" onclick="switchAllFieldsLang(\'' . $l . '\'); return false"><img src="' . PATH . 'model/Form/files/img/langs/' . $l . '.png" alt="" data-lang="' . $l . '"' . ($l === $def_lang ? ' class="selected"' : '') . ' /></a>';
+		}
+		echo '</div>';
+	}
 }
