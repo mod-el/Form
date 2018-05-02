@@ -47,12 +47,12 @@
 .multilang-field-container:hover .multilang-field-lang-container{
 	opacity: 1;
 	z-index: 15;
-	background: #FFF;
-	box-shadow: #777 2px 2px 2px;
 }
 
 .multilang-field-lang-container:hover{
 	border-color: #333;
+	background: #FFF;
+	box-shadow: #777 2px 2px 2px;
 }
 
 .multilang-field-other-langs-container{
