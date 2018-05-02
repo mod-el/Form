@@ -132,7 +132,6 @@ class Form implements \ArrayAccess
 													break 2;
 												}
 											}
-											break;
 										}
 									}
 								}
