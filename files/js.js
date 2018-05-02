@@ -74,7 +74,7 @@ var setElementValue = function (v, trigger_onchange, use_custom_function) {
 				if (trigger_onchange) {
 					triggerOnChange(element);
 				} else if (element.getAttribute('data-depending-parent')) {
-					reloadDependingSelects(element, JSON.parse(element.getAttribute('data-depending-parent')));
+					reloadDependingSelects(element);
 				}
 			}
 
@@ -585,10 +585,14 @@ function simulateTab(current, forward) {
 	return false;
 }
 
-function reloadDependingSelects(parent, fields) {
+function reloadDependingSelects(parent) {
 	let form = parent.form;
-	if (!form)
+	if (!form || !parent.getAttribute('data-depending-parent'))
 		return;
+	let fields = JSON.parse(parent.getAttribute('data-depending-parent'));
+	if (!fields)
+		return;
+
 	parent.getValue().then(parentV => {
 		fields.forEach(f => {
 			if (typeof form[f.name] === 'undefined')
@@ -596,7 +600,7 @@ function reloadDependingSelects(parent, fields) {
 
 			form[f.name].getValue().then(v => {
 				let img = document.createElement('img');
-				img.src = absolute_path + 'model/Output/files/loading.gif'
+				img.src = absolute_path + 'model/Output/files/loading.gif';
 				form[f.name].parentNode.insertBefore(img, form[f.name]);
 				form[f.name].style.display = 'none';
 
@@ -619,6 +623,8 @@ function reloadDependingSelects(parent, fields) {
 
 						if (form[f.name].getAttribute('data-attempted-value'))
 							form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), false);
+						else if (form[f.name].getAttribute('data-depending-parent'))
+							reloadDependingSelects(form[f.name]);
 					}
 				});
 			});
