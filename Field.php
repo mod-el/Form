@@ -181,12 +181,8 @@ class Field
 				return $this->getTextFromSelect($this->options['options'], $value);
 				break;
 			case 'date':
-			case 'datetime':
-				$format = $options['dateFormat'];
-				if ($this->options['type'] == 'datetime')
-					$format .= ' H:i';
 				$data = $value ? date_create($value) : false;
-				return $data ? $data->format($format) : '';
+				return $data ? $data->format($options['dateFormat']) : '';
 				break;
 			case 'price':
 				switch ($options['priceFormat']) {
@@ -498,9 +494,6 @@ class Field
 			case 'date':
 				return 180;
 				break;
-			case 'datetime':
-				return 250;
-				break;
 			case 'textarea':
 				return 200;
 				break;
@@ -532,9 +525,6 @@ class Field
 				break;
 			case 'time':
 				$px = 150;
-				break;
-			case 'datetime':
-				$px = 450;
 				break;
 			case 'number':
 				$px = 100;
