@@ -644,3 +644,35 @@ function switchAllFieldsLang(lang) {
 		switchFieldLang(f.getAttribute('data-name'), lang);
 	});
 }
+
+async function setDatetimeSingle(f) {
+	let cont = f.parentNode.parentNode;
+	let date = await cont.querySelector('input[type="date"]').getValue();
+	let time = await cont.querySelector('input[type="time"]').getValue();
+
+	console.log(date);
+	console.log(time);
+
+	let full;
+	if (!date || !time)
+		full = '';
+	else
+		full = date + ' ' + time;
+
+	return cont.querySelector('input[type="hidden"]').setValue(full, true, false);
+}
+
+function setDatetime(v) {
+	let splitted = v.split(' ');
+	if (splitted.length === 1)
+		splitted.push('');
+	if (splitted.length > 2)
+		splitted = ['', ''];
+
+	let cont = this.parentNode;
+	let datePromise = cont.querySelector('input[type="date"]').setValue(splitted[0], false);
+	let timePromise = cont.querySelector('input[type="time"]').setValue(splitted[1], false);
+	let hiddenPromise = cont.querySelector('input[type="hidden"]').setValue(v ? v : '', false, false);
+
+	return Promise.all([datePromise, timePromise, hiddenPromise]);
+}
