@@ -73,6 +73,7 @@ class Form implements \ArrayAccess
 				'id-field' => false,
 				'text-field' => null,
 				'where' => [],
+				'options' => null,
 
 				'group' => '',
 			], $options);
@@ -152,11 +153,13 @@ class Form implements \ArrayAccess
 							break;
 						case 'enum':
 							$options['type'] = 'select';
-							$options['options'] = [];
-							if ($options['nullable'])
-								$options['options'][''] = '';
-							foreach ($column['length'] as $v)
-								$options['options'][$v] = ucwords($v);
+							if ($options['options'] === null) {
+								$options['options'] = [];
+								if ($options['nullable'])
+									$options['options'][''] = '';
+								foreach ($column['length'] as $v)
+									$options['options'][$v] = ucwords($v);
+							}
 							break;
 						case 'date':
 							$options['type'] = 'date';
