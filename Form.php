@@ -155,11 +155,11 @@ class Form implements \ArrayAccess
 							$options['type'] = 'select';
 							if ($options['options'] === null) {
 								$options['options'] = [];
+								if ($options['nullable'])
+									$options['options'][''] = '';
 								foreach ($column['length'] as $v)
 									$options['options'][$v] = ucwords($v);
 							}
-							if ($options['nullable'])
-								$options['options'][''] = '';
 							break;
 						case 'date':
 							$options['type'] = 'date';
