@@ -73,7 +73,6 @@ class Form implements \ArrayAccess
 				'id-field' => false,
 				'text-field' => null,
 				'where' => [],
-				'options' => null,
 
 				'group' => '',
 			], $options);
@@ -153,7 +152,7 @@ class Form implements \ArrayAccess
 							break;
 						case 'enum':
 							$options['type'] = 'select';
-							if ($options['options'] === null) {
+							if (!isset($options['options'])) {
 								$options['options'] = [];
 								if ($options['nullable'])
 									$options['options'][''] = '';
