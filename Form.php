@@ -128,7 +128,10 @@ class Form implements \ArrayAccess
 											$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
 											foreach ($refTableModel->columns as $ref_k => $ref_f) {
 												if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table']) {
-													$options['depending-on'] = $d->options['name'];
+													$options['depending-on'] = [
+														'name' => $d->options['name'],
+														'db' => $refTableModel->foreign_keys[$ref_f['foreign_key']]['column'],
+													];
 													break 2;
 												}
 											}
