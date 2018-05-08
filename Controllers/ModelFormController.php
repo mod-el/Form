@@ -19,7 +19,11 @@ class ModelFormController extends Controller
 		ksort($arr);
 
 		$formToken = $this->model->_RandToken->getToken('Form');
-		$toHash = json_encode($arr) . $formToken;
+
+		$toHash = $arr;
+		unset($toHash['name']); // Name can be dinamically assigned by javascript, cannot rely on it
+		$toHash = json_encode($toHash) . $formToken;
+
 		$hash = sha1($toHash);
 		if ($hash !== $givenHash)
 			die('Unauthorized');

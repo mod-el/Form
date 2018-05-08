@@ -403,7 +403,11 @@ class Field
 							'where' => $field->options['where'],
 						];
 						ksort($fArr);
-						$toHash = json_encode($fArr) . $formToken;
+
+						$toHash = $fArr;
+						unset($toHash['name']); // Name can be dinamically assigned by javascript, cannot rely on it
+						$toHash = json_encode($toHash) . $formToken;
+
 						$fArr['hash'] = sha1($toHash);
 						$fieldsArr[] = $fArr;
 					}
