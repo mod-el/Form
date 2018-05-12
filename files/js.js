@@ -18,6 +18,13 @@ function setSelect(s, v) {
 	return false;
 }
 
+Element.prototype.hasOption = function (i) {
+	return Array.from(this.options).some(opt => {
+		return opt.value === i;
+	});
+};
+
+
 var setElementValue = function (v, trigger_onchange, use_custom_function) {
 	if (typeof trigger_onchange === 'undefined')
 		trigger_onchange = true;
@@ -70,13 +77,10 @@ var setElementValue = function (v, trigger_onchange, use_custom_function) {
 				element.value = v;
 			}
 
-			if (v !== currentValue) {
-				if (trigger_onchange) {
-					triggerOnChange(element);
-				} else if (element.getAttribute('data-depending-parent')) {
-					reloadDependingSelects(element);
-				}
-			}
+			if (v !== currentValue && trigger_onchange)
+				triggerOnChange(element);
+			else if (element.getAttribute('data-depending-parent'))
+				reloadDependingSelects(element, trigger_onchange);
 
 			return ret;
 		};
@@ -585,7 +589,13 @@ function simulateTab(current, forward) {
 	return false;
 }
 
-function reloadDependingSelects(parent) {
+function reloadDependingSelects(parent, trigger_onchange) {
+	if (parent.hasAttribute('data-attempted-value'))
+		return;
+
+	if (typeof trigger_onchange === 'undefined')
+		trigger_onchange = true;
+
 	let form = parent.form;
 	if (!form || !parent.getAttribute('data-depending-parent'))
 		return;
@@ -621,10 +631,17 @@ function reloadDependingSelects(parent) {
 						form[f.name].style.display = '';
 						img.parentNode.removeChild(img);
 
-						if (form[f.name].getAttribute('data-attempted-value'))
-							form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), false);
-						else if (form[f.name].getAttribute('data-depending-parent'))
-							reloadDependingSelects(form[f.name]);
+						if (form[f.name].hasAttribute('data-attempted-value')) {
+							if (form[f.name].hasOption(form[f.name].getAttribute('data-attempted-value'))) {
+								form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), false);
+								form[f.name].removeAttribute('data-attempted-value');
+							}
+						} else {
+							if (trigger_onchange)
+								triggerOnChange(form[f.name]);
+						}
+						if (form[f.name].getAttribute('data-depending-parent'))
+							reloadDependingSelects(form[f.name], trigger_onchange);
 					}
 				});
 			});
