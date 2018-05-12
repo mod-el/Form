@@ -168,6 +168,7 @@ class Field
 			'priceFormat' => 'vd',
 			'dateFormat' => 'd/m/Y',
 			'lang' => null,
+			'preview' => false,
 		], $options);
 
 		$value = $this->getValue($options['lang']);
