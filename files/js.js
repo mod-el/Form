@@ -295,6 +295,8 @@ function switchFieldLang(name, lang) {
 			el.style.display = 'none';
 		}
 	});
+
+	changedHtml();
 }
 
 function fileGetValue() {
