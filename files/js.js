@@ -100,7 +100,7 @@ function triggerOnChange(field) {
 var basicGetElementValue = function (element) {
 	var v = null;
 
-	if (this instanceof NodeList) { // Radio
+	if (element instanceof NodeList) { // Radio
 		v = element.value;
 	} else if (element.getAttribute('data-getvalue-function') !== null) {
 		var func = element.getAttribute('data-getvalue-function');
