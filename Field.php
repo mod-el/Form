@@ -418,7 +418,7 @@ class Field
 				foreach ($this->options['options'] as $id => $opt) {
 					if (isset($attributes['name']))
 						$attributes['id'] = 'radio-' . $attributes['name'] . '-' . $id;
-					$attributes['value'] = $value;
+					$attributes['value'] = $id;
 					echo '<input type="radio" ' . $this->implodeAttributes($attributes) . ($id == $value ? ' checked' : '') . ' />';
 					echo '<label for="' . ($attributes['id'] ?? '') . '">' . entities($opt) . '</label>';
 				}
