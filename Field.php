@@ -371,51 +371,62 @@ class Field
 			return;
 		}
 
+		if ($this->form and !empty($this->depending_children)) {
+			$formToken = $this->model->_RandToken->getToken('Form');
+			$fieldsArr = [];
+			foreach ($this->depending_children as $ch) {
+				if (!isset($this->form->getDataset()[$ch]))
+					continue;
+				$field = $this->form->getDataset()[$ch];
+				if (!$field->options['depending-on'])
+					continue;
+
+				if ($this->form and $this->form->options['wrap-names']) {
+					$ch = str_replace('[name]', $ch, $this->form->options['wrap-names']);
+				}
+
+				$fArr = [
+					'name' => $ch,
+					'field' => $field->options['depending-on']['db'],
+					'table' => $field->options['table'],
+					'id-field' => $field->options['id-field'],
+					'text-field' => $field->options['text-field'],
+					'order_by' => $field->options['order_by'],
+					'where' => $field->options['where'],
+				];
+				ksort($fArr);
+
+				$toHash = $fArr;
+				unset($toHash['name']); // Name can be dinamically assigned by javascript, cannot rely on it
+				$toHash = json_encode($toHash) . $formToken;
+
+				$fArr['hash'] = sha1($toHash);
+				$fieldsArr[] = $fArr;
+			}
+
+			$attributes['data-depending-parent'] = json_encode($fieldsArr);
+			$attributes['onchange'] = 'reloadDependingSelects(this); ' . ($attibutes['onchange'] ?? '');
+		}
+
 		switch ($this->options['type']) {
 			case 'textarea':
 				echo '<textarea ' . $this->implodeAttributes($attributes) . '>' . entities($this->getValue($lang)) . '</textarea>';
+				break;
+			case 'radio':
+				$this->loadSelectOptions();
+				$value = $this->getValue($lang);
+				foreach ($this->options['options'] as $id => $opt) {
+					if (isset($attributes['name']))
+						$attributes['id'] = 'radio-' . $attributes['name'] . '-' . $id;
+					$attributes['value'] = $value;
+					echo '<input type="radio" ' . $this->implodeAttributes($attributes) . ($id == $value ? ' checked' : '') . ' />';
+					echo '<label for="' . ($attributes['id'] ?? '') . '">' . entities($opt) . '</label>';
+				}
 				break;
 			case 'select':
 				$this->loadSelectOptions();
 				if (!$this->options['nullable'])
 					$attributes['required'] = '';
-
-				if ($this->form and !empty($this->depending_children)) {
-					$formToken = $this->model->_RandToken->getToken('Form');
-					$fieldsArr = [];
-					foreach ($this->depending_children as $ch) {
-						if (!isset($this->form->getDataset()[$ch]))
-							continue;
-						$field = $this->form->getDataset()[$ch];
-						if (!$field->options['depending-on'])
-							continue;
-
-						if ($this->form and $this->form->options['wrap-names']) {
-							$ch = str_replace('[name]', $ch, $this->form->options['wrap-names']);
-						}
-
-						$fArr = [
-							'name' => $ch,
-							'field' => $field->options['depending-on']['db'],
-							'table' => $field->options['table'],
-							'id-field' => $field->options['id-field'],
-							'text-field' => $field->options['text-field'],
-							'order_by' => $field->options['order_by'],
-							'where' => $field->options['where'],
-						];
-						ksort($fArr);
-
-						$toHash = $fArr;
-						unset($toHash['name']); // Name can be dinamically assigned by javascript, cannot rely on it
-						$toHash = json_encode($toHash) . $formToken;
-
-						$fArr['hash'] = sha1($toHash);
-						$fieldsArr[] = $fArr;
-					}
-
-					$attributes['data-depending-parent'] = json_encode($fieldsArr);
-					$attributes['onchange'] = 'reloadDependingSelects(this); ' . ($attibutes['onchange'] ?? '');
-				}
 
 				echo '<select ' . $this->implodeAttributes($attributes) . '>';
 				$this->renderSelectOptions($this->options['options'], $this->getValue($lang));

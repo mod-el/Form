@@ -124,7 +124,7 @@ class Form implements \ArrayAccess
 									$refTable = $options['table'] ?: $fk['ref_table'];
 									$refTableModel = $this->model->_Db->getTable($refTable);
 									foreach ($this->dataset as $d) {
-										if ($d->options['type'] === 'select' and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
+										if (in_array($d->options['type'], ['radio', 'select']) and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
 											$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
 											foreach ($refTableModel->columns as $ref_k => $ref_f) {
 												if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table']) {
@@ -187,7 +187,7 @@ class Form implements \ArrayAccess
 					}
 				}
 
-				if (in_array($options['type'], ['select', 'instant-search']) and $column['foreign_key']) {
+				if (in_array($options['type'], ['select', 'radio', 'instant-search']) and $column['foreign_key']) {
 					$fk = $tableModel->foreign_keys[$column['foreign_key']];
 
 					if (!$options['table'])
