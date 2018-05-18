@@ -107,84 +107,94 @@ class Form implements \ArrayAccess
 				if ($options['nullable'] === null)
 					$options['nullable'] = $column['null'];
 
-				if ($options['type'] === false) {
-					switch ($column['type']) {
-						case 'tinyint':
-						case 'smallint':
-						case 'int':
-						case 'mediumint':
-						case 'bigint':
-						case 'float':
-						case 'double':
-						case 'real':
-							if ($column['foreign_key']) {
-								$fk = $tableModel->foreign_keys[$column['foreign_key']];
+				switch ($column['type']) {
+					case 'tinyint':
+					case 'smallint':
+					case 'int':
+					case 'mediumint':
+					case 'bigint':
+					case 'float':
+					case 'double':
+					case 'real':
+						if ($column['foreign_key']) {
+							$fk = $tableModel->foreign_keys[$column['foreign_key']];
 
-								if ($options['depending-on'] === null) {
-									$refTable = $options['table'] ?: $fk['ref_table'];
-									$refTableModel = $this->model->_Db->getTable($refTable);
-									foreach ($this->dataset as $d) {
-										if (in_array($d->options['type'], ['radio', 'select']) and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
-											$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
-											foreach ($refTableModel->columns as $ref_k => $ref_f) {
-												if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table']) {
-													$options['depending-on'] = [
-														'name' => $d->options['name'],
-														'db' => $refTableModel->foreign_keys[$ref_f['foreign_key']]['column'],
-													];
-													break 2;
-												}
+							if ($options['depending-on'] === null) {
+								$refTable = $options['table'] ?: $fk['ref_table'];
+								$refTableModel = $this->model->_Db->getTable($refTable);
+								foreach ($this->dataset as $d) {
+									if (in_array($d->options['type'], ['radio', 'select']) and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
+										$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
+										foreach ($refTableModel->columns as $ref_k => $ref_f) {
+											if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table']) {
+												$options['depending-on'] = [
+													'name' => $d->options['name'],
+													'db' => $refTableModel->foreign_keys[$ref_f['foreign_key']]['column'],
+												];
+												break 2;
 											}
 										}
 									}
 								}
+							}
 
+							if (!$options['type']) {
 								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
 									$options['type'] = 'instant-search';
 								} else {
 									$options['type'] = 'select';
 								}
-							} else {
+							}
+						} else {
+							if (!$options['type'])
 								$options['type'] = 'number';
-							}
-							break;
-						case 'decimal':
-							$length = explode(',', $column['length']);
+						}
+						break;
+					case 'decimal':
+						$length = explode(',', $column['length']);
+						$options['attributes']['step'] = round($length[0] > 0 ? 1 / pow(10, $length[1]) : 1, $length[1]);
+						if (!$options['type'])
 							$options['type'] = 'number';
-							$options['attributes']['step'] = round($length[0] > 0 ? 1 / pow(10, $length[1]) : 1, $length[1]);
-							break;
-						case 'enum':
+						break;
+					case 'enum':
+						if (!$options['type'])
 							$options['type'] = 'select';
-							if (!isset($options['options'])) {
-								$options['options'] = [];
-								if ($options['nullable'])
-									$options['options'][''] = '';
-								foreach ($column['length'] as $v)
-									$options['options'][$v] = ucwords($v);
-							}
-							break;
-						case 'date':
+						if (!isset($options['options'])) {
+							$options['options'] = [];
+							if ($options['nullable'])
+								$options['options'][''] = '';
+							foreach ($column['length'] as $v)
+								$options['options'][$v] = ucwords($v);
+						}
+						break;
+					case 'date':
+						if (!$options['type'])
 							$options['type'] = 'date';
-							break;
-						case 'time':
+						break;
+					case 'time':
+						if (!$options['type'])
 							$options['type'] = 'time';
-							break;
-						case 'datetime':
+						break;
+					case 'datetime':
+						if (!$options['type'])
 							$options['type'] = 'datetime';
-							break;
-						case 'text':
+						break;
+					case 'text':
+						if (!$options['type'])
 							$options['type'] = 'textarea';
-							break;
-						case 'char':
+						break;
+					case 'char':
+						if (!$options['type']) {
 							if ($options['field'] === 'password' and $column['length'] == 40)
 								$options['type'] = 'password';
 							else
 								$options['type'] = 'text';
-							break;
-						default:
+						}
+						break;
+					default:
+						if (!$options['type'])
 							$options['type'] = 'text';
-							break;
-					}
+						break;
 				}
 
 				if (in_array($options['type'], ['select', 'radio', 'instant-search']) and $column['foreign_key']) {
