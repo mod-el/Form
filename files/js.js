@@ -107,8 +107,11 @@ var basicGetElementValue = function (element) {
 		if (typeof window[func] === 'undefined')
 			return null;
 		v = window[func].call(element);
-	} else if (element.type === 'checkbox' || element.type === 'radio') {
+	} else if (element.type === 'checkbox') {
 		if (element.checked) v = 1;
+		else v = 0;
+	} else if (element.type === 'radio') {
+		if (element.checked) v = element.value;
 		else v = 0;
 	} else if (element.type === 'select-one') {
 		if (element.selectedIndex > -1)
