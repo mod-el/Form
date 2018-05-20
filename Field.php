@@ -10,6 +10,8 @@ class Field
 	protected $form;
 	/** @var array */
 	public $depending_children = [];
+	/** @var array */
+	private $additionalFields = [];
 
 	/**
 	 * Field constructor.
@@ -39,6 +41,7 @@ class Field
 			'where' => [],
 			'order_by' => false,
 			'if-null' => '',
+			'additional-fields' => [],
 
 			'attributes' => [],
 			'mandatory' => false,
@@ -266,10 +269,32 @@ class Field
 			if ($this->form and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
 				$where[$this->options['depending-on']['db']] = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
 			}
+
+			// I only select requested fields, so I can take advantages of eventual db indexes, if any
+			if (!is_string($this->options['text-field']) and is_callable($this->options['text-field'])) {
+				$qry_options['fields'] = [];
+			} elseif (is_array($this->options['text-field'])) {
+				$qry_options['fields'] = array_merge(
+					[
+						$this->options['id-field'],
+					],
+					$this->options['text-field']
+				);
+			} else {
+				$qry_options['fields'] = [
+					$this->options['id-field'],
+					$this->options['text-field']
+				];
+			}
+			if ($qry_options['fields'])
+				$qry_options['fields'] = array_unique(array_merge($qry_options['fields'], $this->options['additional-fields']));
+
 			$q = $this->model->_Db->select_all($this->options['table'], $where, $qry_options);
 			foreach ($q as $r) {
+				// I take the id field
 				$id = $r[$this->options['id-field']];
 
+				// I take the text field(s)
 				if (!is_string($this->options['text-field']) and is_callable($this->options['text-field'])) {
 					$options[$id] = $this->options['text-field']($r);
 				} elseif (is_array($this->options['text-field'])) {
@@ -281,6 +306,11 @@ class Field
 				} else {
 					$options[$id] = $r[$this->options['text-field']];
 				}
+
+				// I take any additional field
+				$this->additionalFields[$id] = [];
+				foreach ($this->options['additional-fields'] as $k)
+					$this->additionalFields[$id][$k] = $r[$k] ?? null;
 			}
 		}
 
@@ -471,7 +501,13 @@ class Field
 				$this->renderSelectOptions($opt, $value);
 				echo '</optgroup>';
 			} else {
-				echo '<option value="' . $id . '"' . (((string)$id === (string)$value) ? ' selected' : '') . '>' . entities($opt) . '</option>';
+				$additionals = [];
+				if (isset($this->additionalFields[$id])) {
+					foreach ($this->additionalFields[$id] as $k => $v) {
+						$additionals[] = 'data-' . entities($k) . '="' . entities($v ?: '') . '"';
+					}
+				}
+				echo '<option value="' . $id . '"' . (((string)$id === (string)$value) ? ' selected' : '') . ' ' . implode(' ', $additionals) . '>' . entities($opt) . '</option>';
 			}
 		}
 	}
