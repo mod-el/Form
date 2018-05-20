@@ -435,7 +435,7 @@ class Field
 			}
 
 			$attributes['data-depending-parent'] = json_encode($fieldsArr);
-			$attributes['onchange'] = 'reloadDependingSelects(this); ' . ($attibutes['onchange'] ?? '');
+			$attributes['onchange'] = 'reloadDependingSelects(this); ' . ($attributes['onchange'] ?? '');
 		}
 
 		switch ($this->options['type']) {
