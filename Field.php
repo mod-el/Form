@@ -334,8 +334,7 @@ class Field
 		if (!isset($attributes['name']))
 			$attributes['name'] = $this->options['name'];
 
-		if ($this->form and $this->form->options['wrap-names'])
-			$attributes['name'] = str_replace('[name]', $attributes['name'], $this->form->options['wrap-names']);
+		$attributes['name'] = $this->wrapName($attributes['name']);
 
 		if ($this->options['maxlength'] !== false and !array_key_exists('maxlength', $attributes))
 			$attributes['maxlength'] = $this->options['maxlength'];
@@ -411,9 +410,7 @@ class Field
 				if (!$field->options['depending-on'])
 					continue;
 
-				if ($this->form and $this->form->options['wrap-names']) {
-					$ch = str_replace('[name]', $ch, $this->form->options['wrap-names']);
-				}
+				$ch = $this->wrapName($ch);
 
 				$fArr = [
 					'name' => $ch,
@@ -636,5 +633,16 @@ class Field
 	public function delete(string $lang = null): bool
 	{
 		return true;
+	}
+
+	/**
+	 * @param string $name
+	 * @return string
+	 */
+	protected function wrapName(string $name): string
+	{
+		if ($this->form and $this->form->options['wrap-names'])
+			$name = str_replace('[name]', $name, $this->form->options['wrap-names']);
+		return $name;
 	}
 }
