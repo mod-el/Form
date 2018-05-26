@@ -631,6 +631,7 @@ function reloadDependingSelects(parent, trigger_onchange) {
 							let option = document.createElement('option');
 							option.value = opt.id;
 							option.innerHTML = opt.text;
+							Object.keys(opt['additional-fields']).forEach(k => option.setAttribute('data-' + k, opt['additional-fields'][k]));
 							form[f.name].appendChild(option);
 						});
 						form[f.name].style.display = '';
