@@ -45,7 +45,13 @@ class ModelFormController extends Controller
 			}
 		}
 
+		$fields = array_unique(array_merge(array_merge(
+			[$arr['id-field']],
+			$arr['text-field']
+		), $arr['additional-fields']));
+
 		$q = $this->model->_Db->select_all($arr['table'], $where, [
+			'fields' => $fields,
 			'order_by' => $orderBy,
 			'stream' => true,
 		]);
@@ -54,16 +60,24 @@ class ModelFormController extends Controller
 			[
 				'id' => '',
 				'text' => '',
+				'additional-fields' => [],
 			],
 		];
+		foreach ($arr['additional-fields'] as $k)
+			$return[0]['additional-fields'][$k] = '';
+
 		foreach ($q as $row) {
 			$text = [];
 			foreach ($arr['text-field'] as $f)
 				$text[] = $row[$f];
-			$return[] = [
+			$opt = [
 				'id' => $row[$arr['id-field']],
 				'text' => implode(' ', $text),
+				'additional-fields' => [],
 			];
+			foreach ($arr['additional-fields'] as $k)
+				$opt['additional-fields'][$k] = $row[$k];
+			$return[] = $opt;
 		}
 
 		$this->model->sendJSON($return);

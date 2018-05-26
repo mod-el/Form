@@ -420,6 +420,7 @@ class Field
 					'text-field' => $field->options['text-field'],
 					'order_by' => $field->options['order_by'],
 					'where' => $field->options['where'],
+					'additional-fields' => $field->options['additional-fields'],
 				];
 				ksort($fArr);
 
