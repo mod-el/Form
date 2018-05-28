@@ -36,6 +36,15 @@ class Form implements \ArrayAccess
 	}
 
 	/**
+	 *
+	 */
+	public function __clone()
+	{
+		foreach($this->dataset as $f)
+			$f->setForm($this);
+	}
+
+	/**
 	 * Adds a new field to the dataset
 	 *
 	 * @param string|Field $datum

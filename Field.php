@@ -97,6 +97,15 @@ class Field
 	}
 
 	/**
+	 * @param Form $form
+	 */
+	public function setForm(Form $form)
+	{
+		$this->options['form'] = $form;
+		$this->form = $form;
+	}
+
+	/**
 	 * Sets the current value
 	 *
 	 * @param mixed $v
