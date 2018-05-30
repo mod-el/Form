@@ -40,7 +40,7 @@ class Form implements \ArrayAccess
 	 */
 	public function __clone()
 	{
-		foreach($this->dataset as $f)
+		foreach ($this->dataset as $f)
 			$f->setForm($this);
 	}
 
@@ -81,6 +81,7 @@ class Form implements \ArrayAccess
 				'table' => false,
 				'id-field' => false,
 				'text-field' => null,
+				'if-null' => '',
 				'where' => [],
 
 				'group' => '',
@@ -169,9 +170,9 @@ class Form implements \ArrayAccess
 						if (!$options['type'])
 							$options['type'] = 'select';
 						if (!isset($options['options'])) {
-							$options['options'] = [];
-							if ($options['nullable'])
-								$options['options'][''] = '';
+							$options['options'] = [
+								'' => $options['if-null'],
+							];
 							foreach ($column['length'] as $v)
 								$options['options'][$v] = ucwords($v);
 						}
