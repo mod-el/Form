@@ -195,7 +195,7 @@ class Form implements \ArrayAccess
 						break;
 					case 'char':
 						if (!$options['type']) {
-							if ($options['field'] === 'password' and $column['length'] == 40)
+							if ($options['field'] === 'password')
 								$options['type'] = 'password';
 							else
 								$options['type'] = 'text';
