@@ -193,6 +193,7 @@ class Form implements \ArrayAccess
 						if (!$options['type'])
 							$options['type'] = 'textarea';
 						break;
+					case 'varchar':
 					case 'char':
 						if (!$options['type']) {
 							if ($options['field'] === 'password')
