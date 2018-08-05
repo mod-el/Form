@@ -19,7 +19,7 @@ function setSelect(s, v) {
 }
 
 Element.prototype.hasOption = function (i) {
-	return Array.from(this.options).some(opt => {
+	return Array.from(this.options).some(function (opt) {
 		return opt.value === i;
 	});
 };
@@ -226,8 +226,8 @@ Element.prototype.setValues = function (values, trigger_onchange, mark) {
 			if (f.value === value)
 				f.checked = true;
 		} else {
-			promises.push(f.setValue(value, trigger_onchange).then(((f, mark) => {
-				return () => {
+			promises.push(f.setValue(value, trigger_onchange).then((function (f, mark) {
+				return function () {
 					if (mark)
 						f.setAttribute('data-' + mark, '1');
 
@@ -321,8 +321,8 @@ function fileGetValue() {
 		})(this.files[i])));
 	}
 
-	return Promise.all(promises).then((field => {
-		return values => {
+	return Promise.all(promises).then((function (field) {
+		return function (values) {
 			if (values.length === 0) {
 				if (field.getAttribute('data-changed'))
 					return null;
@@ -608,12 +608,12 @@ function reloadDependingSelects(parent, trigger_onchange) {
 	if (!fields)
 		return;
 
-	parent.getValue().then(parentV => {
-		fields.forEach(f => {
+	parent.getValue().then(function (parentV) {
+		fields.forEach(function (f) {
 			if (typeof form[f.name] === 'undefined')
 				return;
 
-			form[f.name].getValue().then(v => {
+			form[f.name].getValue().then(function (v) {
 				let img = document.createElement('img');
 				img.src = absolute_path + 'model/Output/files/loading.gif';
 				form[f.name].parentNode.insertBefore(img, form[f.name]);
@@ -622,16 +622,18 @@ function reloadDependingSelects(parent, trigger_onchange) {
 				ajax(absolute_path + 'model-form', '', {
 					'field': JSON.stringify(f),
 					'v': parentV
-				}).then(r => {
+				}).then(function (r) {
 					if (typeof r !== 'object') {
 						throw r;
 					} else {
 						form[f.name].innerHTML = '';
-						r.forEach(opt => {
+						r.forEach(function (opt) {
 							let option = document.createElement('option');
 							option.value = opt.id;
 							option.innerHTML = opt.text;
-							Object.keys(opt['additional-fields']).forEach(k => option.setAttribute('data-' + k, opt['additional-fields'][k]));
+							Object.keys(opt['additional-fields']).forEach(function (k) {
+								option.setAttribute('data-' + k, opt['additional-fields'][k]);
+							});
 							form[f.name].appendChild(option);
 						});
 						form[f.name].style.display = '';
@@ -652,11 +654,13 @@ function reloadDependingSelects(parent, trigger_onchange) {
 				});
 			});
 		});
-	}).catch(err => alert(err));
+	}).catch(function (err) {
+		alert(err);
+	});
 }
 
 function switchAllFieldsLang(lang) {
-	document.querySelectorAll('.lang-switch-cont [data-lang]').forEach(function (el) {
+	Array.from(document.querySelectorAll('.lang-switch-cont [data-lang]')).forEach(function (el) {
 		if (el.getAttribute('data-lang') === lang)
 			el.addClass('selected');
 		else
@@ -668,10 +672,10 @@ function switchAllFieldsLang(lang) {
 	});
 }
 
-async function setDatetimeSingle(f) {
+function setDatetimeSingle(f) {
 	let cont = f.parentNode.parentNode;
-	let date = await cont.querySelector('input[type="date"]').getValue();
-	let time = await cont.querySelector('input[type="time"]').getValue();
+	let date = cont.querySelector('input[type="date"]').getValue(true);
+	let time = cont.querySelector('input[type="time"]').getValue(true);
 
 	console.log(date);
 	console.log(time);
