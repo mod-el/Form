@@ -641,7 +641,7 @@ function reloadDependingSelects(parent, trigger_onchange) {
 
 						if (form[f.name].hasAttribute('data-attempted-value')) {
 							if (form[f.name].hasOption(form[f.name].getAttribute('data-attempted-value'))) {
-								form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), false);
+								form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), trigger_onchange);
 								form[f.name].removeAttribute('data-attempted-value');
 							}
 						} else {
