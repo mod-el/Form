@@ -189,7 +189,11 @@ class Form implements \ArrayAccess
 						if (!$options['type'])
 							$options['type'] = 'datetime';
 						break;
+					case 'longtext':
+					case 'mediumtext':
+					case 'smalltext':
 					case 'text':
+					case 'tinytext':
 						if (!$options['type'])
 							$options['type'] = 'textarea';
 						break;
