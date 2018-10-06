@@ -79,7 +79,7 @@ class Form implements \ArrayAccess
 				'depending-on' => null,
 
 				'table' => false,
-				'id-field' => false,
+				'id-field' => 'id',
 				'text-field' => null,
 				'if-null' => '',
 				'where' => [],
