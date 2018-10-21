@@ -15,9 +15,9 @@ class Config extends Module_Config
 	 * Returns the config template
 	 *
 	 * @param array $request
-	 * @return string
+	 * @return string|null
 	 */
-	public function getTemplate(array $request)
+	public function getTemplate(array $request): ?string
 	{
 		return $request[2] == 'config' ? 'config' : null;
 	}
