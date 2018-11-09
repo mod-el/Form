@@ -206,6 +206,9 @@ class Form implements \ArrayAccess
 								$options['type'] = 'text';
 						}
 						break;
+					case 'point':
+						$options['type'] = 'point';
+						break;
 					default:
 						if (!$options['type'])
 							$options['type'] = 'text';
