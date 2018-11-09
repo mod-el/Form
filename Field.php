@@ -216,6 +216,9 @@ class Field
 			case 'checkbox':
 				return $this->getValue() ? 'Sì' : 'No';
 				break;
+			case 'point':
+				return $value[1] . ' - ' . $value[0];
+				break;
 			default:
 				return $value;
 				break;
