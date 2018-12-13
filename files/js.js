@@ -507,15 +507,19 @@ function checkForm(form, mandatory) {
 
 			if (missings[field].constructor === Array) {
 				if (!alreadyFocused && form[missings[field][0]].offsetParent !== null) {
-					form[missings[field][0]].focus();
-					alreadyFocused = true;
+					if (typeof form[missings[field][0]].focus !== 'undefined') {
+						form[missings[field][0]].focus();
+						alreadyFocused = true;
+					}
 				}
 
 				missingsString.push(missings[field].join(' or '));
 			} else {
 				if (!alreadyFocused && form[missings[field]].offsetParent !== null) {
-					form[missings[field]].focus();
-					alreadyFocused = true;
+					if (typeof form[missings[field]].focus !== 'undefined') {
+						form[missings[field]].focus();
+						alreadyFocused = true;
+					}
 				}
 
 				missingsString.push(missings[field]);
