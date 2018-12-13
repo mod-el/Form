@@ -483,7 +483,7 @@ function checkForm(form, mandatory) {
 			var atLeastOne = false;
 			for (var sub_idx in mandatory[idx]) {
 				if (!mandatory[idx].hasOwnProperty(sub_idx)) continue;
-				if (checkField(form, mandatory[idx]))
+				if (checkField(form, mandatory[idx][sub_idx]))
 					atLeastOne = true;
 			}
 
