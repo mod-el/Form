@@ -338,8 +338,9 @@ class Field
 	 *
 	 * @param array $attributes
 	 * @param bool $return
+	 * @return string|null
 	 */
-	public function render(array $attributes = [], bool $return = false)
+	public function render(array $attributes = [], bool $return = false): ?string
 	{
 		$attributes = array_merge($this->options['attributes'], $attributes);
 
@@ -391,12 +392,17 @@ class Field
 
 				$this->renderWithLang($attributes);
 			}
+
+			if ($return)
+				return ob_get_clean();
 		} catch (\Exception $e) {
 			if ($return)
 				ob_clean();
 
 			throw $e;
 		}
+
+		return null;
 	}
 
 	/**
