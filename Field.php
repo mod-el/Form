@@ -391,6 +391,9 @@ class Field
 
 				$this->renderWithLang($attributes);
 			}
+
+			if ($return)
+				return ob_get_clean();
 		} catch (\Exception $e) {
 			if ($return)
 				ob_clean();
