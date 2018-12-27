@@ -365,7 +365,9 @@ function fileSetValue(v, user_triggered) {
 			}
 
 			if (isImage && !this.getAttribute('data-only-text')) {
-				return setFileImage(fileBox, base_path + v + "?nocache=" + Math.random());
+				if (v.toLowerCase().indexOf('http://') !== 0 && v.toLowerCase().indexOf('https://') !== 0)
+					v = base_path + v;
+				return setFileImage(fileBox, v + "?nocache=" + Math.random());
 			} else {
 				var filename = v.split('/').pop();
 				fileBox.setAttribute('onclick', 'window.open(\'' + base_path + v + '\')');
@@ -706,4 +708,9 @@ function setDatetime(v) {
 	let hiddenPromise = cont.querySelector('input[type="hidden"]').setValue(v ? v : '', false, false);
 
 	return Promise.all([datePromise, timePromise, hiddenPromise]);
+}
+
+function emptyExternalFileInput(box) {
+	if (input = box.querySelector('input[type="hidden"][data-external]'))
+		input.setValue('');
 }

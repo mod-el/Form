@@ -45,6 +45,7 @@ class File extends Field
 			'ext_db' => false, // If the extension of the file is not costant, you need to save it in a database field; specify here the column name
 			'name_db' => false, // Need to save the name of the file, also?
 			'accepted' => false, // Accept only some file types?
+			'external' => null, // There is a db field to optionally retrieve the image from an external url?
 		], $options);
 
 		parent::__construct($nome, $options);
@@ -83,9 +84,13 @@ class File extends Field
 		echo '<input type="file" name="' . $name . '" ' . ($is_image ? 'style="display: none"' : '') . ' id="file-input-' . $name . '" ' . $this->implodeAttributes($attributes) . ' onchange="if(typeof this.files[0]!=\'undefined\') fileSetValue.call(this, this.files[0])" data-getvalue-function="fileGetValue" data-setvalue-function="fileSetValue" />';
 		echo '<div class="file-box-cont" ' . (!$is_image ? 'style="display: none"' : '') . ' ' . $this->implodeAttributes($attributesBox) . '><div class="file-box" data-file-cont onclick="document.getElementById(\'file-input-' . $name . '\').click(); return false">Upload</div></div>';
 		echo '<div class="file-tools" style="display: none">
-				<a href="#" onclick="document.getElementById(\'file-input-' . $name . '\').click(); return false"><img src="' . PATH . 'model/Form/files/img/upload.png" alt="" /> Carica nuovo</a>
-				<a href="#" onclick="document.getElementById(\'file-input-' . $name . '\').setValue(null); return false"><img src="' . PATH . 'model/Form/files/img/delete.png" alt="" /> Elimina</a>
+				<a href="#" onclick="emptyExternalFileInput(this.parentNode.parentNode); document.getElementById(\'file-input-' . $name . '\').click(); return false"><img src="' . PATH . 'model/Form/files/img/upload.png" alt="" /> Carica nuovo</a>
+				<a href="#" onclick="emptyExternalFileInput(this.parentNode.parentNode); document.getElementById(\'file-input-' . $name . '\').setValue(null); return false"><img src="' . PATH . 'model/Form/files/img/delete.png" alt="" /> Elimina</a>
 			</div>';
+
+		if ($this->options['external'])
+			echo '<input type="hidden" name="' . $this->wrapName($this->options['external']) . ($lang !== null ? '-' . $lang : '') . '" data-external/>';
+
 		echo '</div>';
 
 		$v = $this->getValue($lang);
@@ -94,6 +99,9 @@ class File extends Field
 		}
 	}
 
+	/**
+	 * @return bool
+	 */
 	private function isImage(): bool
 	{
 		$path = $this->getPath();
@@ -324,15 +332,22 @@ class File extends Field
 	 * @param int|string $i
 	 * @param string $lang
 	 * @param array $data
-	 * @return array|null
+	 * @return string|null
 	 */
-	public function getPath(string $i = null, string $lang = null, array $data = [])
+	public function getPath(string $i = null, string $lang = null, array $data = []): ?string
 	{
 		if (count($this->paths) === 0)
 			return null;
 
-		if ($i === null)
+		if ($i === null) {
+			if ($this->options['external'] and $this->form->options['element']) {
+				$url = $this->retrieveFieldWithLang($this->options['external'], $lang);
+				if ($url !== null)
+					return $url;
+			}
+
 			$i = current(array_keys($this->paths));
+		}
 
 		$path = $this->paths[$i]['path'];
 
@@ -344,10 +359,7 @@ class File extends Field
 				if (array_key_exists($k, $data)) {
 					$rep = (string)$data[$k];
 				} elseif ($this->form->options['element']) {
-					if ($lang === null or !$this->model->isLoaded('Multilang') or $lang === $this->model->_Multilang->lang) // In case of multilang fields, I have to retrieve the correct field from the database
-						$rep = (string)$this->form->options['element'][$k]; // If the language is the current one, than I just need the element
-					else // If it's not the current language, I'll have to make another query to find out the info in the correct language
-						$rep = (string)$this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['field' => $k, 'lang' => $lang]);
+					$rep = (string)$this->retrieveFieldWithLang($k, $lang);
 				} else {
 					$rep = '';
 				}
@@ -356,6 +368,19 @@ class File extends Field
 		}
 
 		return $path;
+	}
+
+	/**
+	 * @param string $field
+	 * @param string|null $lang
+	 * @return string|null
+	 */
+	private function retrieveFieldWithLang(string $field, string $lang = null): ?string
+	{
+		if ($lang === null or !$this->model->isLoaded('Multilang') or $lang === $this->model->_Multilang->lang) // In case of multilang fields, I have to retrieve the correct field from the database
+			return $this->form->options['element'][$field]; // If the language is the current one, than I just need the element
+		else // If it's not the current language, I'll have to make another query to find out the info in the correct language
+			return $this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['field' => $field, 'lang' => $lang]) ?: null;
 	}
 
 	/**
@@ -383,6 +408,8 @@ class File extends Field
 	public function fileExists(string $lang = null): bool
 	{
 		$path = $this->getPath(null, $lang);
+		if (stripos($path, 'http://') === 0 or stripos($path, 'https://') === 0)
+			return true;
 		return file_exists(INCLUDE_PATH . $path);
 	}
 

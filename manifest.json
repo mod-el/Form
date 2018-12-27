@@ -1,12 +1,12 @@
 {
 	"name": "Form",
 	"description": "A group of classes to manage many types of data fields",
-	"version": "1.4.8",
+	"version": "1.4.9",
 	"dependencies": {
-		"Core": ">=2.7.1",
+		"Core": ">=2.8.0",
 		"Db": ">=1.5.0",
 		"ImgResize": ">=1.1.1",
-		"RandToken": ">=0.1.0"
+		"RandToken": ">=0.2.0"
 	},
 	"css": [
 		"files/style.css"
