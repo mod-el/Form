@@ -14,12 +14,12 @@ class Config extends Module_Config
 	/**
 	 * Returns the config template
 	 *
-	 * @param array $request
+	 * @param string $type
 	 * @return string|null
 	 */
-	public function getTemplate(array $request): ?string
+	public function getTemplate(string $type): ?string
 	{
-		return $request[2] == 'config' ? 'config' : null;
+		return $type === 'config' ? 'config' : null;
 	}
 
 	/**
