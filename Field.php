@@ -253,9 +253,10 @@ class Field
 	/**
 	 * In case of a select, this will fills the "options" array (called when requested)
 	 *
+	 * @param bool $ignoreDepending
 	 * @return bool
 	 */
-	private function loadSelectOptions(): bool
+	private function loadSelectOptions(bool $ignoreDepending = false): bool
 	{
 		if ($this->options['options'] !== false)
 			return true;
@@ -278,7 +279,7 @@ class Field
 			}
 
 			$where = $this->options['where'];
-			if ($this->form and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
+			if ($this->form and !$ignoreDepending and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
 				$where[$this->options['depending-on']['db']] = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
 			}
 
@@ -534,7 +535,7 @@ class Field
 	 */
 	protected function implodeAttributes(array $attributes): string
 	{
-		$str_attributes = array();
+		$str_attributes = [];
 		foreach ($attributes as $k => $v) {
 			$str_attributes[] = $k . '="' . entities($v) . '"';
 		}
