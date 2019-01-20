@@ -256,7 +256,7 @@ class Field
 	 * @param bool $ignoreDepending
 	 * @return bool
 	 */
-	private function loadSelectOptions(bool $ignoreDepending = false): bool
+	public function loadSelectOptions(bool $ignoreDepending = false): bool
 	{
 		if ($this->options['options'] !== false)
 			return true;
