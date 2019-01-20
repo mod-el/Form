@@ -1101,8 +1101,8 @@ $template = ' . var_export($template, true) . ';
 									$this->model->error('"' . $d->options['name'] . '" must be a date.');
 								break;
 							case 'select':
-								$sel_options = $d->loadSelectOptions(true);
-								if (!array_key_exists($values[$d->options['name']], $sel_options))
+								$d->loadSelectOptions(true);
+								if (!array_key_exists($values[$d->options['name']], $d->options['options']))
 									$this->model->error('"' . $d->options['name'] . '" is not a valid value.');
 								break;
 						}
