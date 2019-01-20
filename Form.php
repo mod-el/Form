@@ -1,13 +1,14 @@
 <?php namespace Model\Form;
 
 use Model\Core\Autoloader;
+use Model\Core\Exception;
 
 class Form implements \ArrayAccess
 {
 	/** @var array */
-	private $dataset = array();
+	private $dataset = [];
 	/** @var array */
-	public $options = array();
+	public $options = [];
 	/** @var \Model\Core\Core */
 	private $model;
 
@@ -1061,6 +1062,61 @@ $template = ' . var_export($template, true) . ';
 			if (array_key_exists($d->options['name'], $values))
 				$d->setValue($values[$d->options['name']]);
 		}
+	}
+
+	/**
+	 * Validate provided data against the fields in the form; returns true if all correct, returns false or throws an exception in case of errors
+	 *
+	 * @param array $values
+	 * @param array $options
+	 * @return bool
+	 */
+	public function validate(array $values, array $options = []): bool
+	{
+		$options = array_merge([
+			'check-missing' => false,
+			'check-mandatory' => true,
+			'check-content' => true,
+			'throw' => true,
+		], $options);
+
+		try {
+			foreach ($this->dataset as $d) {
+				if ($options['check-missing'] and !isset($values[$d->options['name']]) and !in_array($d->options['type'], ['checkbox', 'file']))
+					$this->model->error('"' . $d->options['name'] . '" field missing"!');
+
+				if (empty($values[$d->options['name']])) {
+					if ($options['check-mandatory'] and $d->options['mandatory'])
+						$this->model->error('"' . $d->options['name'] . '" field is mandatory.');
+				} else {
+					if ($options['check-content']) {
+						switch ($d->options['type']) {
+							case 'number':
+								if (!is_numeric($values[$d->options['name']]))
+									$this->model->error('"' . $d->options['name'] . '" must be a number.');
+								break;
+							case 'date':
+								$check = date_create($values[$d->options['name']]);
+								if (!$check)
+									$this->model->error('"' . $d->options['name'] . '" must be a date.');
+								break;
+							case 'select':
+								$sel_options = $d->loadSelectOptions(true);
+								if (!array_key_exists($values[$d->options['name']], $sel_options))
+									$this->model->error('"' . $d->options['name'] . '" is not a valid value.');
+								break;
+						}
+					}
+				}
+			}
+		} catch (Exception $e) {
+			if ($options['throw'])
+				throw $e;
+			else
+				return false;
+		}
+
+		return true;
 	}
 
 	/**
