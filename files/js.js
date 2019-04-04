@@ -474,7 +474,7 @@ function checkForm(form, mandatory) {
 			continue;
 		if (required[idx].offsetParent === null)
 			continue;
-		if (mandatory.indexOf(required[idx].name) === -1)
+		if (required[idx].name && mandatory.indexOf(required[idx].name) === -1)
 			mandatory.push(required[idx].name);
 	}
 
