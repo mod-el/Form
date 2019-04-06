@@ -130,7 +130,15 @@ class Form implements \ArrayAccess
 						if ($column['foreign_key']) {
 							$fk = $tableModel->foreign_keys[$column['foreign_key']];
 
-							if ($options['depending-on'] === null) {
+							if (!$options['type']) {
+								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
+									$options['type'] = 'instant-search';
+								} else {
+									$options['type'] = 'select';
+								}
+							}
+
+							if (in_array($options['type'], ['radio', 'select']) and $options['depending-on'] === null) {
 								$refTable = $options['table'] ?: $fk['ref_table'];
 								$refTableModel = $this->model->_Db->getTable($refTable);
 								foreach ($this->dataset as $d) {
@@ -146,14 +154,6 @@ class Form implements \ArrayAccess
 											}
 										}
 									}
-								}
-							}
-
-							if (!$options['type']) {
-								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch')) {
-									$options['type'] = 'instant-search';
-								} else {
-									$options['type'] = 'select';
 								}
 							}
 						} else {
