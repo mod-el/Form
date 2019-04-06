@@ -200,7 +200,7 @@ class File extends Field
 			$temp_file = $file['tmp_name'];
 			$method = 'file';
 		} elseif (isset($file['file'])) {
-			$temp_file = INCLUDE_PATH . 'app-data' . DIRECTORY_SEPARATOR . $this->model->_User_Admin->id . ($fileext ? '.' . $fileext : '');
+			$temp_file = INCLUDE_PATH . 'app-data' . DIRECTORY_SEPARATOR . $this->model->_User_Admin->id . ($fileext ? '.' . $fileext : ''); // TODO: svincolarlo dall'admin
 			$scrittura = file_put_contents($temp_file, base64_decode($file['file']));
 			if ($scrittura === false)
 				return false;
@@ -234,6 +234,7 @@ class File extends Field
 
 		foreach ($this->paths as $i => $p) {
 			$path = $this->getPath($i, $lang, $pathData);
+			$this->isPathWritable($path);
 
 			if (in_array($file['type'], ['image/png', 'image/jpeg', 'image/gif', 'image/x-png', 'image/pjpeg']) and (isset($p['mime']) or isset($p['w']) or isset($p['h']))) {
 				$imgOpt = array();
@@ -311,21 +312,16 @@ class File extends Field
 	}
 
 	/**
-	 * @param string $dir_name
-	 * @return bool|string
+	 * @param string $path
 	 */
-	private function checkDir(string $dir_name)
-	{ // TODO: reorganize
-		$dir = INCLUDE_PATH . $dir_name;
-
-		if (!file_exists($dir))
-			return 'Path ' . entities($dir_name) . ' does not exist.';
+	private function isPathWritable(string $path)
+	{
+		$dir = pathinfo(INCLUDE_PATH . $path, PATHINFO_DIRNAME);
+		$smalldir = pathinfo($path, PATHINFO_DIRNAME);
 		if (!is_dir($dir))
-			return entities($dir_name) . ' is not a directory.';
+			$this->model->error('Specified directory "' . $smalldir . '" does not exist');
 		if (!is_writable($dir))
-			return entities($dir_name) . ' is not writable.';
-
-		return true;
+			$this->model->error('Specified directory "' . $smalldir . '" is not writable');
 	}
 
 	/**
