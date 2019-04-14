@@ -1,11 +1,9 @@
 function setSelect(s, v) {
 	if (v == null)
 		return false;
-	if (isNaN(v))
-		v = v.toLowerCase();
 
 	for (let cp in s.options) {
-		if (typeof s.options[cp].value !== 'undefined' && s.options[cp].value.toLowerCase() == v) {
+		if (typeof s.options[cp].value !== 'undefined' && s.options[cp].value.toString() === v.toString()) {
 			s.selectedIndex = cp;
 			if (s.getAttribute('data-attempted-value'))
 				s.removeAttribute('data-attempted-value');
