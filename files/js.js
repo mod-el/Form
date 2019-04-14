@@ -542,14 +542,10 @@ function checkField(form, name) {
 	if (v === null)
 		v = '';
 
-	if ((form[name].type === 'select-one' || form[name].type === 'checkbox') && v == 0)
+	if (form[name].type === 'checkbox' && v.toString() === 0)
 		v = '';
 
-	if (v === '') {
-		return false;
-	} else {
-		return true;
-	}
+	return v !== '';
 }
 
 function markFieldAsMandatory(field) {
