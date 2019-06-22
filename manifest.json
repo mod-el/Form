@@ -4,7 +4,6 @@
 	"version": "1.4.9",
 	"dependencies": {
 		"Core": ">=2.8.1",
-		"Db": ">=1.5.0",
 		"ImgResize": ">=1.1.1",
 		"RandToken": ">=0.2.0"
 	},
