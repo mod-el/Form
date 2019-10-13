@@ -1128,7 +1128,7 @@ $template = ' . var_export($template, true) . ';
 
 		echo '<div class="lang-switch-cont">';
 		foreach ($this->model->_Multilang->langs as $l) {
-			echo '<a href="#" onclick="switchAllFieldsLang(\'' . $l . '\'); return false"><img src="' . PATH . 'model/Form/files/img/langs/' . $l . '.png" alt="" data-lang="' . $l . '"' . ($l === $def_lang ? ' class="selected"' : '') . ' /></a>';
+			echo '<a href="#" onclick="switchAllFieldsLang(\'' . $l . '\'); return false"><img src="' . PATH . 'model/Form/assets/img/langs/' . $l . '.png" alt="" data-lang="' . $l . '"' . ($l === $def_lang ? ' class="selected"' : '') . ' /></a>';
 		}
 		echo '</div>';
 	}

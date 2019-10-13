@@ -377,12 +377,12 @@ class Field
 					echo '</div>';
 				}
 				echo '<div class="multilang-field-lang-container">';
-				echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $def_lang . '\'); return false" data-lang="' . $def_lang . '"><img src="' . PATH . 'model/Form/files/img/langs/' . $def_lang . '.png" alt="" /></a>';
+				echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $def_lang . '\'); return false" data-lang="' . $def_lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $def_lang . '.png" alt="" /></a>';
 				echo '<div class="multilang-field-other-langs-container">';
 				foreach ($this->model->_Multilang->langs as $lang) {
 					if ($lang === $def_lang)
 						continue;
-					echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $lang . '\'); return false" data-lang="' . $lang . '"><img src="' . PATH . 'model/Form/files/img/langs/' . $lang . '.png" alt="" /></a>';
+					echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $lang . '\'); return false" data-lang="' . $lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $lang . '.png" alt="" /></a>';
 				}
 				echo '</div>';
 				echo '</div>';

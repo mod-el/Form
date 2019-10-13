@@ -3,16 +3,10 @@
 	"description": "A group of classes to manage many types of data fields",
 	"version": "1.4.9",
 	"dependencies": {
-		"Core": ">=2.8.1",
+		"Core": ">=2.9.0",
 		"ImgResize": ">=1.1.1",
 		"RandToken": ">=0.2.0"
 	},
-	"css": [
-		"files/style.css"
-	],
-	"js": [
-		"files/js.js"
-	],
 	"load": false,
 	"file-types": {
 		"Field": {
