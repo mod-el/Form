@@ -364,11 +364,11 @@ function fileSetValue(v, user_triggered) {
 
 			if (isImage && !this.getAttribute('data-only-text')) {
 				if (v.toLowerCase().indexOf('http://') !== 0 && v.toLowerCase().indexOf('https://') !== 0)
-					v = base_path + v;
+					v = PATHBASE + v;
 				return setFileImage(fileBox, v + "?nocache=" + Math.random());
 			} else {
 				var filename = v.split('/').pop();
-				fileBox.setAttribute('onclick', 'window.open(\'' + base_path + v + '\')');
+				fileBox.setAttribute('onclick', 'window.open(\'' + PATHBASE + v + '\')');
 				return setFileText(fileBox, filename);
 			}
 		} else {
@@ -615,11 +615,11 @@ function reloadDependingSelects(parent, trigger_onchange) {
 
 			form[f.name].getValue().then(function (v) {
 				let img = document.createElement('img');
-				img.src = absolute_path + 'model/Output/files/loading.gif';
+				img.src = PATHBASE + 'model/Output/files/loading.gif';
 				form[f.name].parentNode.insertBefore(img, form[f.name]);
 				form[f.name].style.display = 'none';
 
-				ajax(absolute_path + 'model-form', '', {
+				ajax(PATH + 'model-form', '', {
 					'field': JSON.stringify(f),
 					'v': parentV
 				}).then(function (r) {
