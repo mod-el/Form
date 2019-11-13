@@ -177,13 +177,13 @@ Element.prototype.getValues = function () {
 	return Promise.all(promises).then(function (data) {
 		var ret = {};
 
-		data.forEach(function (v, k) {
-			ret[k] = v;
+		data.forEach(function (v) {
+			ret[v[0]] = v[1];
 		});
 
 		return ret;
 	});
-}
+};
 
 Element.prototype.setValues = function (values, trigger_onchange, mark) {
 	if (this.nodeName.toLowerCase() !== 'form')
@@ -236,7 +236,7 @@ Element.prototype.setValues = function (values, trigger_onchange, mark) {
 	}
 
 	return Promise.all(promises);
-}
+};
 
 Element.prototype.fill = Element.prototype.setValues; // Alias
 
