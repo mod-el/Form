@@ -178,7 +178,8 @@ Element.prototype.getValues = function () {
 		var ret = {};
 
 		data.forEach(function (v) {
-			ret[v[0]] = v[1];
+			if (typeof ret[v[0]] === 'undefined' || v[1] !== null) // Per i radio
+				ret[v[0]] = v[1];
 		});
 
 		return ret;
