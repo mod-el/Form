@@ -33,7 +33,7 @@ var setElementValue = function (v, trigger_onchange, use_custom_function) {
 		v = '';
 
 	return this.getValue().then((function (element, v, trigger_onchange) {
-		return function (currentValue) {
+		return async function (currentValue) {
 			if (v === true || v === false)
 				return null;
 
@@ -46,6 +46,7 @@ var setElementValue = function (v, trigger_onchange, use_custom_function) {
 				if (typeof window[func] === 'undefined')
 					return null;
 				ret = window[func].call(element, v);
+				await Promise.resolve(ret);
 			} else if (element.type === 'checkbox' || element.type === 'radio') {
 				if (v == 1 || v == true) element.checked = true;
 				else element.checked = false;
