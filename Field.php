@@ -406,19 +406,8 @@ class Field
 		return null;
 	}
 
-	/**
-	 * Actually renders the field with a given language (called as many times as the number of languages by render() method)
-	 *
-	 * @param array $attributes
-	 * @param string $lang
-	 */
-	protected function renderWithLang(array $attributes, string $lang = null)
+	protected function makeDependingFieldsAttributes(array $attributes): array
 	{
-		if ($this->form and $this->form->options['print']) {
-			echo entities($this->getText(['lang' => $lang]), true);
-			return;
-		}
-
 		if ($this->form and !empty($this->depending_children)) {
 			$formToken = $this->model->_RandToken->getToken('Form');
 			$fieldsArr = [];
@@ -454,6 +443,24 @@ class Field
 			$attributes['data-depending-parent'] = json_encode($fieldsArr);
 			$attributes['onchange'] = 'reloadDependingSelects(this); ' . ($attributes['onchange'] ?? '');
 		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Actually renders the field with a given language (called as many times as the number of languages by render() method)
+	 *
+	 * @param array $attributes
+	 * @param string $lang
+	 */
+	protected function renderWithLang(array $attributes, string $lang = null)
+	{
+		if ($this->form and $this->form->options['print']) {
+			echo entities($this->getText(['lang' => $lang]), true);
+			return;
+		}
+
+		$attributes = $this->makeDependingFieldsAttributes($attributes);
 
 		switch ($this->options['type']) {
 			case 'textarea':
