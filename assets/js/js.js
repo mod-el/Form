@@ -87,12 +87,17 @@ var setElementValue = function (v, trigger_onchange, use_custom_function) {
 };
 
 function triggerOnChange(field) {
-	if ("createEvent" in document) {
-		var evt = document.createEvent("HTMLEvents");
-		evt.initEvent("change", false, true);
+	if ('createEvent' in document) {
+		let evt = document.createEvent('HTMLEvents');
+		evt.initEvent('change', false, true);
+		field.dispatchEvent(evt);
+
+		evt = document.createEvent('HTMLEvents');
+		evt.initEvent('input', false, true);
 		field.dispatchEvent(evt);
 	} else {
-		field.fireEvent("onchange");
+		field.fireEvent('onchange');
+		field.fireEvent('oninput');
 	}
 }
 
