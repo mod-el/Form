@@ -412,7 +412,7 @@ function fileSetValue(v, user_triggered) {
 
 function setFileImage(box, i) {
 	return new Promise(function (resolve) {
-		var img = new Image();
+		let img = new Image();
 		img.onload = (function (box, i) {
 			return function () {
 				box.setAttribute('data-natural-width', this.naturalWidth);
@@ -423,7 +423,7 @@ function setFileImage(box, i) {
 				box.style.backgroundImage = "url('" + i + "')";
 				box.innerHTML = '';
 
-				if (i.charAt(0) === '/')
+				if (i.charAt(0) === '/' || i.indexOf('http://') === 0 || i.indexOf('https://') === 0)
 					box.setAttribute('onclick', 'window.open(\'' + i + '\')');
 				else
 					box.removeAttribute('onclick');
