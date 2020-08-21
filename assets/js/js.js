@@ -359,29 +359,31 @@ function fileSetValue(v, user_triggered) {
 		fileTools.style.display = 'block';
 		this.style.display = 'none';
 
-		var isImage = false;
+		let isImage = false;
 
 		if (typeof v === 'string') {
-			var filename = v.split('.');
+			let filename = v.split('.');
 			if (filename.length > 1) {
-				var ext = filename.pop().toLowerCase();
+				let ext = filename.pop().toLowerCase();
 				if (ext === 'jpg' || ext === 'jpeg' || ext === 'bmp' || ext === 'png' || ext === 'gif')
 					isImage = true;
 			}
 
+			if (v.toLowerCase().indexOf('http://') !== 0 && v.toLowerCase().indexOf('https://') !== 0)
+				v = PATHBASE + v;
+			fileBox.setAttribute('onclick', 'window.open(\'' + v + '\')');
+
 			if (isImage && !this.getAttribute('data-only-text')) {
-				if (v.toLowerCase().indexOf('http://') !== 0 && v.toLowerCase().indexOf('https://') !== 0)
-					v = PATHBASE + v;
 				return setFileImage(fileBox, v + "?nocache=" + Math.random());
 			} else {
-				var filename = v.split('/').pop();
-				fileBox.setAttribute('onclick', 'window.open(\'' + PATHBASE + v + '\')');
+				filename = v.split('/').pop();
+				fileBox.setAttribute('onclick', 'window.open(\'' + v + '\')');
 				return setFileText(fileBox, filename);
 			}
 		} else {
 			return new Promise((function (field) {
 				return function (resolve) {
-					var reader = new FileReader();
+					let reader = new FileReader();
 					reader.onload = (function (box, file, field) {
 						return function (e) {
 							var mime = e.target.result.match(/^data:(.*);/)[1];
