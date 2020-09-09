@@ -350,17 +350,21 @@ class File extends Field
 		preg_match_all('/\[([a-z0-9:_-]+)\]/i', $path, $matches);
 		foreach ($matches[1] as $k) {
 			if ($k === ':lang') {
-				$rep = (string)$lang;
+				$rep = $lang;
 			} else {
 				if (array_key_exists($k, $data)) {
-					$rep = (string)$data[$k];
+					$rep = $data[$k];
 				} elseif ($this->form->options['element']) {
-					$rep = (string)$this->retrieveFieldWithLang($k, $lang);
+					$rep = $this->retrieveFieldWithLang($k, $lang);
 				} else {
-					$rep = '';
+					$rep = null;
 				}
 			}
-			$path = str_replace('[' . $k . ']', $rep, $path);
+
+			if ($rep === null and ($this->options['name_db'] === $k or $this->options['ext_db'] === $k))
+				return null;
+
+			$path = str_replace('[' . $k . ']', (string)$rep, $path);
 		}
 
 		return $path;
@@ -404,6 +408,8 @@ class File extends Field
 	public function fileExists(string $lang = null): bool
 	{
 		$path = $this->getPath(null, $lang);
+		if ($path === null)
+			return false;
 		if (stripos($path, 'http://') === 0 or stripos($path, 'https://') === 0)
 			return true;
 		return file_exists(INCLUDE_PATH . $path);
