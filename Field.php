@@ -479,8 +479,10 @@ class Field
 				break;
 			case 'select':
 				$this->loadSelectOptions();
-				if (!$this->options['nullable'])
+				if (!$this->options['nullable'] and !isset($attributes['required']))
 					$attributes['required'] = '';
+				if ($attributes['required'] === false)
+					unset($attributes['required']);
 
 				echo '<select ' . $this->implodeAttributes($attributes) . '>';
 				$this->renderSelectOptions($this->options['options'], $this->getValue($lang));
