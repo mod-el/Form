@@ -481,7 +481,7 @@ class Field
 				$this->loadSelectOptions();
 				if (!$this->options['nullable'] and !isset($attributes['required']))
 					$attributes['required'] = '';
-				if ($attributes['required'] === false)
+				if (isset($attributes['required']) and $attributes['required'] === false)
 					unset($attributes['required']);
 
 				echo '<select ' . $this->implodeAttributes($attributes) . '>';
