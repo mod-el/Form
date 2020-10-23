@@ -493,6 +493,7 @@ $template = ' . var_export($template, true) . ';
 		$options = array_merge([
 			'labels-as-placeholders' => false,
 			'show-labels' => true,
+			'only-placeholders' => false,
 		], $options);
 
 		echo '<div class="rob-field-cont">';
@@ -505,13 +506,18 @@ $template = ' . var_export($template, true) . ';
 				$label = $this[$div['field']]->getLabel();
 				if ($options['show-labels'] and !$options['labels-as-placeholders'] and $this[$div['field']]->options['type'] != 'checkbox')
 					echo entities($label) . '<br />';
-				$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
+
+				if ($options['only-placeholders'])
+					echo '<div data-fieldplaceholder="' . entities($div['field']) . '"></div>';
+				else
+					$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
+
 				echo '</div>';
 			} else {
 				echo '<div style="width: ' . $div['w'] . '%">';
-				if (isset($div['content'])) {
+				if (isset($div['content']))
 					$this->renderTemplate($div['content'], $options);
-				}
+
 				echo '</div>';
 			}
 		}
