@@ -507,10 +507,7 @@ $template = ' . var_export($template, true) . ';
 				if ($options['show-labels'] and !$options['labels-as-placeholders'] and $this[$div['field']]->options['type'] != 'checkbox')
 					echo entities($label) . '<br />';
 
-				if ($this->options['render-only-placeholders'])
-					echo '<div data-fieldplaceholder="' . entities($div['field']) . '"></div>';
-				else
-					$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
+				$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
 
 				echo '</div>';
 			} else {
