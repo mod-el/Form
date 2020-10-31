@@ -465,11 +465,11 @@ function resizeFileBox(box) {
 	var h = parseInt(box.getAttribute('data-natural-height'));
 
 	box.style.width = '100%';
-	var boxW = box.offsetWidth;
+	let boxW = box.offsetWidth;
 	if (boxW > w)
 		boxW = w;
 
-	var boxH = Math.round(h / w * boxW);
+	let boxH = Math.round(h / w * boxW);
 	box.style.width = boxW + 'px';
 	box.style.height = boxH + 'px';
 }
@@ -779,6 +779,7 @@ class FormManager {
 
 			fieldCont.innerHTML = '';
 			fieldCont.appendChild(await field.render());
+			field.emit('append');
 		}
 
 		changedHtml();
@@ -911,19 +912,22 @@ class Field {
 			});
 		}
 
-		this.assignAttributesAndEvents(node, attributes);
+		this.assignAttributes(node, attributes);
+		this.assignEvents(node);
 
 		return node;
 	}
 
-	async assignAttributesAndEvents(node, attributes) {
+	assignAttributes(node, attributes) {
 		if (typeof attributes['name'] === 'undefined')
 			attributes['name'] = this.name;
 
 		Object.keys(attributes).forEach(k => {
 			node.setAttribute(k, attributes[k]);
 		});
+	}
 
+	assignEvents(node) {
 		for (let eventName of ['keyup', 'keydown', 'click', 'change', 'input']) {
 			node.addEventListener(eventName, async event => {
 				if (eventName === 'change') {
@@ -1050,3 +1054,105 @@ class Field {
 		}
 	}
 }
+
+class FieldFile extends Field {
+	constructor(name, options = {}) {
+		super(name, options);
+
+		this.cont = null;
+
+		this.addEventListener('append', () => {
+			if (this.cont && this.cont.querySelector('.file-box'))
+				resizeFileBox(this.cont.querySelector('.file-box'));
+		});
+	}
+
+	getSingleNode(lang = null) {
+		let attributes = this.options['attributes'];
+
+		let boxAttributes = {};
+		if (attributes.hasOwnProperty('style')) {
+			boxAttributes.style = attributes.style;
+			delete attributes.style;
+		}
+		if (attributes.hasOwnProperty('class')) {
+			boxAttributes.class = attributes.class;
+			delete attributes.class;
+		}
+
+		this.cont = document.createElement('div');
+		this.cont.setAttribute('data-file-box', this.name);
+
+		let input = document.createElement('input');
+		input.type = 'file';
+		input.name = this.name;
+		input.setAttribute('data-getvalue-function', 'fileGetValue');
+		input.setAttribute('data-setvalue-function', 'fileSetValue');
+		input.addEventListener('change', function () {
+			if (typeof this.files[0] !== 'undefined')
+				fileSetValue.call(this, this.files[0]);
+		});
+
+		super.assignAttributes(input, attributes);
+		super.assignEvents(input);
+
+		this.cont.appendChild(input);
+
+		let box = document.createElement('div');
+		box.className = 'file-box-cont';
+		box.style.display = 'none';
+		super.assignAttributes(box, boxAttributes);
+		this.cont.appendChild(box);
+
+		let innerBox = document.createElement('div');
+		innerBox.className = 'file-box';
+		innerBox.setAttribute('data-file-cont', '');
+		innerBox.addEventListener('click', event => {
+			event.preventDefault();
+			input.click();
+		});
+		innerBox.innerHTML = 'Upload';
+		box.appendChild(innerBox);
+
+		let tools = document.createElement('div');
+		tools.className = 'file-tools';
+		tools.style.display = 'none';
+
+		let newTool = document.createElement('a');
+		newTool.href = '#';
+		newTool.addEventListener('click', event => {
+			event.preventDefault();
+			emptyExternalFileInput(cont);
+			input.click();
+		});
+		newTool.innerHTML = '<img src="' + PATHBASE + 'model/Form/assets/img/upload.png" alt="" /> Carica nuovo';
+		tools.appendChild(newTool);
+
+		let deleteTool = document.createElement('a');
+		deleteTool.href = '#';
+		deleteTool.addEventListener('click', event => {
+			event.preventDefault();
+			if (confirm('Vuoi rimuovere questo file?')) {
+				emptyExternalFileInput(cont);
+				this.setValue(null);
+			}
+		});
+		deleteTool.innerHTML = '<img src="' + PATHBASE + 'model/Form/assets/img/delete.png" alt="" /> Elimina';
+		tools.appendChild(deleteTool);
+
+		this.cont.appendChild(tools);
+
+		return this.cont;
+	}
+
+	async setValue(v, trigger = true) {
+		this.value = v;
+
+		let node = await this.getNode();
+		let inputs = node.querySelectorAll('input[type="file"]');
+		for (let input of inputs)
+			await input.setValue(v, trigger);
+	}
+}
+
+formSignatures.set('file', FieldFile);
