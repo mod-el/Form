@@ -371,13 +371,13 @@ function fileSetValue(v, user_triggered) {
 
 			if (v.toLowerCase().indexOf('http://') !== 0 && v.toLowerCase().indexOf('https://') !== 0)
 				v = PATHBASE + v;
-			fileBox.setAttribute('onclick', 'window.open(\'' + v + '\')');
+			fileBox.setAttribute('data-file-path', v);
 
 			if (isImage && !this.getAttribute('data-only-text')) {
 				return setFileImage(fileBox, v + "?nocache=" + Math.random());
 			} else {
 				filename = v.split('/').pop();
-				fileBox.setAttribute('onclick', 'window.open(\'' + v + '\')');
+				fileBox.setAttribute('data-file-path', v);
 				return setFileText(fileBox, filename);
 			}
 		} else {
@@ -404,6 +404,7 @@ function fileSetValue(v, user_triggered) {
 	} else {
 		fileTools.style.display = 'none';
 		fileBoxCont.style.display = 'none';
+		fileBox.removeAttribute('data-file-path');
 		this.style.display = 'inline-block';
 		this.value = null;
 		return true;
@@ -1109,7 +1110,10 @@ class FieldFile extends Field {
 		innerBox.setAttribute('data-file-cont', '');
 		innerBox.addEventListener('click', event => {
 			event.preventDefault();
-			input.click();
+			if (innerBox.hasAttribute('data-file-path'))
+				window.open(innerBox.getAttribute('data-file-path'));
+			else
+				input.click();
 		});
 		innerBox.innerHTML = 'Upload';
 		box.appendChild(innerBox);
@@ -1122,7 +1126,7 @@ class FieldFile extends Field {
 		newTool.href = '#';
 		newTool.addEventListener('click', event => {
 			event.preventDefault();
-			emptyExternalFileInput(cont);
+			emptyExternalFileInput(this.cont);
 			input.click();
 		});
 		newTool.innerHTML = '<img src="' + PATHBASE + 'model/Form/assets/img/upload.png" alt="" /> Carica nuovo';
@@ -1133,7 +1137,7 @@ class FieldFile extends Field {
 		deleteTool.addEventListener('click', event => {
 			event.preventDefault();
 			if (confirm('Vuoi rimuovere questo file?')) {
-				emptyExternalFileInput(cont);
+				emptyExternalFileInput(this.cont);
 				this.setValue(null);
 			}
 		});
