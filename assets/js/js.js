@@ -717,3 +717,336 @@ function emptyExternalFileInput(box) {
 	if (input = box.querySelector('input[type="hidden"][data-external]'))
 		input.setValue('');
 }
+
+/************************ CLASSI STRUTTURATE ************************/
+
+var formSignatures = new Map();
+
+class FormManager {
+	constructor(name) {
+		this.name = name;
+		this.version = 1;
+		this.fields = new Map()
+		this.changedValues = {};
+	}
+
+	async add(field) {
+		field.historyDefaultValue = await field.getValue();
+
+		field.addEventListener('change', event => {
+			let old = null;
+			if (typeof this.changedValues[field.name] === 'undefined') {
+				old = field.historyDefaultValue;
+			} else {
+				old = this.changedValues[field.name];
+			}
+
+			field.getValue().then(v => {
+				if (v === old)
+					return;
+
+				this.changedValues[field.name] = v;
+
+				if (typeof historyMgr === 'object') // Per admin
+					historyMgr.append(this.name, field.name, old, v, event.langChanged || null);
+			});
+		});
+
+		this.fields.set(field.name, field);
+	}
+
+	async build(cont, data) {
+		if (data.version)
+			this.version = data.version;
+
+		for (let k of Object.keys(data.fields)) {
+			let fieldCont = cont.querySelector('[data-fieldplaceholder="' + k + '"]');
+			if (!fieldCont)
+				continue;
+
+			let fieldOptions = data.fields[k];
+			if (typeof data.data[k] !== 'undefined')
+				fieldOptions.value = data.data[k];
+
+			let field;
+			if (fieldOptions.hasOwnProperty('type') && formSignatures.get(fieldOptions.type)) {
+				let fieldClass = formSignatures.get(fieldOptions.type);
+				field = new fieldClass(k, fieldOptions);
+			} else {
+				field = new Field(k, fieldOptions);
+			}
+			await this.add(field);
+
+			fieldCont.innerHTML = '';
+			fieldCont.appendChild(await field.render());
+		}
+
+		changedHtml();
+	}
+
+	getChangedValues() {
+		return this.changedValues;
+	}
+
+	getRequired() {
+		let required = [];
+		for (let field of this.fields) {
+			if (field.required)
+				required.push(field.name);
+		}
+		return required;
+	}
+}
+
+class Field {
+	constructor(name, options = {}) {
+		this.name = name;
+		this.node = null;
+		this.options = {
+			'type': 'text',
+			'value': null,
+			'attributes': {},
+			'options': [],
+			'multilang': false,
+			'required': false,
+			...options
+		};
+
+		this.value = this.options.value;
+		this.options.type = this.options.type.toLowerCase();
+
+		this.listeners = new Map();
+	}
+
+	addEventListener(event, callback) {
+		let listeners = this.listeners.get(event);
+		if (!listeners)
+			listeners = [];
+		listeners.push(callback);
+		this.listeners.set(event, listeners);
+	}
+
+	emit(eventName, event = null) {
+		let listeners = this.listeners.get(eventName);
+		if (!listeners)
+			return;
+
+		for (let listener of listeners)
+			listener.call(this, event);
+	}
+
+	async setValue(v, trigger = true) {
+		this.value = v;
+
+		let node = await this.getNode();
+		if (this.options.multilang) {
+			for (let lang of this.options.multilang) {
+				if (node.hasOwnProperty(lang) && v.hasOwnProperty(lang))
+					await node[lang].setValue(v[lang], trigger);
+			}
+		} else {
+			await node.setValue(v, trigger);
+		}
+
+		if (trigger)
+			this.emit('change');
+	}
+
+	async getValue() {
+		if (this.value === null || typeof this.value !== 'object')
+			return this.value;
+		else
+			return {...this.value};
+	}
+
+	focus(lang = null) {
+		this.getNode().then(obj => {
+			let node;
+			if (this.options.multilang) {
+				if (lang === null)
+					lang = this.options.multilang[0];
+				node = obj[lang];
+			} else {
+				node = obj;
+			}
+
+			node.focus();
+			if (node.select)
+				node.select();
+		});
+	}
+
+	getSingleNode(lang = null) {
+		let nodeType = null;
+		let attributes = this.options['attributes'];
+
+		switch (this.options['type']) {
+			case 'textarea':
+				nodeType = 'textarea';
+				break;
+			case 'select':
+				nodeType = 'select';
+				break;
+			case 'date':
+				nodeType = 'input';
+				attributes['type'] = 'date';
+				break;
+			default:
+				nodeType = 'input';
+				attributes['type'] = this.options['type'];
+				break;
+		}
+
+		let node = document.createElement(nodeType);
+
+		if (this.options['type'] === 'select') {
+			node.innerHTML = '<option value=""></option>';
+			this.options['options'].forEach(option => {
+				let el = document.createElement('option');
+				el.value = option.id;
+				el.innerHTML = option.text;
+				if (option.id == this.options['value'])
+					el.setAttribute('selected', '');
+				node.appendChild(el);
+			});
+		}
+
+		this.assignAttributesAndEvents(node, attributes);
+
+		return node;
+	}
+
+	async assignAttributesAndEvents(node, attributes) {
+		if (typeof attributes['name'] === 'undefined')
+			attributes['name'] = this.name;
+
+		Object.keys(attributes).forEach(k => {
+			node.setAttribute(k, attributes[k]);
+		});
+
+		for (let eventName of ['keyup', 'keydown', 'click', 'change', 'input']) {
+			node.addEventListener(eventName, async event => {
+				if (eventName === 'change') {
+					await node.getValue().then(v => {
+						if (this.options.multilang) {
+							event.langChanged = lang;
+							if (this.value === null || typeof this.value !== 'object')
+								this.value = {};
+
+							this.value[lang] = v;
+						} else {
+							this.value = v;
+						}
+					});
+				}
+
+				this.emit(eventName, event);
+			});
+		}
+	}
+
+	async getNode() {
+		if (this.node === null) {
+			if (this.options.multilang) {
+				this.node = {};
+				for (let lang of this.options.multilang)
+					this.node[lang] = this.getSingleNode(lang);
+			} else {
+				this.node = this.getSingleNode();
+			}
+
+			await this.setValue(this.value, false);
+		}
+
+		return this.node;
+	}
+
+	async render() {
+		let node = await this.getNode();
+
+		if (this.options.multilang) {
+			let cont = document.createElement('div');
+			cont.className = 'multilang-field-container';
+			cont.setAttribute('data-name', this.name);
+
+			let firstLang = true;
+			for (let lang of this.options.multilang) {
+				let langCont = document.createElement('div');
+				langCont.setAttribute('data-lang', lang);
+				langCont.appendChild(await this.renderNode(node[lang]));
+
+				if (firstLang) {
+					firstLang = false;
+				} else {
+					langCont.style.display = 'none';
+				}
+
+				cont.appendChild(langCont);
+			}
+
+			let defaultLang = this.options.multilang[0];
+
+			let flagsCont = document.createElement('div');
+			flagsCont.className = 'multilang-field-lang-container';
+
+			let mainFlag = document.createElement('a');
+			mainFlag.href = '#';
+			mainFlag.setAttribute('data-lang', defaultLang);
+			mainFlag.addEventListener('click', event => {
+				event.preventDefault();
+				switchFieldLang(this.name, defaultLang);
+			});
+			mainFlag.innerHTML = `<img src="${PATH}model/Form/assets/img/langs/${defaultLang}.png" alt="${defaultLang}"/>`;
+			flagsCont.appendChild(mainFlag);
+
+			let otherFlagsCont = document.createElement('div');
+			otherFlagsCont.className = 'multilang-field-other-langs-container';
+			for (let lang of this.options.multilang) {
+				if (lang === defaultLang)
+					continue;
+
+				let flag = document.createElement('a');
+				flag.href = '#';
+				flag.setAttribute('data-lang', lang);
+				flag.addEventListener('click', event => {
+					event.preventDefault();
+					switchFieldLang(this.name, lang);
+				});
+				flag.innerHTML = `<img src="${PATH}model/Form/assets/img/langs/${lang}.png" alt="${lang}"/>`;
+				otherFlagsCont.appendChild(flag);
+			}
+			flagsCont.appendChild(otherFlagsCont);
+
+			cont.appendChild(flagsCont);
+
+			return cont;
+		} else {
+			return this.renderNode(node);
+		}
+	}
+
+	async renderNode(node) {
+		if (this.options.type === 'checkbox' && this.options.label) {
+			let id = node.id;
+			if (!id) {
+				id = 'checkbox-' + Math.round(Math.random() * 10000);
+				node.id = id;
+			}
+
+			let span = document.createElement('span');
+			span.appendChild(node);
+
+			let whitespace = document.createTextNode(' ');
+			span.appendChild(whitespace);
+
+			let label = document.createElement('label');
+			label.setAttribute('for', id);
+			label.innerHTML = this.options.label;
+			span.appendChild(label);
+
+			return span;
+		} else {
+			return node;
+		}
+	}
+}
