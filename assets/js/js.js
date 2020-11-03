@@ -880,7 +880,7 @@ class Field {
 
 	getSingleNode(lang = null) {
 		let nodeType = null;
-		let attributes = this.options['attributes'];
+		let attributes = this.options['attributes'] || {};
 
 		switch (this.options['type']) {
 			case 'textarea':
