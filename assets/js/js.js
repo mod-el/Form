@@ -914,35 +914,45 @@ class Field {
 		}
 
 		this.assignAttributes(node, attributes);
-		this.assignEvents(node);
+		this.assignEvents(node, attributes);
 
 		return node;
 	}
 
 	assignAttributes(node, attributes) {
+		attributes = {...attributes}; // Clono per evitare interferenze
+
 		if (typeof attributes['name'] === 'undefined')
 			attributes['name'] = this.name;
+
+		if (attributes.hasOwnProperty('onchange'))
+			delete attributes.onchange;
 
 		Object.keys(attributes).forEach(k => {
 			node.setAttribute(k, attributes[k]);
 		});
 	}
 
-	assignEvents(node) {
+	assignEvents(node, attributes) {
 		for (let eventName of ['keyup', 'keydown', 'click', 'change', 'input']) {
 			node.addEventListener(eventName, async event => {
 				if (eventName === 'change') {
-					await node.getValue().then(v => {
-						if (this.options.multilang) {
-							event.langChanged = lang;
-							if (this.value === null || typeof this.value !== 'object')
-								this.value = {};
+					let v = await node.getValue();
+					if (this.options.multilang) {
+						event.langChanged = lang;
+						if (this.value === null || typeof this.value !== 'object')
+							this.value = {};
 
-							this.value[lang] = v;
-						} else {
-							this.value = v;
-						}
-					});
+						this.value[lang] = v;
+					} else {
+						this.value = v;
+					}
+
+					if (attributes.hasOwnProperty('onchange')) {
+						let customFunc;
+						eval('customFunc = () => { ' + attributes.onchange + ' };');
+						customFunc.call(node);
+					}
 				}
 
 				this.emit(eventName, event);
@@ -1095,7 +1105,7 @@ class FieldFile extends Field {
 		});
 
 		super.assignAttributes(input, attributes);
-		super.assignEvents(input);
+		super.assignEvents(input, attributes);
 
 		this.cont.appendChild(input);
 
