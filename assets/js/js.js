@@ -1121,13 +1121,6 @@ class FieldFile extends Field {
 		let innerBox = document.createElement('div');
 		innerBox.className = 'file-box';
 		innerBox.setAttribute('data-file-cont', '');
-		innerBox.addEventListener('click', event => {
-			event.preventDefault();
-			if (innerBox.hasAttribute('data-file-path'))
-				window.open(innerBox.getAttribute('data-file-path'));
-			else
-				input.click();
-		});
 		innerBox.innerHTML = 'Upload';
 		box.appendChild(innerBox);
 
