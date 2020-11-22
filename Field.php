@@ -44,6 +44,7 @@ class Field
 			'additional-fields' => [],
 
 			'attributes' => [],
+			'label-attributes' => [],
 			'mandatory' => false,
 			'label' => false,
 
@@ -472,6 +473,27 @@ class Field
 
 		$attributes = $this->makeDependingFieldsAttributes($attributes);
 
+		$labelAttributes = $this->options['label-attributes'];
+
+		if ($this->form and $this->form->options['bootstrap']) {
+			if (in_array($this->options['type'], ['radio', 'checkbox'])) {
+				$inputClass = 'form-check-input';
+				$labelAttributes['class'] = isset($labelAttributes['class']) ? $labelAttributes['class'] . ' form-check-label' : 'form-check-label';
+			} else {
+				$inputClass = 'form-control';
+			}
+
+			if (isset($attributes['class'])) {
+				if (strpos($attributes['class'], $inputClass) === false)
+					$attributes['class'] .= ' ' . $inputClass;
+			} else {
+				$attributes['class'] = $inputClass;
+			}
+		}
+
+		if ($this->options['mandatory'] and !isset($attributes['required']))
+			$attributes['required'] = '';
+
 		switch ($this->options['type']) {
 			case 'textarea':
 				echo '<textarea ' . $this->implodeAttributes($attributes) . '>' . entities($this->getValue($lang)) . '</textarea>';
@@ -480,11 +502,17 @@ class Field
 				$this->loadSelectOptions();
 				$value = $this->getValue($lang);
 				foreach ($this->options['options'] as $id => $opt) {
+					if ($this->form and $this->form->options['bootstrap'])
+						echo '<div class="form-check form-check-inline">';
+
 					if (isset($attributes['name']))
 						$attributes['id'] = 'radio-' . $attributes['name'] . '-' . $id;
 					$attributes['value'] = $id;
-					echo '<input type="radio" ' . $this->implodeAttributes($attributes) . ($id == $value ? ' checked' : '') . ' />'
-						. ' <label for="' . ($attributes['id'] ?? '') . '">' . entities($opt) . '</label> ';
+					echo '<input type="radio" ' . $this->implodeAttributes($attributes) . ($id == $value ? ' checked' : '') . ' />';
+					echo ' <label for="' . ($attributes['id'] ?? '') . '" ' . $this->implodeAttributes($labelAttributes) . '>' . entities($opt) . '</label> ';
+
+					if ($this->form and $this->form->options['bootstrap'])
+						echo '</div>';
 				}
 				break;
 			case 'select':
@@ -505,6 +533,9 @@ class Field
 				echo '<input type="date" value="' . entities($value) . '" ' . $this->implodeAttributes($attributes) . ' />';
 				break;
 			case 'checkbox':
+				if ($this->form and $this->form->options['bootstrap'])
+					echo '<div class="form-check form-check-inline">';
+
 				if (!isset($attributes['id']))
 					$attributes['id'] = 'checkbox-' . $attributes['name'];
 
@@ -512,9 +543,11 @@ class Field
 
 				echo '<input type="checkbox" value="1"' . ($this->getValue($lang) ? ' checked' : '') . ' ' . $this->implodeAttributes($attributes) . ' />';
 
-				if (!isset($attributes['hide-label']) and $label) {
-					echo ' <label for="' . $attributes['id'] . '">' . $label . '</label>';
-				}
+				if (!isset($attributes['hide-label']) and $label)
+					echo ' <label for="' . $attributes['id'] . '" ' . $this->implodeAttributes($labelAttributes) . '>' . $label . '</label>';
+
+				if ($this->form and $this->form->options['bootstrap'])
+					echo '</div>';
 				break;
 			default:
 				if (!isset($attributes['type']))
@@ -683,5 +716,60 @@ class Field
 		if ($this->form and $this->form->options['wrap-names'])
 			$name = str_replace('[name]', $name, $this->form->options['wrap-names']);
 		return $name;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getJavascriptDescription(): array
+	{
+		$response = [
+			'type' => $this->options['type'],
+			'label' => $this->getLabel(),
+			'required' => $this->options['mandatory'],
+			'multilang' => false,
+			'attributes' => $this->options['attributes'],
+			'label-attributes' => $this->options['label-attributes'],
+		];
+
+		if ($this->form and $this->form->options['bootstrap']) {
+			if (in_array($this->options['type'], ['radio', 'checkbox'])) {
+				$inputClass = 'form-check-input';
+				$response['label-attributes']['class'] = isset($response['label-attributes']['class']) ? $response['label-attributes']['class'] . ' form-check-label' : 'form-check-label';
+			} else {
+				$inputClass = 'form-control';
+			}
+
+			if (isset($attributes['class'])) {
+				if (strpos($attributes['class'], $inputClass) === false)
+					$response['attributes']['class'] .= ' ' . $inputClass;
+			} else {
+				$response['attributes']['class'] = $inputClass;
+			}
+		}
+
+		switch ($this->options['type']) {
+			case 'select':
+			case 'radio':
+				$this->loadSelectOptions();
+				$response['options'] = [];
+				foreach ($this->options['options'] as $k => $v) {
+					if ($k === '')
+						continue;
+					$response['options'][] = [
+						'id' => $k,
+						'text' => $v,
+					];
+				}
+				break;
+		}
+
+		if ($this->options['default'])
+			$response['default'] = $this->options['default'];
+
+		if ($this->options['multilang'] and $this->model->isLoaded('Multilang'))
+			$response['multilang'] = $this->model->_Multilang->langs;
+
+		return $response;
 	}
 }

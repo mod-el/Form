@@ -919,10 +919,10 @@ class Field {
 		return node;
 	}
 
-	assignAttributes(node, attributes) {
+	assignAttributes(node, attributes, assignName = true) {
 		attributes = {...attributes}; // Clono per evitare interferenze
 
-		if (typeof attributes['name'] === 'undefined')
+		if (assignName && typeof attributes['name'] === 'undefined')
 			attributes['name'] = this.name;
 
 		if (attributes.hasOwnProperty('onchange'))
@@ -933,8 +933,11 @@ class Field {
 		});
 	}
 
-	assignEvents(node, attributes) {
-		for (let eventName of ['keyup', 'keydown', 'click', 'change', 'input']) {
+	assignEvents(node, attributes, events = null) {
+		if (events === null)
+			events = ['keyup', 'keydown', 'click', 'change', 'input'];
+
+		for (let eventName of events) {
 			node.addEventListener(eventName, async event => {
 				if (eventName === 'change') {
 					let v = await node.getValue();
@@ -947,12 +950,12 @@ class Field {
 					} else {
 						this.value = v;
 					}
+				}
 
-					if (attributes.hasOwnProperty('onchange')) {
-						let customFunc;
-						eval('customFunc = () => { ' + attributes.onchange + ' };');
-						customFunc.call(node);
-					}
+				if (attributes.hasOwnProperty('on' + eventName)) {
+					let customFunc;
+					eval('customFunc = () => { ' + attributes['on' + eventName] + ' };');
+					customFunc.call(node);
 				}
 
 				this.emit(eventName, event);
@@ -1044,7 +1047,7 @@ class Field {
 		if (this.options.type === 'checkbox' && this.options.label) {
 			let id = node.id;
 			if (!id) {
-				id = 'checkbox-' + Math.round(Math.random() * 10000);
+				id = 'checkbox-' + Math.round(Math.random() * 100000);
 				node.id = id;
 			}
 
@@ -1169,4 +1172,58 @@ class FieldFile extends Field {
 	}
 }
 
+class FieldRadio extends Field {
+	constructor(name, options = {}) {
+		super(name, options);
+		this.cont = null;
+	}
+
+	getSingleNode(lang = null) {
+		let attributes = this.options['attributes'];
+
+		this.cont = document.createElement('div');
+
+		this.options['options'].forEach(option => {
+			let input = document.createElement('input');
+			input.type = 'radio';
+			input.value = option.id;
+
+			let id = input.id;
+			if (!id) {
+				id = 'radio-' + Math.round(Math.random() * 100000);
+				input.id = id;
+			}
+
+			super.assignAttributes(input, attributes);
+			super.assignEvents(input, attributes);
+
+			let label = document.createElement('label');
+			label.setAttribute('for', id);
+			label.innerHTML = option.text;
+
+			this.cont.appendChild(input);
+			this.cont.appendChild(document.createTextNode(' '));
+			this.cont.appendChild(label);
+			this.cont.appendChild(document.createTextNode(' '));
+		});
+
+		return this.cont;
+	}
+
+	async setValue(v, trigger = true) {
+		this.value = v;
+
+		if (typeof v === 'number')
+			v = v.toString();
+
+		let node = await this.getNode();
+		let inputs = node.querySelectorAll('input[type="radio"]');
+		for (let input of inputs) {
+			if (input.value === v)
+				await input.setValue(1, trigger);
+		}
+	}
+}
+
+formSignatures.set('radio', FieldRadio);
 formSignatures.set('file', FieldFile);

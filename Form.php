@@ -5,7 +5,7 @@ use Model\Core\Exception;
 
 class Form implements \ArrayAccess
 {
-	/** @var array */
+	/** @var Field[] */
 	private $dataset = [];
 	/** @var array */
 	public $options = [];
@@ -30,6 +30,7 @@ class Form implements \ArrayAccess
 			'wrap-names' => null,
 			'print' => false,
 			'render-only-placeholders' => false,
+			'bootstrap' => false,
 		], $options);
 
 		$this->model = $this->options['model'];
@@ -357,7 +358,7 @@ class Form implements \ArrayAccess
 	/**
 	 * Returns an array with the fields in the form
 	 *
-	 * @return array
+	 * @return Field[]
 	 */
 	public function getDataset(): array
 	{
