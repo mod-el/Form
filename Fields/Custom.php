@@ -6,9 +6,7 @@ class Custom extends Field
 {
 	public function renderWithLang(array $attributes, string $lang = null)
 	{
-		echo '<div data-custom="' . $this->options['name'] . '">';
 		echo $this->getText(['lang' => $lang]);
-		echo '</div>';
 	}
 
 	public function getText(array $options = []): string
@@ -19,6 +17,8 @@ class Custom extends Field
 			} else {
 				return $this->options['custom'];
 			}
+		} else {
+			return $this->options['value'];
 		}
 	}
 

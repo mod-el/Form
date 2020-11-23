@@ -63,8 +63,13 @@ class Form implements \ArrayAccess
 				$this->model->error('Only Field can be passed directly as objects, in Form "add" method.');
 			}
 		} else {
-			$name = $datum;
-			$datum = false;
+			if (isset($this->dataset[$datum])) { // Already existing
+				$name = $datum;
+				$datum = $this->dataset[$datum];
+			} else {
+				$name = $datum;
+				$datum = false;
+			}
 		}
 
 		if ($datum === false) {
