@@ -732,6 +732,7 @@ class FormManager {
 	}
 
 	async add(field) {
+		field.form = this;
 		field.historyDefaultValue = await field.getValue();
 
 		field.addEventListener('change', event => {
@@ -804,6 +805,7 @@ class Field {
 	constructor(name, options = {}) {
 		this.name = name;
 		this.node = null;
+		this.form = null;
 		this.options = {
 			'type': 'text',
 			'value': null,
