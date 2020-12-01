@@ -508,7 +508,7 @@ class Field
 					if (isset($attributes['name']))
 						$attributes['id'] = 'radio-' . $attributes['name'] . '-' . $id;
 					$attributes['value'] = $id;
-					echo '<input type="radio" ' . $this->implodeAttributes($attributes) . ($id == $value ? ' checked' : '') . ' />';
+					echo '<input type="radio" ' . $this->implodeAttributes($attributes) . (((string)$id === (string)$value) ? ' checked' : '') . ' />';
 					echo ' <label for="' . ($attributes['id'] ?? '') . '" ' . $this->implodeAttributes($labelAttributes) . '>' . entities($opt) . '</label> ';
 
 					if ($this->form and $this->form->options['bootstrap'])
