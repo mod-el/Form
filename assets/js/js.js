@@ -916,7 +916,7 @@ class Field {
 		}
 
 		this.assignAttributes(node, attributes);
-		this.assignEvents(node, attributes);
+		this.assignEvents(node, attributes, lang);
 
 		return node;
 	}
@@ -935,7 +935,7 @@ class Field {
 		});
 	}
 
-	assignEvents(node, attributes, events = null) {
+	assignEvents(node, attributes, lang, events = null) {
 		if (events === null)
 			events = ['keyup', 'keydown', 'click', 'change', 'input'];
 
@@ -1110,7 +1110,7 @@ class FieldFile extends Field {
 		});
 
 		super.assignAttributes(input, attributes);
-		super.assignEvents(input, attributes);
+		super.assignEvents(input, attributes, lang);
 
 		this.cont.appendChild(input);
 
@@ -1190,7 +1190,7 @@ class FieldRadio extends Field {
 			}
 
 			super.assignAttributes(input, attributes);
-			super.assignEvents(input, attributes);
+			super.assignEvents(input, attributes, lang);
 
 			let label = document.createElement('label');
 			label.setAttribute('for', id);
