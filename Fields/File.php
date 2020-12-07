@@ -133,7 +133,7 @@ class File extends Field
 			}
 			return $values;
 		} else {
-			if ($this->options['multilang'] and $lang === null)
+			if (!$lang)
 				$lang = $this->model->_Multilang->lang;
 
 			if ($this->fileExists($lang)) {
