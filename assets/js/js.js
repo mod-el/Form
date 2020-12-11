@@ -424,11 +424,6 @@ function setFileImage(box, i) {
 				box.style.backgroundImage = "url('" + i + "')";
 				box.innerHTML = '';
 
-				if (i.charAt(0) === '/' || i.indexOf('http://') === 0 || i.indexOf('https://') === 0)
-					box.setAttribute('onclick', 'window.open(\'' + i + '\')');
-				else
-					box.removeAttribute('onclick');
-
 				resolve();
 			};
 		})(box, i);
@@ -436,8 +431,6 @@ function setFileImage(box, i) {
 			return function () {
 				box.removeAttribute('data-natural-width');
 				box.removeAttribute('data-natural-height');
-
-				box.removeAttribute('onclick');
 
 				box.innerHTML = 'Corrupted image';
 
@@ -1123,6 +1116,13 @@ class FieldFile extends Field {
 		let innerBox = document.createElement('div');
 		innerBox.className = 'file-box';
 		innerBox.setAttribute('data-file-cont', '');
+		innerBox.addEventListener('click', event => {
+			event.preventDefault();
+			if (innerBox.hasAttribute('data-file-path'))
+				window.open(innerBox.getAttribute('data-file-path'));
+			else
+				input.click();
+		});
 		innerBox.innerHTML = 'Upload';
 		box.appendChild(innerBox);
 
