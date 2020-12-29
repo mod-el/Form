@@ -792,6 +792,22 @@ class FormManager {
 		}
 		return required;
 	}
+
+	async getValues() {
+		let values = {};
+		for (let k of this.fields.keys())
+			values[k] = await this.fields.get(k).getValue();
+
+		return values;
+	}
+
+	async setValues(values, trigger = true) {
+		for (let k of Object.keys(values)) {
+			let field = this.fields.get(k);
+			if (field)
+				await field.setValue(values[k], trigger);
+		}
+	}
 }
 
 class Field {
