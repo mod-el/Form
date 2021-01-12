@@ -622,7 +622,7 @@ function reloadDependingSelects(parent, trigger_onchange) {
 				form[f.name].parentNode.insertBefore(img, form[f.name]);
 				form[f.name].style.display = 'none';
 
-				ajax(PATH + 'model-form', '', {
+				ajax(PATH + 'model-form/depending', {}, {
 					'field': JSON.stringify(f),
 					'v': parentV
 				}).then(function (r) {
@@ -829,6 +829,8 @@ class Field {
 		this.options.type = this.options.type.toLowerCase();
 
 		this.listeners = new Map();
+
+		this.rendered = null;
 	}
 
 	addEventListener(event, callback) {
@@ -897,9 +899,6 @@ class Field {
 			case 'textarea':
 				nodeType = 'textarea';
 				break;
-			case 'select':
-				nodeType = 'select';
-				break;
 			case 'date':
 				nodeType = 'input';
 				attributes['type'] = 'date';
@@ -911,18 +910,6 @@ class Field {
 		}
 
 		let node = document.createElement(nodeType);
-
-		if (this.options['type'] === 'select') {
-			node.innerHTML = '<option value=""></option>';
-			this.options['options'].forEach(option => {
-				let el = document.createElement('option');
-				el.value = option.id;
-				el.innerHTML = option.text;
-				if (option.id == this.options['value'])
-					el.setAttribute('selected', '');
-				node.appendChild(el);
-			});
-		}
 
 		this.assignAttributes(node, attributes);
 		this.assignEvents(node, attributes, lang);
@@ -1048,10 +1035,12 @@ class Field {
 
 			cont.appendChild(flagsCont);
 
-			return cont;
+			this.rendered = cont;
 		} else {
-			return this.renderNode(node);
+			this.rendered = await this.renderNode(node);
 		}
+
+		return this.rendered;
 	}
 
 	async renderNode(node) {
@@ -1077,6 +1066,78 @@ class Field {
 		} else {
 			return node;
 		}
+	}
+}
+
+class FieldSelect extends Field {
+	getSingleNode(lang = null) {
+		let node = document.createElement('select');
+
+		let attributes = this.options['attributes'] || {};
+		this.assignAttributes(node, attributes);
+		this.assignEvents(node, attributes, lang);
+
+		return node;
+	}
+
+	async getNode() {
+		let node = super.getNode();
+		this.setOptions();
+		return node;
+	}
+
+	setOptions(options = null) {
+		if (options !== null)
+			this.options['options'] = options;
+
+		if (this.options.multilang) {
+			for (let lang of Object.keys(this.node)) {
+				this.setNodeOptions(this.node[lang]);
+			}
+		} else {
+			this.setNodeOptions(this.node);
+		}
+	}
+
+	setNodeOptions(node) {
+		node.innerHTML = '<option value=""></option>';
+		this.options['options'].forEach(option => {
+			let el = document.createElement('option');
+			el.value = option.id;
+			el.innerHTML = option.text;
+			if (option.id == this.options['value'])
+				el.setAttribute('selected', '');
+			node.appendChild(el);
+		});
+	}
+
+	async reloadOptions() {
+		let currentValue = await this.getValue();
+
+		let loading;
+		if (this.rendered) {
+			loading = document.createElement('img');
+			loading.src = PATH + 'model/Output/files/loading.gif';
+			this.rendered.parentNode.insertBefore(loading, this.rendered);
+			this.rendered.addClass('d-none');
+		}
+
+		let response = await ajax(PATH + 'model-form/options', {}, {
+			'table': this.options.token.table || null,
+			'element': this.options.token.element || null,
+			'field': this.name,
+			'token': this.options.token.token
+		});
+
+		if (response && response.options)
+			this.setOptions(response.options);
+
+		if (this.rendered) {
+			loading.remove();
+			this.rendered.removeClass('d-none');
+		}
+
+		return this.setValue(currentValue, false);
 	}
 }
 
@@ -1236,5 +1297,6 @@ class FieldRadio extends Field {
 	}
 }
 
+formSignatures.set('select', FieldSelect);
 formSignatures.set('radio', FieldRadio);
 formSignatures.set('file', FieldFile);

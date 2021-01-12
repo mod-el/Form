@@ -49,6 +49,7 @@ class Field
 			'label' => false,
 
 			'options' => false,
+			'token' => false,
 		], $options);
 
 		$this->model = $this->options['model'];
@@ -494,6 +495,12 @@ class Field
 		if ($this->options['mandatory'] and !isset($attributes['required']))
 			$attributes['required'] = '';
 
+		if ($this->options['token']) {
+			$attributes['data-element'] = $this->getRelevantElement();
+			$attributes['data-table'] = $this->getRelevantTable();
+			$attributes['data-token'] = $this->makeToken();
+		}
+
 		switch ($this->options['type']) {
 			case 'textarea':
 				echo '<textarea ' . $this->implodeAttributes($attributes) . '>' . entities($this->getValue($lang)) . '</textarea>';
@@ -770,6 +777,42 @@ class Field
 		if ($this->options['multilang'] and $this->model->isLoaded('Multilang'))
 			$response['multilang'] = $this->model->_Multilang->langs;
 
+		if ($this->options['token']) {
+			$response['token'] = [
+				'token' => $this->makeToken(),
+				'table' => $this->getRelevantTable(),
+				'element' => $this->getRelevantElement(),
+			];
+		}
+
 		return $response;
+	}
+
+	private function makeToken(): string
+	{
+		$token = [
+			'table' => $this->getRelevantTable(),
+			'element' => $this->getRelevantElement(),
+			'field' => $this->options['name'],
+			'token' => $this->model->_RandToken->getToken('Form'),
+		];
+
+		return sha1(json_encode($token));
+	}
+
+	private function getRelevantElement(): ?string
+	{
+		if ($this->form and $this->form->options['element'])
+			return $this->form->options['element']->getClassShortName();
+		else
+			return null;
+	}
+
+	private function getRelevantTable(): ?string
+	{
+		if ($this->form)
+			return $this->form->options['table'] ?: null;
+		else
+			return null;
 	}
 }
