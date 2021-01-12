@@ -228,7 +228,8 @@ class File extends Field
 			$pathData[$this->options['ext_db']] = $fileext;
 		}
 
-		$this->form->options['element']->update($updateArr);
+		if ($this->form->options['element'])
+			$this->form->options['element']->update($updateArr);
 
 		$img = false;
 
@@ -281,7 +282,8 @@ class File extends Field
 			unlink($temp_file);
 		}
 
-		$this->form->options['element']->save($updateArr);
+		if ($this->form->options['element'])
+			$this->form->options['element']->save($updateArr);
 
 		return true;
 	}
