@@ -355,7 +355,7 @@ class Form implements \ArrayAccess
 	public function offsetGet($offset)
 	{
 		if (!isset($this->dataset[$offset]))
-			$this->model->error('Index "' . $offset . '" does not exists in the form.');
+			$this->model->error('Index "' . $offset . '" does not exist in the form.');
 
 		return $this->dataset[$offset];
 	}
