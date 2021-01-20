@@ -1077,6 +1077,12 @@ class FieldSelect extends Field {
 		this.assignAttributes(node, attributes);
 		this.assignEvents(node, attributes, lang);
 
+		if (attributes['data-depending-parent']) {
+			node.addEventListener('change', () => {
+				reloadDependingSelects(node);
+			});
+		}
+
 		return node;
 	}
 

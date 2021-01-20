@@ -747,28 +747,31 @@ class Field
 				$inputClass = 'form-control';
 			}
 
-			if (isset($attributes['class'])) {
-				if (strpos($attributes['class'], $inputClass) === false)
+			if (isset($response['attributes']['class'])) {
+				if (strpos($response['attributes']['class'], $inputClass) === false)
 					$response['attributes']['class'] .= ' ' . $inputClass;
 			} else {
 				$response['attributes']['class'] = $inputClass;
 			}
 		}
 
-		switch ($this->options['type']) {
-			case 'select':
-			case 'radio':
-				$this->loadSelectOptions();
-				$response['options'] = [];
-				foreach ($this->options['options'] as $k => $v) {
-					if ($k === '')
-						continue;
-					$response['options'][] = [
-						'id' => $k,
-						'text' => $v,
-					];
-				}
-				break;
+		if (in_array($this->options['type'], ['select', 'radio'])) {
+			$this->loadSelectOptions();
+			$response['options'] = [];
+			foreach ($this->options['options'] as $k => $v) {
+				if ($k === '')
+					continue;
+				$response['options'][] = [
+					'id' => $k,
+					'text' => $v,
+				];
+			}
+		}
+
+		if ($this->options['type'] === 'select') {
+			$dependingAttributes = $this->makeDependingFieldsAttributes([]);
+			if ($dependingAttributes['data-depending-parent'] ?? null)
+				$response['attributes']['data-depending-parent'] = $dependingAttributes['data-depending-parent'];
 		}
 
 		if ($this->options['default'])
