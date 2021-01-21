@@ -786,9 +786,10 @@ class FormManager {
 
 	getRequired() {
 		let required = [];
-		for (let field of this.fields) {
+		for (let k of this.fields.keys()) {
+			let field = this.fields.get(k);
 			if (field.options.required)
-				required.push(field.name);
+				required.push(k);
 		}
 		return required;
 	}
