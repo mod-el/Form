@@ -787,7 +787,7 @@ class FormManager {
 	getRequired() {
 		let required = [];
 		for (let field of this.fields) {
-			if (field.required)
+			if (field.options.required)
 				required.push(field.name);
 		}
 		return required;
@@ -919,6 +919,9 @@ class Field {
 
 	assignAttributes(node, attributes, assignName = true) {
 		attributes = {...attributes}; // Clono per evitare interferenze
+
+		if (this.options.required)
+			attributes.required = '';
 
 		if (assignName && typeof attributes['name'] === 'undefined')
 			attributes['name'] = this.name;
