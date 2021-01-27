@@ -468,15 +468,17 @@ function resizeFileBox(box) {
 	box.style.height = boxH + 'px';
 }
 
-function checkForm(form, mandatory) {
-	var required = form.querySelectorAll('input[required], select[required], textarea[required]');
-	for (var idx in required) {
-		if (!required.hasOwnProperty(idx))
-			continue;
-		if (required[idx].offsetParent === null)
-			continue;
-		if (required[idx].name && mandatory.indexOf(required[idx].name) === -1)
-			mandatory.push(required[idx].name);
+function checkForm(form, mandatory, appendRequired = true) {
+	if (appendRequired) {
+		var required = form.querySelectorAll('input[required], select[required], textarea[required]');
+		for (var idx in required) {
+			if (!required.hasOwnProperty(idx))
+				continue;
+			if (required[idx].offsetParent === null)
+				continue;
+			if (required[idx].name && mandatory.indexOf(required[idx].name) === -1)
+				mandatory.push(required[idx].name);
+		}
 	}
 
 	var missings = [];
@@ -545,7 +547,7 @@ function checkField(form, name) {
 	if (v === null)
 		v = '';
 
-	if (form[name].type === 'checkbox' && v.toString() === 0)
+	if (form[name].type === 'checkbox' && v.toString() === '0')
 		v = '';
 
 	return v !== '';
@@ -792,6 +794,25 @@ class FormManager {
 				required.push(k);
 		}
 		return required;
+	}
+
+	async checkRequired() {
+		let required = this.getRequired();
+		for (let fieldName of required) {
+			let v = await this.fields.get(fieldName).getValue();
+			if (v === null)
+				v = '';
+
+			if (this.fields.get(fieldName).options.type === 'checkbox' && v.toString() === '0')
+				v = '';
+
+			if (v === '') {
+				markFieldAsMandatory(this.fields.get(fieldName).node);
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	async getValues() {
