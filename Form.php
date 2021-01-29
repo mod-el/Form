@@ -1095,7 +1095,7 @@ $template = ' . var_export($template, true) . ';
 					$this->model->error('"' . $d->options['name'] . '" field missing"!');
 
 				if (empty($values[$d->options['name']])) {
-					if ($options['check-mandatory'] and $d->options['mandatory'])
+					if ($options['check-mandatory'] and $d->options['required'])
 						$this->model->error('"' . $d->options['name'] . '" field is mandatory.');
 				} else {
 					if ($options['check-content']) {

@@ -46,6 +46,7 @@ class Field
 			'attributes' => [],
 			'label-attributes' => [],
 			'mandatory' => false,
+			'required' => false,
 			'label' => false,
 
 			'options' => false,
@@ -76,6 +77,12 @@ class Field
 				];
 			}
 		}
+
+		if ($this->options['mandatory']) // Backward compatibility
+			$this->options['required'] = true;
+
+		if (in_array($this->options['type'], ['select', 'radio']) and !$this->options['nullable'])
+			$this->options['required'] = true;
 
 		if ($this->form) {
 			$current_dataset = $this->form->getDataset();
@@ -492,7 +499,7 @@ class Field
 			}
 		}
 
-		if ($this->options['mandatory'] and !isset($attributes['required']))
+		if ($this->options['required'] and !isset($attributes['required']))
 			$attributes['required'] = '';
 
 		if ($this->options['token']) {
@@ -507,6 +514,9 @@ class Field
 				break;
 			case 'radio':
 				$this->loadSelectOptions();
+				if (isset($attributes['required']) and $attributes['required'] === false)
+					unset($attributes['required']);
+
 				$value = $this->getValue($lang);
 				foreach ($this->options['options'] as $id => $opt) {
 					if ($this->form and $this->form->options['bootstrap'])
@@ -524,8 +534,6 @@ class Field
 				break;
 			case 'select':
 				$this->loadSelectOptions();
-				if (!$this->options['nullable'] and !isset($attributes['required']))
-					$attributes['required'] = '';
 				if (isset($attributes['required']) and $attributes['required'] === false)
 					unset($attributes['required']);
 
@@ -733,7 +741,7 @@ class Field
 		$response = [
 			'type' => $this->options['type'],
 			'label' => $this->getLabel(),
-			'required' => $this->options['mandatory'],
+			'required' => $this->options['required'],
 			'multilang' => false,
 			'attributes' => $this->options['attributes'],
 			'label-attributes' => $this->options['label-attributes'],

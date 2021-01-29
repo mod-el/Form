@@ -798,6 +798,7 @@ class FormManager {
 
 	async checkRequired() {
 		let required = this.getRequired();
+		let allFilled = true;
 		for (let fieldName of required) {
 			let v = await this.fields.get(fieldName).getValue();
 			if (v === null)
@@ -808,11 +809,11 @@ class FormManager {
 
 			if (v === '') {
 				markFieldAsMandatory(this.fields.get(fieldName).node);
-				return false;
+				allFilled = false;
 			}
 		}
 
-		return true;
+		return allFilled;
 	}
 
 	async getValues() {
@@ -1121,6 +1122,9 @@ class FieldSelect extends Field {
 		if (options !== null)
 			this.options['options'] = options;
 
+		if (!this.options['options'].some(option => option.id == this.value))
+			this.value = '';
+
 		if (this.options.multilang) {
 			for (let lang of Object.keys(this.node)) {
 				this.setNodeOptions(this.node[lang]);
@@ -1136,7 +1140,7 @@ class FieldSelect extends Field {
 			let el = document.createElement('option');
 			el.value = option.id;
 			el.innerHTML = option.text;
-			if (option.id == this.options['value'])
+			if (option.id == this.value)
 				el.setAttribute('selected', '');
 			node.appendChild(el);
 		});
