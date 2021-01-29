@@ -798,22 +798,28 @@ class FormManager {
 
 	async checkRequired() {
 		let required = this.getRequired();
-		let allFilled = true;
+		let missingFields = [];
 		for (let fieldName of required) {
-			let v = await this.fields.get(fieldName).getValue();
+			let field = this.fields.get(fieldName);
+			let v = await field.getValue();
 			if (v === null)
 				v = '';
 
-			if (this.fields.get(fieldName).options.type === 'checkbox' && v.toString() === '0')
+			if (field.options.type === 'checkbox' && v.toString() === '0')
 				v = '';
 
 			if (v === '') {
-				markFieldAsMandatory(this.fields.get(fieldName).node);
-				allFilled = false;
+				markFieldAsMandatory(field.node);
+				missingFields.push(field.options.label);
 			}
 		}
 
-		return allFilled;
+		if (missingFields.length) {
+			alert("Compilare i seguenti campi:\n" + missingFields.join("\n"));
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	async getValues() {
@@ -845,6 +851,7 @@ class Field {
 			'options': [],
 			'multilang': false,
 			'required': false,
+			'label': null,
 			...options
 		};
 
@@ -854,6 +861,14 @@ class Field {
 		this.listeners = new Map();
 
 		this.rendered = null;
+
+		if (!this.options.label)
+			this.options.label = this.makeLabel(name);
+	}
+
+	makeLabel(name) {
+		let label = name.split(/[_ -]/).join(' ');
+		return label.substr(0, 1).toUpperCase() + label.substr(1).toLowerCase();
 	}
 
 	addEventListener(event, callback) {
