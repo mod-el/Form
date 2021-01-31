@@ -766,12 +766,20 @@ class Field
 		if (in_array($this->options['type'], ['select', 'radio'])) {
 			$this->loadSelectOptions();
 			$response['options'] = [];
-			foreach ($this->options['options'] as $k => $v) {
-				if ($k === '')
+			foreach ($this->options['options'] as $id => $optionValue) {
+				if ($id === '')
 					continue;
+
+				$additionals = [];
+				if (isset($this->additionalFields[$id])) {
+					foreach ($this->additionalFields[$id] as $k => $v)
+						$additionals[$k] = $v;
+				}
+
 				$response['options'][] = [
-					'id' => $k,
-					'text' => $v,
+					'id' => $id,
+					'text' => $optionValue,
+					'additionals' => $additionals,
 				];
 			}
 		}

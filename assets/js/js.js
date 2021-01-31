@@ -1157,6 +1157,12 @@ class FieldSelect extends Field {
 			el.innerHTML = option.text;
 			if (option.id == this.value)
 				el.setAttribute('selected', '');
+
+			if (option.additionals) {
+				for (let k of Object.keys(option.additionals))
+					el.setAttribute('data-' + k, option.additionals[k]);
+			}
+
 			node.appendChild(el);
 		});
 	}
