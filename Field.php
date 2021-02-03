@@ -506,6 +506,7 @@ class Field
 			$attributes['data-element'] = $this->getRelevantElement();
 			$attributes['data-table'] = $this->getRelevantTable();
 			$attributes['data-token'] = $this->makeToken();
+			$attributes['data-additionals'] = json_encode($this->options['additional-fields']);
 		}
 
 		switch ($this->options['type']) {
@@ -763,26 +764,8 @@ class Field
 			}
 		}
 
-		if (in_array($this->options['type'], ['select', 'radio'])) {
-			$this->loadSelectOptions();
-			$response['options'] = [];
-			foreach ($this->options['options'] as $id => $optionValue) {
-				if ($id === '')
-					continue;
-
-				$additionals = [];
-				if (isset($this->additionalFields[$id])) {
-					foreach ($this->additionalFields[$id] as $k => $v)
-						$additionals[$k] = $v;
-				}
-
-				$response['options'][] = [
-					'id' => $id,
-					'text' => $optionValue,
-					'additionals' => $additionals,
-				];
-			}
-		}
+		if (in_array($this->options['type'], ['select', 'radio']))
+			$response['options'] = $this->getFrontendOptions();
 
 		if ($this->options['type'] === 'select') {
 			$dependingAttributes = $this->makeDependingFieldsAttributes([]);
@@ -801,10 +784,36 @@ class Field
 				'token' => $this->makeToken(),
 				'table' => $this->getRelevantTable(),
 				'element' => $this->getRelevantElement(),
+				'additionals' => json_encode($this->options['additional-fields']),
 			];
 		}
 
 		return $response;
+	}
+
+	public function getFrontendOptions(): array
+	{
+		$this->loadSelectOptions();
+		$options = [];
+
+		foreach ($this->options['options'] as $id => $optionValue) {
+			if ($id === '')
+				continue;
+
+			$additionals = [];
+			if (isset($this->additionalFields[$id])) {
+				foreach ($this->additionalFields[$id] as $k => $v)
+					$additionals[$k] = $v;
+			}
+
+			$options[] = [
+				'id' => $id,
+				'text' => $optionValue,
+				'additionals' => $additionals,
+			];
+		}
+
+		return $options;
 	}
 
 	private function makeToken(): string
@@ -813,6 +822,7 @@ class Field
 			'table' => $this->getRelevantTable(),
 			'element' => $this->getRelevantElement(),
 			'field' => $this->options['name'],
+			'additionals' => json_encode($this->options['additional-fields']),
 			'token' => $this->model->_RandToken->getToken('Form'),
 		];
 

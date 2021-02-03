@@ -1182,6 +1182,7 @@ class FieldSelect extends Field {
 			'table': this.options.token.table || null,
 			'element': this.options.token.element || null,
 			'field': this.name,
+			'additionals': this.options.token.additionals || null,
 			'token': this.options.token.token
 		});
 

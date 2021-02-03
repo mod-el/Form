@@ -16,6 +16,7 @@ class ModelFormController extends Controller
 						'table' => $_POST['table'] ?: null,
 						'element' => $_POST['element'] ?: null,
 						'field' => $_POST['field'],
+						'additionals' => $_POST['additionals'] ?: '[]',
 						'token' => $this->model->_RandToken->getToken('Form'),
 					];
 
@@ -33,19 +34,10 @@ class ModelFormController extends Controller
 					if ($form[$_POST['field']]->options['type'] !== 'select')
 						throw new \Exception('Provided field is not a select');
 
-					$form[$_POST['field']]->loadSelectOptions();
-					$options = [];
-					foreach ($form[$_POST['field']]->options['options'] as $id => $text) {
-						if ($id === '')
-							continue;
-						$options[] = [
-							'id' => $id,
-							'text' => $text,
-						];
-					}
+					$form[$_POST['field']]->options['additional-fields'] = json_decode($token['additionals'], true, 512, JSON_THROW_ON_ERROR);
 
 					return [
-						'options' => $options,
+						'options' => $form[$_POST['field']]->getFrontendOptions(),
 					];
 				case 'depending':
 					if (!isset($_POST['field'], $_POST['v']))
