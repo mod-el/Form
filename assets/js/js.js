@@ -745,7 +745,7 @@ class FormManager {
 				this.changedValues[field.name] = v;
 
 				if (typeof historyMgr === 'object') // Per admin
-					historyMgr.append(this.name, field.name, old, v, event.langChanged || null);
+					historyMgr.append(this.name, field.name, old, v, event ? (event.langChanged || null) : null);
 			});
 		});
 
@@ -1110,6 +1110,93 @@ class Field {
 	}
 }
 
+class FieldDatetime extends Field {
+	cont;
+	dateNode;
+	timeNode;
+	hiddenNode;
+
+	getSingleNode(lang = null) {
+		this.dateNode = document.createElement('input');
+		this.dateNode.type = 'date';
+		this.dateNode.addEventListener('change', () => {
+			this.updateInputValue();
+		});
+
+		this.timeNode = document.createElement('input');
+		this.timeNode.type = 'time';
+		this.timeNode.addEventListener('change', () => {
+			this.updateInputValue();
+		});
+
+		this.hiddenNode = document.createElement('input');
+		this.hiddenNode.type = 'hidden';
+
+		let attributes = this.options['attributes'] || {};
+		let textAttributes = {};
+		if (attributes.class)
+			textAttributes.class = attributes.class;
+		if (attributes.style)
+			textAttributes.style = attributes.style;
+
+		this.assignAttributes(this.dateNode, textAttributes);
+		this.assignAttributes(this.timeNode, textAttributes);
+
+		this.assignAttributes(this.hiddenNode, attributes);
+		this.assignEvents(this.hiddenNode, attributes, lang);
+
+		this.cont = document.createElement('div');
+		this.cont.className = 'flex-fields';
+
+		let dateCont = document.createElement('div');
+		dateCont.style.padding = '0 3px 0 0';
+		dateCont.appendChild(this.dateNode);
+		this.cont.appendChild(dateCont);
+
+		let timeCont = document.createElement('div');
+		timeCont.style.padding = '0 0 0 3px';
+		timeCont.appendChild(this.timeNode);
+		this.cont.appendChild(timeCont);
+
+		this.cont.appendChild(this.hiddenNode);
+
+		return this.cont;
+	}
+
+	updateInputValue() {
+		if (!this.cont)
+			return;
+
+		let date = this.dateNode.value;
+		let time = this.timeNode.value;
+
+		let full = '';
+		if (date && time)
+			full = date + ' ' + time;
+
+		return this.hiddenNode.setValue(full);
+	}
+
+	async setValue(v, trigger = true) {
+		this.value = v;
+
+		if (!this.cont)
+			return;
+
+		let splitted = v.split(' ');
+		if (splitted.length === 1)
+			splitted.push('');
+		if (splitted.length > 2)
+			splitted = ['', ''];
+
+		let datePromise = this.dateNode.setValue(splitted[0], false);
+		let timePromise = this.timeNode.setValue(splitted[1], false);
+		let hiddenPromise = this.hiddenNode.setValue(v ? v : '', trigger);
+
+		return Promise.all([datePromise, timePromise, hiddenPromise]);
+	}
+}
+
 class FieldSelect extends Field {
 	getSingleNode(lang = null) {
 		let node = document.createElement('select');
@@ -1357,3 +1444,4 @@ class FieldRadio extends Field {
 formSignatures.set('select', FieldSelect);
 formSignatures.set('radio', FieldRadio);
 formSignatures.set('file', FieldFile);
+formSignatures.set('datetime', FieldDatetime);
