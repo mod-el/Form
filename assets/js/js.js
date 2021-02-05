@@ -1183,7 +1183,7 @@ class FieldDatetime extends Field {
 		if (!this.cont)
 			return;
 
-		let splitted = v.split(' ');
+		let splitted = v ? v.toString().split(' ') : ['', ''];
 		if (splitted.length === 1)
 			splitted.push('');
 		if (splitted.length > 2)
