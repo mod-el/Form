@@ -386,7 +386,7 @@ class Field
 				$def_lang = $this->model->_Multilang->options['default'];
 				$originalName = $attributes['name'];
 
-				echo '<div class="multilang-field-container" data-name="' . entities($originalName) . '">';
+				echo '<div class="multilang-field-container">';
 				foreach ($this->model->_Multilang->langs as $lang) {
 					echo '<div data-lang="' . $lang . '" style="' . ($lang !== $def_lang ? 'display: none' : '') . '">';
 					$attributes['name'] = $originalName . '-' . $lang;
@@ -396,12 +396,12 @@ class Field
 					echo '</div>';
 				}
 				echo '<div class="multilang-field-lang-container">';
-				echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $def_lang . '\'); return false" data-lang="' . $def_lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $def_lang . '.png" alt="" /></a>';
+				echo '<a href="#" onclick="switchFieldLang(this.parentNode.parentNode, \'' . $def_lang . '\'); return false" data-lang="' . $def_lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $def_lang . '.png" alt="" /></a>';
 				echo '<div class="multilang-field-other-langs-container">';
 				foreach ($this->model->_Multilang->langs as $lang) {
 					if ($lang === $def_lang)
 						continue;
-					echo '<a href="#" onclick="switchFieldLang(\'' . entities($originalName) . '\', \'' . $lang . '\'); return false" data-lang="' . $lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $lang . '.png" alt="" /></a>';
+					echo '<a href="#" onclick="switchFieldLang(this.parentNode.parentNode.parentNode, \'' . $lang . '\'); return false" data-lang="' . $lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $lang . '.png" alt="" /></a>';
 				}
 				echo '</div>';
 				echo '</div>';

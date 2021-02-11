@@ -277,23 +277,19 @@ NodeList.prototype.setValue = setElementValue;
 Element.prototype.getValue = getElementValue;
 NodeList.prototype.getValue = getElementValue;
 
-function switchFieldLang(name, lang) {
-	var main = document.querySelector('.multilang-field-container[data-name="' + name + '"]');
-	if (!main)
-		return false;
-
-	var currentFlag = main.querySelector('.multilang-field-lang-container > a[data-lang]');
+function switchFieldLang(cont, lang) {
+	let currentFlag = cont.querySelector('.multilang-field-lang-container > a[data-lang]');
 	if (!currentFlag || currentFlag.getAttribute('data-lang') === lang)
 		return false;
 
-	var newFlag = main.querySelector('.multilang-field-other-langs-container > a[data-lang="' + lang + '"]');
+	let newFlag = cont.querySelector('.multilang-field-other-langs-container > a[data-lang="' + lang + '"]');
 	if (!newFlag)
 		return false;
 
-	main.querySelector('.multilang-field-lang-container').insertBefore(newFlag, currentFlag);
-	main.querySelector('.multilang-field-other-langs-container').appendChild(currentFlag);
+	cont.querySelector('.multilang-field-lang-container').insertBefore(newFlag, currentFlag);
+	cont.querySelector('.multilang-field-other-langs-container').appendChild(currentFlag);
 
-	main.querySelectorAll('.multilang-field-container > [data-lang]').forEach(function (el) {
+	cont.querySelectorAll('.multilang-field-container > [data-lang]').forEach(function (el) {
 		if (el.getAttribute('data-lang') === lang) {
 			el.style.display = 'block';
 			if (fileBox = el.querySelector('[data-file-cont][data-natural-width][data-natural-height]')) {
@@ -673,7 +669,7 @@ function switchAllFieldsLang(lang) {
 	});
 
 	document.querySelectorAll('.multilang-field-container[data-name]').forEach(function (f) {
-		switchFieldLang(f.getAttribute('data-name'), lang);
+		switchFieldLang(f, lang);
 	});
 }
 
@@ -724,6 +720,7 @@ class FormManager {
 		this.version = 1;
 		this.fields = new Map()
 		this.changedValues = {};
+		this.ignore = false;
 	}
 
 	async add(field) {
@@ -1051,7 +1048,7 @@ class Field {
 			mainFlag.setAttribute('data-lang', defaultLang);
 			mainFlag.addEventListener('click', event => {
 				event.preventDefault();
-				switchFieldLang(this.name, defaultLang);
+				switchFieldLang(cont, defaultLang);
 			});
 			mainFlag.innerHTML = `<img src="${PATH}model/Form/assets/img/langs/${defaultLang}.png" alt="${defaultLang}"/>`;
 			flagsCont.appendChild(mainFlag);
@@ -1067,7 +1064,7 @@ class Field {
 				flag.setAttribute('data-lang', lang);
 				flag.addEventListener('click', event => {
 					event.preventDefault();
-					switchFieldLang(this.name, lang);
+					switchFieldLang(cont, lang);
 				});
 				flag.innerHTML = `<img src="${PATH}model/Form/assets/img/langs/${lang}.png" alt="${lang}"/>`;
 				otherFlagsCont.appendChild(flag);
