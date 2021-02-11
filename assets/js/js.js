@@ -23,7 +23,6 @@ Element.prototype.hasOption = function (i) {
 	});
 };
 
-
 var setElementValue = function (v, trigger_onchange, use_custom_function) {
 	if (typeof trigger_onchange === 'undefined')
 		trigger_onchange = true;
