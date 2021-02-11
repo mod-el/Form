@@ -11,7 +11,8 @@ function setSelect(s, v) {
 		}
 	}
 
-	s.setAttribute('data-attempted-value', v);
+	if (v)
+		s.setAttribute('data-attempted-value', v);
 	s.selectedIndex = 0;
 	return false;
 }
