@@ -5,14 +5,10 @@ function setSelect(s, v) {
 	for (let cp in s.options) {
 		if (typeof s.options[cp].value !== 'undefined' && s.options[cp].value.toString() === v.toString()) {
 			s.selectedIndex = cp;
-			if (s.getAttribute('data-attempted-value'))
-				s.removeAttribute('data-attempted-value');
 			return true;
 		}
 	}
 
-	if (v)
-		s.setAttribute('data-attempted-value', v);
 	s.selectedIndex = 0;
 	return false;
 }
@@ -78,8 +74,6 @@ var setElementValue = function (v, trigger_onchange, use_custom_function) {
 
 			if (v !== currentValue && trigger_onchange)
 				triggerOnChange(element);
-			else if (element.getAttribute('data-depending-parent'))
-				reloadDependingSelects(element, trigger_onchange);
 
 			return ret;
 		};
@@ -595,71 +589,6 @@ function simulateTab(current, forward) {
 	return false;
 }
 
-function reloadDependingSelects(parent, trigger_onchange) {
-	if (parent.hasAttribute('data-attempted-value'))
-		return;
-
-	if (typeof trigger_onchange === 'undefined')
-		trigger_onchange = true;
-
-	let form = parent.form;
-	if (!form || !parent.getAttribute('data-depending-parent'))
-		return;
-	let fields = JSON.parse(parent.getAttribute('data-depending-parent'));
-	if (!fields)
-		return;
-
-	parent.getValue().then(function (parentV) {
-		fields.forEach(function (f) {
-			if (typeof form[f.name] === 'undefined')
-				return;
-
-			form[f.name].getValue().then(function (v) {
-				let img = document.createElement('img');
-				img.src = PATHBASE + 'model/Output/files/loading.gif';
-				form[f.name].parentNode.insertBefore(img, form[f.name]);
-				form[f.name].style.display = 'none';
-
-				ajax(PATH + 'model-form/depending', {}, {
-					'field': JSON.stringify(f),
-					'v': parentV
-				}).then(function (r) {
-					if (typeof r !== 'object') {
-						throw r;
-					} else {
-						form[f.name].innerHTML = '';
-						r.forEach(function (opt) {
-							let option = document.createElement('option');
-							option.value = opt.id;
-							option.innerHTML = opt.text;
-							Object.keys(opt['additional-fields']).forEach(function (k) {
-								option.setAttribute('data-' + k, opt['additional-fields'][k]);
-							});
-							form[f.name].appendChild(option);
-						});
-						form[f.name].style.display = '';
-						img.parentNode.removeChild(img);
-
-						if (form[f.name].hasAttribute('data-attempted-value')) {
-							if (form[f.name].hasOption(form[f.name].getAttribute('data-attempted-value'))) {
-								form[f.name].setValue(form[f.name].getAttribute('data-attempted-value'), trigger_onchange);
-								form[f.name].removeAttribute('data-attempted-value');
-							}
-						} else {
-							if (trigger_onchange)
-								triggerOnChange(form[f.name]);
-						}
-						if (form[f.name].getAttribute('data-depending-parent'))
-							reloadDependingSelects(form[f.name], trigger_onchange);
-					}
-				});
-			});
-		});
-	}).catch(function (err) {
-		alert(err);
-	});
-}
-
 function switchAllFieldsLang(lang) {
 	Array.from(document.querySelectorAll('.lang-switch-cont [data-lang]')).forEach(function (el) {
 		if (el.getAttribute('data-lang') === lang)
@@ -774,6 +703,11 @@ class FormManager {
 			fieldCont.innerHTML = '';
 			fieldCont.appendChild(await field.render());
 			field.emit('append');
+		}
+
+		for (let fieldName of this.fields.keys()) {
+			if (this.fields.get(fieldName).options.type === 'select')
+				await this.fields.get(fieldName).reloadDependingSelects(false);
 		}
 
 		changedHtml();
@@ -1195,6 +1129,17 @@ class FieldDatetime extends Field {
 }
 
 class FieldSelect extends Field {
+	attemptedValue = null;
+
+	async setValue(v, trigger = true) {
+		if (!this.options['options'].some(option => option.id == v)) {
+			this.attemptedValue = v;
+			v = null;
+		}
+
+		return super.setValue(v, trigger);
+	}
+
 	getSingleNode(lang = null) {
 		let node = document.createElement('select');
 
@@ -1202,11 +1147,8 @@ class FieldSelect extends Field {
 		this.assignAttributes(node, attributes);
 		this.assignEvents(node, attributes, lang);
 
-		if (attributes['data-depending-parent']) {
-			node.addEventListener('change', () => {
-				reloadDependingSelects(node);
-			});
-		}
+		if (attributes['data-depending-parent'])
+			this.addEventListener('change', this.reloadDependingSelects);
 
 		return node;
 	}
@@ -1251,7 +1193,7 @@ class FieldSelect extends Field {
 		});
 	}
 
-	async reloadOptions() {
+	async reloadOptions(parent_field = null, parent_value = null, trigger_onchange = true) {
 		let currentValue = await this.getValue();
 
 		let loading;
@@ -1262,13 +1204,20 @@ class FieldSelect extends Field {
 			this.rendered.addClass('d-none');
 		}
 
-		let response = await ajax(PATH + 'model-form/options', {}, {
+		let payload = {
 			'table': this.options.token.table || null,
 			'element': this.options.token.element || null,
 			'field': this.name,
 			'additionals': this.options.token.additionals || null,
 			'token': this.options.token.token
-		});
+		};
+
+		if (parent_field && parent_value) {
+			payload.parent_field = parent_field;
+			payload.parent_value = parent_value;
+		}
+
+		let response = await ajax(PATH + 'model-form/options', {}, payload);
 
 		if (response && response.options)
 			this.setOptions(response.options);
@@ -1278,7 +1227,35 @@ class FieldSelect extends Field {
 			this.rendered.removeClass('d-none');
 		}
 
-		return this.setValue(currentValue, false);
+		if (this.attemptedValue) {
+			currentValue = this.attemptedValue;
+			this.attemptedValue = null;
+		}
+
+		return this.setValue(currentValue, trigger_onchange);
+	}
+
+	async reloadDependingSelects(trigger_onchange = true) {
+		let node = this.node;
+		if (this.options.multilang)
+			node = node[Object.keys(node)[0]];
+
+		if (!node.getAttribute('data-depending-parent'))
+			return;
+
+		let fields = JSON.parse(node.getAttribute('data-depending-parent'));
+		if (!fields)
+			return;
+
+		let v = await this.getValue();
+
+		for (let f of fields) {
+			let field = this.form.fields.get(f.name);
+			if (!field)
+				continue;
+
+			await field.reloadOptions(this.name, v, trigger_onchange);
+		}
 	}
 }
 

@@ -460,7 +460,6 @@ class Field
 			}
 
 			$attributes['data-depending-parent'] = json_encode($fieldsArr);
-			$attributes['onchange'] = 'reloadDependingSelects(this); ' . ($attributes['onchange'] ?? '');
 		}
 
 		return $attributes;
@@ -779,7 +778,7 @@ class Field
 		if ($this->options['multilang'] and $this->model->isLoaded('Multilang'))
 			$response['multilang'] = $this->model->_Multilang->langs;
 
-		if ($this->options['token']) {
+		if ($this->options['token'] or $this->options['depending-on']) {
 			$response['token'] = [
 				'token' => $this->makeToken(),
 				'table' => $this->getRelevantTable(),
