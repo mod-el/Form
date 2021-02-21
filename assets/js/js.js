@@ -889,6 +889,9 @@ class Field {
 	assignAttributes(node, attributes, assignName = true) {
 		attributes = {...attributes}; // Clono per evitare interferenze
 
+		node.modelField = this;
+		node.modelForm = this.form;
+
 		if (this.options.required)
 			attributes.required = '';
 
