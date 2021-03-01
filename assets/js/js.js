@@ -912,7 +912,7 @@ class Field {
 
 		for (let eventName of events) {
 			node.addEventListener(eventName, async event => {
-				if (eventName === 'change') {
+				if (['change', 'input'].includes(eventName)) {
 					let v = await node.getValue();
 					if (this.options.multilang) {
 						event.langChanged = lang;
