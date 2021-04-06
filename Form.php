@@ -1091,7 +1091,7 @@ $template = ' . var_export($template, true) . ';
 
 		try {
 			foreach ($this->dataset as $d) {
-				if ($options['check-missing'] and !isset($values[$d->options['name']]) and !in_array($d->options['type'], ['checkbox', 'file']))
+				if ($options['check-missing'] and !isset($values[$d->options['name']]) and !in_array($d->options['type'], ['checkbox', 'radio', 'file']))
 					$this->model->error('"' . $d->options['name'] . '" field missing"!');
 
 				if (empty($values[$d->options['name']])) {
