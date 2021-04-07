@@ -775,6 +775,9 @@ class Field
 		if ($this->options['default'])
 			$response['default'] = $this->options['default'];
 
+		if ($this->options['if-null'])
+			$response['if-null'] = $this->options['if-null'];
+
 		if ($this->options['multilang'] and $this->model->isLoaded('Multilang'))
 			$response['multilang'] = $this->model->_Multilang->langs;
 

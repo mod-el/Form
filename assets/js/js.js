@@ -1179,7 +1179,8 @@ class FieldSelect extends Field {
 	}
 
 	setNodeOptions(node) {
-		node.innerHTML = '<option value=""></option>';
+		let nullText = this.options['if-null'] ? this.options['if-null'] : '';
+		node.innerHTML = '<option value="">' + nullText + '</option>';
 		this.options['options'].forEach(option => {
 			let el = document.createElement('option');
 			el.value = option.id;
