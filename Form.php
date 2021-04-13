@@ -511,7 +511,7 @@ $template = ' . var_export($template, true) . ';
 
 				$label = $this[$div['field']]->getLabel();
 				if ($options['show-labels'] and !$options['labels-as-placeholders'] and $this[$div['field']]->options['type'] != 'checkbox')
-					echo entities($label) . '<br />';
+					echo '<label>' . entities($label) . '</label>';
 
 				$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
 
