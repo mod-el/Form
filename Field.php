@@ -772,6 +772,9 @@ class Field
 				$response['attributes']['data-depending-parent'] = $dependingAttributes['data-depending-parent'];
 		}
 
+		if ($this->options['maxlength'] !== false and !array_key_exists('maxlength', $response['attributes']))
+			$response['attributes']['maxlength'] = $this->options['maxlength'];
+
 		if ($this->options['default'])
 			$response['default'] = $this->options['default'];
 
