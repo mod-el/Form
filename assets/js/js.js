@@ -1258,7 +1258,8 @@ class FieldSelect extends Field {
 			if (!field)
 				continue;
 
-			await field.reloadOptions(this.name, v, trigger_onchange);
+			if (field.reloadOptions)
+				await field.reloadOptions(this.name, v, trigger_onchange);
 		}
 	}
 }

@@ -67,8 +67,8 @@ class Field
 			$this->setValue($this->options['value']);
 
 		if ($this->options['depending-on']) {
-			if ($this->options['type'] !== 'select')
-				$this->model->error('Only selects can have "depending on" option');
+			if (!in_array($this->options['type'], ['radio', 'select', 'instant-search']))
+				$this->model->error('The field cannot have "depending on" option');
 
 			if (!is_array($this->options['depending-on'])) {
 				$this->options['depending-on'] = [
@@ -81,7 +81,7 @@ class Field
 		if ($this->options['mandatory']) // Backward compatibility
 			$this->options['required'] = true;
 
-		if (in_array($this->options['type'], ['select', 'radio']) and !$this->options['nullable'])
+		if (in_array($this->options['type'], ['instant-search', 'select', 'radio']) and !$this->options['nullable'])
 			$this->options['required'] = true;
 
 		if ($this->form) {

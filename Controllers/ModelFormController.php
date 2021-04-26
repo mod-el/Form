@@ -35,8 +35,8 @@ class ModelFormController extends Controller
 					if (!$form[$_POST['field']])
 						throw new \Exception('Invalid field');
 
-					if ($form[$_POST['field']]->options['type'] !== 'select')
-						throw new \Exception('Provided field is not a select');
+					if (!in_array($form[$_POST['field']]->options['type'], ['radio', 'select', 'instant-search']))
+						throw new \Exception('Provided field cannot have options');
 
 					$form[$_POST['field']]->options['additional-fields'] = json_decode($token['additionals'], true, 512, JSON_THROW_ON_ERROR);
 
