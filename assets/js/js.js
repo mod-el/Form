@@ -1,3 +1,5 @@
+const reloadingOptionsCache = new Map();
+
 function setSelect(s, v) {
 	if (v == null)
 		return false;
@@ -1197,7 +1199,7 @@ class FieldSelect extends Field {
 		});
 	}
 
-	async reloadOptions(parent_field = null, parent_value = null, trigger_onchange = true) {
+	async reloadOptions(parent_field = null, parent_value = null, trigger_onchange = true, useCache = true) {
 		let currentValue = await this.getValue();
 
 		let loading;
@@ -1225,10 +1227,17 @@ class FieldSelect extends Field {
 			payload.parent_value = parent_value;
 		}
 
-		let response = await ajax(PATH + 'model-form/options', {}, payload);
+		let k = JSON.stringify(payload);
+		if (useCache && reloadingOptionsCache.get(k)) {
+			this.setOptions(reloadingOptionsCache.get(k));
+		} else {
+			let response = await ajax(PATH + 'model-form/options', {}, payload);
 
-		if (response && response.options)
-			this.setOptions(response.options);
+			if (response && response.options) {
+				reloadingOptionsCache.set(k, response.options);
+				this.setOptions(response.options);
+			}
+		}
 
 		if (this.rendered) {
 			loading.remove();
