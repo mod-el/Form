@@ -147,19 +147,38 @@ class Form implements \ArrayAccess
 							if (in_array($options['type'], ['radio', 'select', 'instant-search']) and $options['depending-on'] === null) {
 								$refTable = $options['table'] ?: $fk['ref_table'];
 								$refTableModel = $this->model->_Db->getTable($refTable);
+
+								$possibleParents = [];
 								foreach ($this->dataset as $d) {
-									if (in_array($d->options['type'], ['radio', 'select']) and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
+									if (in_array($d->options['type'], ['radio', 'select', 'instant-search']) and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
 										$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
 										foreach ($refTableModel->columns as $ref_k => $ref_f) {
 											if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table'] and $ref_k !== $options['field']) {
-												$options['depending-on'] = [
-													'name' => $d->options['name'],
+												$possibleParents[$d->options['name']] = [
+													'datum' => $d,
 													'db' => $refTableModel->foreign_keys[$ref_f['foreign_key']]['column'],
 												];
-												break 2;
+												break;
 											}
 										}
 									}
+								}
+
+								if (count($possibleParents) > 0) {
+									// Do priorità ai campi che non hanno ancora dei figli, quindi creo una lista temporanea dove escludo quelli già agganciati a qualcosa
+									$possibleParentsNonDepending = $possibleParents;
+									foreach ($possibleParents as $possibleParent) {
+										if ($possibleParent['datum']->options['depending-on'] and isset($possibleParentsNonDepending[$possibleParent['datum']->options['depending-on']['name']]))
+											unset($possibleParentsNonDepending[$possibleParent['datum']->options['depending-on']['name']]);
+									}
+
+									// Se ne è rimasto qualcuno, uso la nuova lista, sennò rimango con la vecchia
+									if (count($possibleParentsNonDepending) > 0)
+										$possibleParents = $possibleParentsNonDepending;
+
+									$options['depending-on'] = array_values($possibleParents)[0];
+									$options['depending-on']['name'] = $options['depending-on']['datum']->options['name'];
+									unset($options['depending-on']['datum']);
 								}
 							}
 						} else {

@@ -766,7 +766,7 @@ class Field
 		if (in_array($this->options['type'], ['select', 'radio']))
 			$response['options'] = $this->getFrontendOptions();
 
-		if ($this->options['type'] === 'select') {
+		if (in_array($this->options['type'], ['radio', 'select', 'instant-search'])) {
 			$dependingAttributes = $this->makeDependingFieldsAttributes([]);
 			if ($dependingAttributes['data-depending-parent'] ?? null)
 				$response['attributes']['data-depending-parent'] = $dependingAttributes['data-depending-parent'];
