@@ -789,6 +789,10 @@ class Field
 				'token' => $this->makeToken(),
 				'table' => $this->getRelevantTable(),
 				'element' => $this->getRelevantElement(),
+				'id-field' => $this->options['id-field'],
+				'text-field' => $this->options['text-field'],
+				'order_by' => $this->options['order_by'] ?: null,
+				'where' => json_encode($this->options['where']),
 				'additionals' => json_encode($this->options['additional-fields']),
 			];
 		}
@@ -827,11 +831,15 @@ class Field
 			'table' => $this->getRelevantTable(),
 			'element' => $this->getRelevantElement(),
 			'field' => $this->options['name'],
+			'id-field' => $this->options['id-field'],
+			'text-field' => $this->options['text-field'],
+			'order_by' => $this->options['order_by'] ?: null,
+			'where' => json_encode($this->options['where']),
 			'additionals' => json_encode($this->options['additional-fields']),
 			'token' => $this->model->_RandToken->getToken('Form'),
 		];
 
-		return sha1(json_encode($token));
+		return sha1(json_encode(array_filter($token)));
 	}
 
 	private function getRelevantElement(): ?string

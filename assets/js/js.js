@@ -1209,10 +1209,14 @@ class FieldSelect extends Field {
 		}
 
 		let payload = {
-			'table': this.options.token.table || null,
-			'element': this.options.token.element || null,
+			'table': this.options.token.table || '',
+			'element': this.options.token.element || '',
 			'field': this.name,
-			'additionals': this.options.token.additionals || null,
+			'id-field': this.options.token['id-field'] || 'id',
+			'text-field': this.options.token['text-field'] ? JSON.stringify(this.options.token['text-field']) : '',
+			'order_by': this.options.token['order_by'] || '',
+			'where': this.options.token['where'] || '',
+			'additionals': this.options.token.additionals || '',
 			'token': this.options.token.token
 		};
 
