@@ -529,7 +529,7 @@ $template = ' . var_export($template, true) . ';
 
 				$label = $this[$div['field']]->getLabel();
 				if ($options['show-labels'] and !$options['labels-as-placeholders'] and $this[$div['field']]->options['type'] != 'checkbox')
-					echo '<label>' . entities($label) . '</label>';
+					echo '<label data-auto>' . entities($label) . '</label>';
 
 				$this[$div['field']]->render($options['labels-as-placeholders'] ? ['placeholder' => $label] : []);
 
