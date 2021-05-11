@@ -646,12 +646,16 @@ function emptyExternalFileInput(box) {
 var formSignatures = new Map();
 
 class FormManager {
-	constructor(name) {
+	constructor(name, options = {}) {
 		this.name = name;
 		this.version = 1;
 		this.fields = new Map()
 		this.changedValues = {};
 		this.ignore = false;
+		this.options = {
+			updateAdminHistory: false,
+			...options
+		};
 	}
 
 	async add(field) {
@@ -672,7 +676,7 @@ class FormManager {
 
 				this.changedValues[field.name] = v;
 
-				if (typeof historyMgr === 'object') // Per admin
+				if (this.options.updateAdminHistory && typeof historyMgr === 'object') // Per admin
 					historyMgr.append(this.name, field.name, old, v, event ? (event.langChanged || null) : null);
 			});
 		});
