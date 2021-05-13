@@ -662,15 +662,14 @@ class FormManager {
 		field.form = this;
 		field.historyDefaultValue = await field.getValue();
 
-		field.addEventListener('change', event => {
+		field.addEventListener('change', async event => {
 			let old = null;
-			if (typeof this.changedValues[field.name] === 'undefined') {
+			if (typeof this.changedValues[field.name] === 'undefined')
 				old = field.historyDefaultValue;
-			} else {
+			else
 				old = this.changedValues[field.name];
-			}
 
-			field.getValue().then(v => {
+			return field.getValue().then(v => {
 				if (v === old)
 					return;
 
@@ -816,17 +815,19 @@ class Field {
 		this.listeners.set(event, listeners);
 	}
 
-	emit(eventName, event = null) {
+	async emit(eventName, event = null) {
 		let listeners = this.listeners.get(eventName);
 		if (!listeners)
 			return;
 
 		for (let listener of listeners)
-			listener.call(this, event);
+			await listener.call(this, event);
 	}
 
 	async setValue(v, trigger = true) {
 		this.value = v;
+		if (trigger)
+			this.skipNextOnChange = true;
 
 		let node = await this.getNode();
 		if (this.options.multilang) {
@@ -839,7 +840,7 @@ class Field {
 		}
 
 		if (trigger)
-			this.emit('change');
+			await this.emit('change');
 	}
 
 	async getValue() {
@@ -918,8 +919,12 @@ class Field {
 
 		for (let eventName of events) {
 			node.addEventListener(eventName, async event => {
+				let skip = false;
+				let v = await node.getValue();
+				if (v == this.value && this.skipNextOnChange)
+					skip = true;
+
 				if (['change', 'input'].includes(eventName)) {
-					let v = await node.getValue();
 					if (this.options.multilang) {
 						event.langChanged = lang;
 						if (this.value === null || typeof this.value !== 'object')
@@ -937,7 +942,10 @@ class Field {
 					customFunc.call(node);
 				}
 
-				this.emit(eventName, event);
+				if (skip)
+					this.skipNextOnChange = false;
+				else
+					return this.emit(eventName, event);
 			});
 		}
 	}
@@ -1270,14 +1278,17 @@ class FieldSelect extends Field {
 
 		let v = await this.getValue();
 
+		let promises = [];
 		for (let f of fields) {
 			let field = this.form.fields.get(f.name);
 			if (!field)
 				continue;
 
 			if (field.reloadOptions)
-				await field.reloadOptions(this.name, v, trigger_onchange);
+				promises.push(field.reloadOptions(this.name, v, trigger_onchange));
 		}
+
+		return Promise.all(promises);
 	}
 }
 
