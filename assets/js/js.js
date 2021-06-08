@@ -1048,6 +1048,8 @@ class Field {
 
 			let label = document.createElement('label');
 			label.setAttribute('for', id);
+			if (this.options['label-attributes'])
+				this.assignAttributes(label, this.options['label-attributes'], false);
 			label.innerHTML = this.options.label;
 			span.appendChild(label);
 
@@ -1422,6 +1424,8 @@ class FieldRadio extends Field {
 
 			let label = document.createElement('label');
 			label.setAttribute('for', id);
+			if (this.options['label-attributes'])
+				this.assignAttributes(label, this.options['label-attributes'], false);
 			label.innerHTML = option.text;
 
 			this.cont.appendChild(input);
