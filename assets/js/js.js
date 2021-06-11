@@ -645,6 +645,15 @@ function emptyExternalFileInput(box) {
 
 var formSignatures = new Map();
 
+function buildFormField(name, options = {}) {
+	if (options.hasOwnProperty('type') && formSignatures.get(options.type)) {
+		let fieldClass = formSignatures.get(options.type);
+		return new fieldClass(name, options);
+	} else {
+		return new Field(name, options);
+	}
+}
+
 class FormManager {
 	constructor(name, options = {}) {
 		this.name = name;
@@ -696,18 +705,12 @@ class FormManager {
 			if (typeof data.data[k] !== 'undefined')
 				fieldOptions.value = data.data[k];
 
-			let field;
-			if (fieldOptions.hasOwnProperty('type') && formSignatures.get(fieldOptions.type)) {
-				let fieldClass = formSignatures.get(fieldOptions.type);
-				field = new fieldClass(k, fieldOptions);
-			} else {
-				field = new Field(k, fieldOptions);
-			}
+			let field = buildFormField(k, fieldOptions);
 			await this.add(field);
 
 			fieldCont.innerHTML = '';
 			fieldCont.appendChild(await field.render());
-			field.emit('append');
+			await field.emit('append');
 		}
 
 		for (let fieldName of this.fields.keys()) {
