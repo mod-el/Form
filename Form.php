@@ -150,7 +150,7 @@ class Form implements \ArrayAccess
 
 								$possibleParents = [];
 								foreach ($this->dataset as $d) {
-									if (in_array($d->options['type'], ['radio', 'select', 'instant-search']) and $tableModel->columns[$d->options['field']] and $tableModel->columns[$d->options['field']]['foreign_key']) {
+									if (in_array($d->options['type'], ['radio', 'select', 'instant-search']) and isset($tableModel->columns[$d->options['field']]) and $tableModel->columns[$d->options['field']]['foreign_key']) {
 										$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
 										foreach ($refTableModel->columns as $ref_k => $ref_f) {
 											if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table'] and $ref_k !== $options['field']) {
