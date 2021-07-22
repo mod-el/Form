@@ -21,7 +21,7 @@ Element.prototype.hasOption = function (i) {
 	});
 };
 
-var setElementValue = function (v, trigger_onchange, use_custom_function) {
+const setElementValue = async function (v, trigger_onchange, use_custom_function) {
 	if (typeof trigger_onchange === 'undefined')
 		trigger_onchange = true;
 	if (typeof use_custom_function === 'undefined')
@@ -97,8 +97,8 @@ function triggerOnChange(field) {
 	}
 }
 
-var basicGetElementValue = function (element) {
-	var v = null;
+const basicGetElementValue = function (element) {
+	let v = null;
 
 	if (element instanceof NodeList) { // Radio
 		v = element.value;
@@ -138,11 +138,11 @@ var basicGetElementValue = function (element) {
 	return v;
 };
 
-var getElementValue = function (direct_value) {
-	if (typeof direct_value === 'undefined')
-		direct_value = false;
+const getElementValue = function (sync) {
+	if (typeof sync === 'undefined')
+		sync = false;
 
-	if (direct_value) {
+	if (sync) {
 		return basicGetElementValue(this);
 	} else {
 		return new Promise((function (element) {
@@ -154,7 +154,7 @@ var getElementValue = function (direct_value) {
 	}
 };
 
-Element.prototype.getValues = function () {
+Element.prototype.getValues = async function () {
 	if (this.nodeName.toLowerCase() !== 'form')
 		return new Promise(function (resolve) {
 			resolve([]);
@@ -188,9 +188,10 @@ Element.prototype.getValues = function () {
 	});
 };
 
-Element.prototype.setValues = function (values, trigger_onchange, mark) {
+Element.prototype.setValues = async function (values, trigger_onchange, mark) {
 	if (this.nodeName.toLowerCase() !== 'form')
 		return false;
+
 	if (typeof trigger_onchange === 'undefined')
 		trigger_onchange = true;
 	if (typeof mark === 'undefined')
