@@ -129,6 +129,8 @@ class Field
 				if (is_array($v)) {
 					$this->options['value'] = $v;
 				} else {
+					if (!is_array($this->options['value']))
+						$this->options['value'] = [];
 					$this->options['value'][$this->model->_Multilang->lang] = $v;
 				}
 			}

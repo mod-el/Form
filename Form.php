@@ -326,8 +326,7 @@ class Form implements \ArrayAccess
 		if (!$className)
 			$className = '\\Model\\Form\\Field';
 
-		$datum = new $className($name, $options);
-		return $datum;
+		return new $className($name, $options);
 	}
 
 	/**
