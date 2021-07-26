@@ -237,22 +237,24 @@ class File extends Field
 			$path = $this->getPath($i, $lang, $pathData);
 			$this->isPathWritable($path);
 
+			$imgConversionOptions = [];
+
 			if (in_array($file['type'], ['image/png', 'image/jpeg', 'image/gif', 'image/x-png', 'image/pjpeg']) and (isset($p['mime']) or isset($p['w']) or isset($p['h']))) {
-				$imgOpt = array();
-
-				if (array_key_exists('mime', $p))
-					$imgOpt['type'] = $p['mime'];
+				if (array_key_exists('mime', $p) and $p['mime'] !== $file['type'])
+					$imgConversionOptions['type'] = $p['mime'];
 				if (array_key_exists('w', $p))
-					$imgOpt['w'] = $p['w'];
+					$imgConversionOptions['w'] = $p['w'];
 				if (array_key_exists('h', $p))
-					$imgOpt['h'] = $p['h'];
+					$imgConversionOptions['h'] = $p['h'];
 				if (array_key_exists('extend', $p))
-					$imgOpt['extend'] = $p['extend'];
+					$imgConversionOptions['extend'] = $p['extend'];
+			}
 
+			if ($imgConversionOptions) {
 				if (!$img)
 					$img = new ImgResize($temp_file);
 
-				if (!$img->save(INCLUDE_PATH . $path, $imgOpt))
+				if (!$img->save(INCLUDE_PATH . $path, $imgConversionOptions))
 					$this->model->error('Unable to save image');
 			} else {
 				switch ($method) {
