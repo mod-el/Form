@@ -358,7 +358,7 @@ function fileSetValue(v, user_triggered) {
 			let filename = v.split('.');
 			if (filename.length > 1) {
 				let ext = filename.pop().toLowerCase();
-				if (ext === 'jpg' || ext === 'jpeg' || ext === 'bmp' || ext === 'png' || ext === 'gif')
+				if (ext === 'jpg' || ext === 'jpeg' || ext === 'bmp' || ext === 'png' || ext === 'gif' || ext === 'svg')
 					isImage = true;
 			}
 
