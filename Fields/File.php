@@ -280,9 +280,8 @@ class File extends Field
 			unset($img);
 		}
 
-		if ($method === 'post') {
+		if ($method === 'post')
 			unlink($temp_file);
-		}
 
 		if ($this->form->options['element'])
 			$this->form->options['element']->save($updateArr);
@@ -429,12 +428,12 @@ class File extends Field
 			if ($this->options['multilang'] and !$lang) {
 				foreach ($this->model->_Multilang->langs as $l) {
 					$path = $this->getPath($i, $l);
-					if (file_exists(INCLUDE_PATH . $path))
+					if (file_exists(INCLUDE_PATH . $path) and !is_dir(INCLUDE_PATH . $path))
 						unlink(INCLUDE_PATH . $path);
 				}
 			} else {
 				$path = $this->getPath($i, $lang);
-				if (file_exists(INCLUDE_PATH . $path))
+				if (file_exists(INCLUDE_PATH . $path) and !is_dir(INCLUDE_PATH . $path))
 					unlink(INCLUDE_PATH . $path);
 			}
 		}
