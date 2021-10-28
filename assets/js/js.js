@@ -1062,6 +1062,33 @@ class Field {
 			return node;
 		}
 	}
+
+	async reloadDependingSelects(trigger_onchange = true) {
+		let node = this.node;
+		if (this.options.multilang)
+			node = node[Object.keys(node)[0]];
+
+		if (!node.getAttribute('data-depending-parent'))
+			return;
+
+		let fields = JSON.parse(node.getAttribute('data-depending-parent'));
+		if (!fields)
+			return;
+
+		let v = await this.getValue();
+
+		let promises = [];
+		for (let f of fields) {
+			let field = this.form.fields.get(f.name);
+			if (!field)
+				continue;
+
+			if (field.reloadOptions)
+				promises.push(field.reloadOptions(this.name, v, trigger_onchange));
+		}
+
+		return Promise.all(promises);
+	}
 }
 
 class FieldDatetime extends Field {
@@ -1268,33 +1295,6 @@ class FieldSelect extends Field {
 		}
 
 		return this.setValue(currentValue, trigger_onchange);
-	}
-
-	async reloadDependingSelects(trigger_onchange = true) {
-		let node = this.node;
-		if (this.options.multilang)
-			node = node[Object.keys(node)[0]];
-
-		if (!node.getAttribute('data-depending-parent'))
-			return;
-
-		let fields = JSON.parse(node.getAttribute('data-depending-parent'));
-		if (!fields)
-			return;
-
-		let v = await this.getValue();
-
-		let promises = [];
-		for (let f of fields) {
-			let field = this.form.fields.get(f.name);
-			if (!field)
-				continue;
-
-			if (field.reloadOptions)
-				promises.push(field.reloadOptions(this.name, v, trigger_onchange));
-		}
-
-		return Promise.all(promises);
 	}
 }
 

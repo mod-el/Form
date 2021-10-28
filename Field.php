@@ -86,9 +86,9 @@ class Field
 
 		if ($this->form) {
 			$current_dataset = $this->form->getDataset();
-			if ($this->options['depending-on'] and isset($current_dataset[$this->options['depending-on']['name']])) {
+			if ($this->options['depending-on'] and isset($current_dataset[$this->options['depending-on']['name']]))
 				$current_dataset[$this->options['depending-on']['name']]->depending_children[] = $this->options['name'];
-			}
+
 			foreach ($current_dataset as $fName => $field) {
 				if ($field->options['depending-on'] === $this->options['name'] and !in_array($fName, $this->depending_children))
 					$this->depending_children[] = $fName;
@@ -97,7 +97,7 @@ class Field
 	}
 
 	/**
-	 * Whene clone, "depending" relationship get wiped
+	 * When cloning, "depending" relationships get wiped
 	 */
 	function __clone()
 	{
@@ -290,9 +290,8 @@ class Field
 			}
 
 			$where = $this->options['where'];
-			if ($this->form and !$ignoreDepending and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
+			if ($this->form and !$ignoreDepending and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']]))
 				$where[$this->options['depending-on']['db']] = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
-			}
 
 			// I only select requested fields, so I can take advantages of eventual db indexes, if any
 			if (!is_string($this->options['text-field']) and is_callable($this->options['text-field'])) {
