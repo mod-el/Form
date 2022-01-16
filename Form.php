@@ -1,16 +1,15 @@
 <?php namespace Model\Form;
 
 use Model\Core\Autoloader;
+use Model\Core\Core;
 use Model\Core\Exception;
 
 class Form implements \ArrayAccess
 {
 	/** @var Field[] */
-	private $dataset = [];
-	/** @var array */
-	public $options = [];
-	/** @var \Model\Core\Core */
-	private $model;
+	private array $dataset = [];
+	public array $options = [];
+	private ?Core $model = null;
 
 	/**
 	 * Form constructor.
@@ -35,7 +34,7 @@ class Form implements \ArrayAccess
 
 		$this->model = $this->options['model'];
 		if ($this->model === null)
-			throw new \Model\Core\Exception('Form class need a model reference!');
+			throw new \Exception('Form class need a model reference!');
 	}
 
 	/**
@@ -354,22 +353,22 @@ class Form implements \ArrayAccess
 	}
 
 	/* ArrayAccess implementations */
-	public function offsetSet($offset, $value)
+	public function offsetSet($offset, $value): void
 	{
 		$this->model->error('Form array is read-only. Please use add method to add a new field.');
 	}
 
-	public function offsetExists($offset)
+	public function offsetExists($offset): bool
 	{
 		return isset($this->dataset[$offset]);
 	}
 
-	public function offsetUnset($offset)
+	public function offsetUnset($offset): void
 	{
 		$this->model->error('Form array is read-only. Please use remove method to delete a field.');
 	}
 
-	public function offsetGet($offset)
+	public function offsetGet($offset): mixed
 	{
 		if (!isset($this->dataset[$offset]))
 			$this->model->error('Index "' . $offset . '" does not exist in the form.');
