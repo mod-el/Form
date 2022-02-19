@@ -22,6 +22,11 @@ class Config extends Module_Config
 		return $type === 'config' ? 'config' : null;
 	}
 
+	public function getConfigData(): ?array
+	{
+		return [];
+	}
+
 	/**
 	 * Clears the cache (only possible configuration for the module at the moment)
 	 *
