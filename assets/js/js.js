@@ -461,10 +461,10 @@ function resizeFileBox(box) {
 	box.style.height = boxH + 'px';
 }
 
-function checkForm(form, mandatory, appendRequired = true) {
+function checkForm(form, mandatory = [], appendRequired = true) {
 	if (appendRequired) {
-		var required = form.querySelectorAll('input[required], select[required], textarea[required]');
-		for (var idx in required) {
+		let required = form.querySelectorAll('input[required], select[required], textarea[required], [data-required="1"]');
+		for (let idx in required) {
 			if (!required.hasOwnProperty(idx))
 				continue;
 			if (required[idx].offsetParent === null)
@@ -475,7 +475,7 @@ function checkForm(form, mandatory, appendRequired = true) {
 	}
 
 	var missings = [];
-	for (var idx in mandatory) {
+	for (let idx in mandatory) {
 		if (!mandatory.hasOwnProperty(idx)) continue;
 		if (mandatory[idx].constructor === Array) {
 			var atLeastOne = false;
@@ -525,7 +525,10 @@ function checkForm(form, mandatory, appendRequired = true) {
 			}
 		}
 
-		alert("Required fields:\n\n" + missingsString.join("\n"))
+		let missing_fields_string = 'Required fields';
+		if (typeof dictionary !== 'undefined' && typeof dictionary.missing_fields !== 'undefined')
+			missing_fields_string = dictionary.missing_fields;
+		alert(missing_fields_string + ":\n\n" + missingsString.join("\n"))
 		return false;
 	} else {
 		return true;
