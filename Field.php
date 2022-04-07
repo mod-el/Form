@@ -1,17 +1,14 @@
 <?php namespace Model\Form;
 
+use Model\Core\Core;
+
 class Field
 {
-	/** @var array */
-	public $options = [];
-	/** @var \Model\Core\Core */
-	protected $model;
-	/** @var Form */
-	protected $form;
-	/** @var array */
-	public $depending_children = [];
-	/** @var array */
-	private $additionalFields = [];
+	public array $options = [];
+	protected Core $model;
+	protected ?Form $form;
+	public array $depending_children = [];
+	private array $additionalFields = [];
 
 	/**
 	 * Field constructor.
@@ -38,6 +35,7 @@ class Field
 			'table' => false,
 			'id-field' => 'id',
 			'text-field' => null,
+			'separator' => ' ',
 			'where' => [],
 			'order_by' => false,
 			'if-null' => '',
@@ -54,8 +52,6 @@ class Field
 		], $options);
 
 		$this->model = $this->options['model'];
-		if ($this->model === null)
-			throw new \Model\Core\Exception('Field class need a model reference!');
 		$this->form = $this->options['form'];
 
 		if ($this->options['multilang'] and !$this->model->isLoaded('Multilang'))
@@ -322,10 +318,10 @@ class Field
 					$options[$id] = $this->options['text-field']($r);
 				} elseif (is_array($this->options['text-field'])) {
 					$multiple_fields = [];
-					foreach ($this->options['text-field'] as $tf) {
+					foreach ($this->options['text-field'] as $tf)
 						$multiple_fields[] = $r[$tf];
-					}
-					$options[$id] = implode(' ', $multiple_fields);
+
+					$options[$id] = implode($this->options['separator'], $multiple_fields);
 				} else {
 					$options[$id] = $r[$this->options['text-field']];
 				}
@@ -627,19 +623,18 @@ class Field
 		switch ($this->options['type']) {
 			case 'password':
 				return 180;
-				break;
+
 			case 'date':
 				return 180;
-				break;
+
 			case 'textarea':
 				return 200;
-				break;
+
 			case 'number':
 				return 100;
-				break;
+
 			default:
 				return 200;
-				break;
 		}
 	}
 
@@ -653,19 +648,24 @@ class Field
 			case 'textarea':
 				$px = 300;
 				break;
+
 			case 'checkbox':
 			case 'radio':
 				$px = 30 + (strlen($this->getLabel()) * 7);
 				break;
+
 			case 'date':
 				$px = 300;
 				break;
+
 			case 'time':
 				$px = 150;
 				break;
+
 			case 'number':
 				$px = 100;
 				break;
+
 			default:
 				if ($this->options['maxlength']) {
 					$px = $this->options['maxlength'] * 5;
@@ -695,13 +695,12 @@ class Field
 		switch ($this->options['type']) {
 			case 'ckeditor':
 				return 4;
-				break;
+
 			case 'textarea':
 				return 3;
-				break;
+
 			default:
 				return 1;
-				break;
 		}
 	}
 
