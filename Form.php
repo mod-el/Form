@@ -133,8 +133,8 @@ class Form implements \ArrayAccess
 					case 'float':
 					case 'double':
 					case 'real':
-						if ($column['foreign_key']) {
-							$fk = $tableModel->foreign_keys[$column['foreign_key']];
+						if ($column['foreign_keys']) {
+							$fk = $column['foreign_keys'][0];
 
 							if (!$options['type']) {
 								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch'))
@@ -149,13 +149,13 @@ class Form implements \ArrayAccess
 
 								$possibleParents = [];
 								foreach ($this->dataset as $d) {
-									if (in_array($d->options['type'], ['radio', 'select', 'instant-search']) and isset($tableModel->columns[$d->options['field']]) and $tableModel->columns[$d->options['field']]['foreign_key']) {
-										$col_fk = $tableModel->foreign_keys[$tableModel->columns[$d->options['field']]['foreign_key']];
+									if (in_array($d->options['type'], ['radio', 'select', 'instant-search']) and isset($tableModel->columns[$d->options['field']]) and $tableModel->columns[$d->options['field']]['foreign_keys']) {
+										$col_fk = $tableModel->columns[$d->options['field']]['foreign_keys'][0];
 										foreach ($refTableModel->columns as $ref_k => $ref_f) {
-											if ($ref_f['foreign_key'] and $refTableModel->foreign_keys[$ref_f['foreign_key']]['ref_table'] === $col_fk['ref_table'] and $ref_k !== $options['field']) {
+											if ($ref_f['foreign_keys'] and $ref_f['foreign_keys'][0]['ref_table'] === $col_fk['ref_table'] and $ref_k !== $options['field']) {
 												$possibleParents[$d->options['name']] = [
 													'datum' => $d,
-													'db' => $refTableModel->foreign_keys[$ref_f['foreign_key']]['column'],
+													'db' => $ref_f['foreign_keys'][0]['column'],
 												];
 												break;
 											}
@@ -240,8 +240,8 @@ class Form implements \ArrayAccess
 						break;
 				}
 
-				if (in_array($options['type'], ['select', 'radio', 'instant-search']) and $column['foreign_key']) {
-					$fk = $tableModel->foreign_keys[$column['foreign_key']];
+				if (in_array($options['type'], ['select', 'radio', 'instant-search']) and $column['foreign_keys']) {
+					$fk = $column['foreign_keys'][0];
 
 					if (!$options['table'])
 						$options['table'] = $fk['ref_table'];
