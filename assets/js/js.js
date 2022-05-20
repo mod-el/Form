@@ -662,6 +662,7 @@ class FormManager {
 	constructor(name, options = {}) {
 		this.name = name;
 		this.version = 1;
+		this.cp_token = null;
 		this.fields = new Map()
 		this.changedValues = {};
 		this.ignore = false;
@@ -699,6 +700,8 @@ class FormManager {
 	async build(cont, data) {
 		if (data.version)
 			this.version = data.version;
+		if (data.cp_token)
+			this.cp_token = data.cp_token;
 
 		for (let k of Object.keys(data.fields)) {
 			let fieldCont = cont.querySelector('[data-fieldplaceholder="' + k + '"]');
