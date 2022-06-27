@@ -520,7 +520,11 @@ function checkForm(form, mandatory = [], appendRequired = true) {
 					}
 				}
 
-				missingsString.push(missings[field]);
+				let fieldId = form[missings[field]].id;
+				if (fieldId && _('label[for="' + fieldId + '"]'))
+					missingsString.push(_('label[for="' + fieldId + '"]').textContent.replace('*', '').trim());
+				else
+					missingsString.push(missings[field]);
 				markFieldAsMandatory(form[missings[field]]);
 			}
 		}
