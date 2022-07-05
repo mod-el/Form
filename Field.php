@@ -498,12 +498,8 @@ class Field
 		if ($this->options['required'] and !isset($attributes['required']))
 			$attributes['required'] = '';
 
-		if ($this->options['token']) {
-			$attributes['data-element'] = $this->getRelevantElement();
-			$attributes['data-table'] = $this->getRelevantTable();
+		if ($this->options['token'])
 			$attributes['data-token'] = $this->makeToken();
-			$attributes['data-additionals'] = json_encode($this->options['additional-fields']);
-		}
 
 		switch ($this->options['type']) {
 			case 'textarea':
@@ -785,16 +781,8 @@ class Field
 			$response['multilang'] = $this->model->_Multilang->langs;
 
 		if ($this->options['token'] or $this->options['depending-on']) {
-			$response['token'] = [
-				'token' => $this->makeToken(),
-				'table' => $this->getRelevantTable(),
-				'element' => $this->getRelevantElement(),
-				'id-field' => $this->options['id-field'],
-				'text-field' => $this->options['text-field'],
-				'order_by' => $this->options['order_by'] ?: null,
-				'where' => json_encode($this->options['where']),
-				'additionals' => json_encode($this->options['additional-fields']),
-			];
+			$response['reloading_data'] = $this->buildTokenData();
+			$response['token'] = $this->makeToken();
 		}
 
 		return $response;
@@ -825,36 +813,44 @@ class Field
 		return $options;
 	}
 
-	private function makeToken(): string
+	private function buildTokenData(): array
 	{
-		$token = [
-			'table' => $this->getRelevantTable(),
-			'element' => $this->getRelevantElement(),
+		$tokenData = [
+			'table' => $this->options['table'],
 			'field' => $this->options['name'],
 			'id-field' => $this->options['id-field'],
 			'text-field' => $this->options['text-field'],
 			'order_by' => $this->options['order_by'] ?: null,
-			'where' => json_encode($this->options['where']),
-			'additionals' => json_encode($this->options['additional-fields']),
-			'token' => $this->model->_RandToken->getToken('Form'),
+			'where' => $this->options['where'],
+			'additionals' => $this->options['additional-fields'],
 		];
 
-		return sha1(json_encode(array_filter($token)));
+		if ($this->options['depending-on']) {
+			$tokenData['db-field'] = $this->options['depending-on']['db'];
+
+			$current_dataset = $this->form->getDataset();
+			if (isset($current_dataset[$this->options['depending-on']['name']])) {
+				$parent_field = $current_dataset[$this->options['depending-on']['name']];
+				$tokenData['parent'] = [
+					'table' => $parent_field->options['table'],
+					'field' => $parent_field->options['name'],
+					'id-field' => $parent_field->options['id-field'],
+					'text-field' => $parent_field->options['text-field'],
+					'order_by' => $parent_field->options['order_by'] ?: null,
+					'where' => $parent_field->options['where'],
+					'options' => !$parent_field->options['table'] ? ($parent_field->options['options'] ?? []) : null,
+					'additionals' => $parent_field->options['additional-fields'],
+				];
+			}
+		}
+
+		return $tokenData;
 	}
 
-	private function getRelevantElement(): ?string
+	public function makeToken(): string
 	{
-		if ($this->form and $this->form->options['element'])
-			return $this->form->options['element']->getClassShortName();
-		else
-			return null;
-	}
-
-	private function getRelevantTable(): ?string
-	{
-		if ($this->form)
-			return $this->form->options['table'] ?: null;
-		else
-			return null;
+		$tokenData = $this->buildTokenData();
+		$tokenData['token'] = $this->model->_RandToken->getToken('Form');
+		return sha1(json_encode(array_filter($tokenData)));
 	}
 }

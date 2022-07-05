@@ -1089,6 +1089,21 @@ $template = ' . var_export($template, true) . ';
 		}
 	}
 
+	public function jsExport(): array
+	{
+		$arr = [
+			'fields' => [],
+			'data' => [],
+		];
+
+		foreach ($this->getDataset() as $k => $d) {
+			$arr['fields'][$k] = $d->getJavascriptDescription();
+			$arr['data'][$k] = $d->getJsValue(false);
+		}
+
+		return $arr;
+	}
+
 	/**
 	 * Validate provided data against the fields in the form; returns true if all correct, returns false or throws an exception in case of errors
 	 *

@@ -1094,7 +1094,7 @@ class Field {
 				continue;
 
 			if (field.reloadOptions)
-				promises.push(field.reloadOptions(this.name, v, trigger_onchange));
+				promises.push(field.reloadOptions(v, trigger_onchange));
 		}
 
 		return Promise.all(promises);
@@ -1254,7 +1254,7 @@ class FieldSelect extends Field {
 		});
 	}
 
-	async reloadOptions(parent_field = null, parent_value = null, trigger_onchange = true, useCache = true) {
+	async reloadOptions(parent_value = null, trigger_onchange = true, useCache = true) {
 		let currentValue = await this.getValue();
 
 		let loading;
@@ -1266,27 +1266,18 @@ class FieldSelect extends Field {
 		}
 
 		let payload = {
-			'table': this.options.token.table || '',
-			'element': this.options.token.element || '',
-			'field': this.name,
-			'id-field': this.options.token['id-field'] || 'id',
-			'text-field': this.options.token['text-field'] ? JSON.stringify(this.options.token['text-field']) : '',
-			'order_by': this.options.token['order_by'] || '',
-			'where': this.options.token['where'] || '',
-			'additionals': this.options.token.additionals || '',
-			'token': this.options.token.token
+			...this.options.reloading_data,
+			token: this.options.token,
 		};
 
-		if (parent_field && parent_value) {
-			payload.parent_field = parent_field;
+		if (parent_value)
 			payload.parent_value = parent_value;
-		}
 
 		let k = JSON.stringify(payload);
 		if (useCache && reloadingOptionsCache.get(k)) {
 			this.setOptions(reloadingOptionsCache.get(k));
 		} else {
-			let response = await ajax(PATH + 'model-form/options', {}, payload);
+			let response = await ajax(PATH + 'model-form/options', {}, payload, {json:  true});
 
 			if (response && response.options) {
 				reloadingOptionsCache.set(k, response.options);

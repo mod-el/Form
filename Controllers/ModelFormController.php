@@ -1,6 +1,8 @@
 <?php namespace Model\Form\Controllers;
 
 use Model\Core\Controller;
+use Model\Core\Model;
+use Model\Form\Form;
 
 class ModelFormController extends Controller
 {
@@ -9,52 +11,45 @@ class ModelFormController extends Controller
 		try {
 			switch ($this->model->getRequest(1)) {
 				case 'options':
-					if (!isset($_POST['element'], $_POST['table'], $_POST['field'], $_POST['token']) or empty($_POST['field']) or empty($_POST['token']))
+					$input = Model::getInput();
+					if (!isset($input['table'], $input['field'], $input['db-field'], $input['parent'], $input['token']) or empty($input['field']) or empty($input['parent']) or empty($input['db-field']) or empty($input['token']))
 						die('Missing data');
 
-					$token = [
-						'table' => $_POST['table'] ?: null,
-						'element' => $_POST['element'] ?: null,
-						'field' => $_POST['field'],
-						'id-field' => $_POST['id-field'] ?: 'id',
-						'text-field' => $_POST['text-field'] ? json_decode($_POST['text-field'], true) : null,
-						'order_by' => $_POST['order_by'] ?: null,
-						'where' => $_POST['where'] ?: '[]',
-						'additionals' => $_POST['additionals'] ?: '[]',
-						'token' => $this->model->_RandToken->getToken('Form'),
-					];
-
-					if (sha1(json_encode(array_filter($token))) !== $_POST['token'])
-						throw new \Exception('Invalid token', 401);
-
-					$dummy = $this->model->_ORM->create(trim($_POST['element']) ?: 'Element', [
-						'table' => $_POST['table'],
+					$form = new Form(['model' => $this->model]);
+					$form->add($input['parent']['field'], [
+						'type' => 'select',
+						'table' => $input['parent']['table'] ?: null,
+						'id-field' => $input['parent']['id-field'] ?: 'id',
+						'text-field' => $input['parent']['text-field'],
+						'order_by' => $input['parent']['order_by'] ?: null,
+						'where' => $input['parent']['where'] ?: [],
+						'options' => $input['parent']['options'] ?? false,
+						'additionals' => $input['parent']['additionals'] ?: [],
 					]);
 
-					if (isset($_POST['parent_field'], $_POST['parent_value']))
-						$dummy->update([$_POST['parent_field'] => $_POST['parent_value']]);
+					$form->add($input['field'], [
+						'type' => 'select',
+						'table' => $input['table'] ?: null,
+						'id-field' => $input['id-field'] ?: 'id',
+						'text-field' => $input['text-field'],
+						'order_by' => $input['order_by'] ?: null,
+						'where' => $input['where'] ?: [],
+						'additionals' => $input['additionals'] ?: [],
+						'depending-on' => [
+							'name' => $input['parent']['field'],
+							'db' => $input['db-field'],
+						],
+					]);
 
-					$form = $dummy->getForm();
+					$token = $form[$input['field']]->makeToken();
+					if ($token !== $input['token'])
+						throw new \Exception('Invalid token', 401);
 
-					if (!$form[$_POST['field']])
-						throw new \Exception('Invalid field');
-
-					if (!in_array($form[$_POST['field']]->options['type'], ['radio', 'select', 'instant-search']))
-						throw new \Exception('Provided field cannot have options');
-
-					if ($token['id-field'])
-						$form[$_POST['field']]->options['id-field'] = $token['id-field'];
-					if ($token['text-field'])
-						$form[$_POST['field']]->options['text-field'] = $token['text-field'];
-					if ($token['order_by'])
-						$form[$_POST['field']]->options['order_by'] = $token['order_by'];
-					if ($token['where'] and $token['where'] !== '[]')
-						$form[$_POST['field']]->options['where'] = json_decode($token['where'], true, 512, JSON_THROW_ON_ERROR);
-					if ($token['additionals'] and $token['additionals'] !== '[]')
-						$form[$_POST['field']]->options['additional-fields'] = json_decode($token['additionals'], true, 512, JSON_THROW_ON_ERROR);
+					if (isset($input['parent_value']))
+						$form[$input['parent']['field']]->setValue($input['parent_value']);
 
 					return [
-						'options' => $form[$_POST['field']]->getFrontendOptions(),
+						'options' => $form[$input['field']]->getFrontendOptions(),
 					];
 				default:
 					throw new \Exception('Unknown action', 404);
