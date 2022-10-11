@@ -321,8 +321,8 @@ class File extends Field
 	{
 		$dir = pathinfo(INCLUDE_PATH . $path, PATHINFO_DIRNAME);
 		$smalldir = pathinfo($path, PATHINFO_DIRNAME);
-		if (!is_dir($dir))
-			$this->model->error('Specified directory "' . $smalldir . '" does not exist');
+		if (!is_dir($dir) and !mkdir($dir, 0775, true))
+			$this->model->error('Couldn\'t create directory "' . $smalldir . '"');
 		if (!is_writable($dir))
 			$this->model->error('Specified directory "' . $smalldir . '" is not writable');
 	}
