@@ -833,7 +833,7 @@ class Field
 			if (isset($current_dataset[$this->options['depending-on']['name']])) {
 				$parent_field = $current_dataset[$this->options['depending-on']['name']];
 				$tokenData['parent'] = [
-					'table' => $parent_field->options['table'],
+					'table' => $parent_field->options['table'] ?: null,
 					'field' => $parent_field->options['name'],
 					'id-field' => $parent_field->options['id-field'],
 					'text-field' => $parent_field->options['text-field'],
