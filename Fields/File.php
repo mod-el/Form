@@ -211,7 +211,7 @@ class File extends Field
 		}
 
 		if ($this->options['multilang'] and $lang) {
-			$multilangTableOptions = $this->model->_Multilang->getTableOptionsFor($this->form->options['table']);
+			$multilangTableOptions = \Model\Multilang\Ml::getTableOptionsFor($this->model->_Db->getConnection(), $this->form->options['table']);
 			$multilangColumns = $multilangTableOptions['fields'];
 		} else {
 			$multilangColumns = [];

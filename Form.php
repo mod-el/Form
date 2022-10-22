@@ -94,26 +94,27 @@ class Form implements \ArrayAccess
 				'group' => '',
 			], $options);
 
-			if ($this->model->isLoaded('Multilang')) {
+			if (class_exists('\\Model\\Multilang\\Ml')) {
+				$mlTables = \Model\Multilang\Ml::getTables($this->model->_Db->getConnection());
 				if ($options['multilang'] === null) {
-					if (isset($this->model->_Multilang->tables[$this->options['table']]) and in_array($options['field'], $this->model->_Multilang->tables[$this->options['table']]['fields']))
+					if (isset($mlTables[$this->options['table']]) and in_array($options['field'], $mlTables[$this->options['table']]['fields']))
 						$options['multilang'] = true;
 					else
 						$options['multilang'] = false;
 				}
 
-				if ($options['multilang'] and $this->options['table'] and !isset($this->model->_Multilang->tables[$this->options['table']]))
+				if ($options['multilang'] and $this->options['table'] and !isset($mlTables[$this->options['table']]))
 					$options['multilang'] = false;
 			} else {
+				$mlTables = [];
 				if ($options['multilang'])
 					$options['multilang'] = false;
 			}
 
-			if ($this->options['table'] and $options['multilang']) {
-				$table = $this->options['table'] . $this->model->_Multilang->tables[$this->options['table']]['suffix'];
-			} else {
+			if ($this->options['table'] and $options['multilang'])
+				$table = $this->options['table'] . $mlTables[$this->options['table']]['table_suffix'];
+			else
 				$table = $this->options['table'];
-			}
 
 			$tableModel = $table ? $this->model->_Db->getTable($table) : false;
 			if ($table and $tableModel === false)
@@ -250,14 +251,19 @@ class Form implements \ArrayAccess
 						$options['id-field'] = $fk['ref_column'];
 
 					if (!$options['text-field']) {
+						$db = $this->model->_Db->getConnection();
+
 						$options['text-field'] = null;
-						$ref_table = $this->model->_Db->getTable($options['table']);
+						$ref_table = $db->getTable($options['table']);
 						$refTable_columns = $ref_table->columns;
 
-						if ($this->model->isLoaded('Multilang') and array_key_exists($options['table'], $this->model->_Multilang->tables)) {
-							$ref_ml_table = $this->model->_Db->getTable($options['table'] . $this->model->_Multilang->tables[$options['table']]['suffix']);
-							foreach ($this->model->_Multilang->tables[$options['table']]['fields'] as $ref_ck)
-								$refTable_columns[$ref_ck] = $ref_ml_table->columns[$ref_ck];
+						if (class_exists('\\Model\\Multilang\\Ml')) {
+							$mlTables = \Model\Multilang\Ml::getTables($db);
+							if (isset($mlTables[$options['table']])) {
+								$ref_ml_table = $db->getTable($options['table'] . $mlTables[$options['table']]['table_suffix']);
+								foreach ($mlTables[$options['table']]['fields'] as $ref_ck)
+									$refTable_columns[$ref_ck] = $ref_ml_table->columns[$ref_ck];
+							}
 						}
 
 						foreach ($refTable_columns as $ref_ck => $ref_cc) {
