@@ -54,7 +54,7 @@ class Field
 		$this->model = $this->options['model'];
 		$this->form = $this->options['form'];
 
-		if ($this->options['multilang'] and !$this->model->isLoaded('Multilang'))
+		if ($this->options['multilang'] and !class_exists('\\Model\\Multilang\\Ml'))
 			$this->options['multilang'] = false;
 
 		if ($this->options['value'] === false and $this->options['default'] !== false)
@@ -384,7 +384,7 @@ class Field
 				$originalName = $attributes['name'];
 
 				echo '<div class="multilang-field-container">';
-				foreach ($this->model->_Multilang->langs as $lang) {
+				foreach (\Model\Multilang\Ml::getLangs() as $lang) {
 					echo '<div data-lang="' . $lang . '" style="' . ($lang !== $def_lang ? 'display: none' : '') . '">';
 					$attributes['name'] = $originalName . '-' . $lang;
 					$attributes['data-lang'] = $lang;
@@ -395,7 +395,7 @@ class Field
 				echo '<div class="multilang-field-lang-container">';
 				echo '<a href="#" onclick="switchFieldLang(this.parentNode.parentNode, \'' . $def_lang . '\'); return false" data-lang="' . $def_lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $def_lang . '.png" alt="" /></a>';
 				echo '<div class="multilang-field-other-langs-container">';
-				foreach ($this->model->_Multilang->langs as $lang) {
+				foreach (\Model\Multilang\Ml::getLangs() as $lang) {
 					if ($lang === $def_lang)
 						continue;
 					echo '<a href="#" onclick="switchFieldLang(this.parentNode.parentNode.parentNode, \'' . $lang . '\'); return false" data-lang="' . $lang . '"><img src="' . PATH . 'model/Form/assets/img/langs/' . $lang . '.png" alt="" /></a>';
@@ -777,8 +777,8 @@ class Field
 		if ($this->options['if-null'])
 			$response['if-null'] = $this->options['if-null'];
 
-		if ($this->options['multilang'] and $this->model->isLoaded('Multilang'))
-			$response['multilang'] = $this->model->_Multilang->langs;
+		if ($this->options['multilang'] and class_exists('\\Model\\Multilang\\Ml'))
+			$response['multilang'] = \Model\Multilang\Ml::getLangs();
 
 		if ($this->options['token'] or $this->options['depending-on']) {
 			$response['reloading_data'] = $this->buildTokenData();

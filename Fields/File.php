@@ -124,23 +124,21 @@ class File extends Field
 	{
 		if ($this->options['multilang'] and $lang === false) {
 			$values = [];
-			foreach ($this->model->_Multilang->langs as $l) {
-				if ($this->fileExists($l)) {
+			foreach (\Model\Multilang\Ml::getLangs() as $l) {
+				if ($this->fileExists($l))
 					$values[$l] = $this->getPath(null, $l);
-				} else {
+				else
 					$values[$l] = null;
-				}
 			}
 			return $values;
 		} else {
 			if (!$lang and $this->model->moduleExists('Multilang'))
 				$lang = $this->model->_Multilang->lang;
 
-			if ($this->fileExists($lang)) {
+			if ($this->fileExists($lang))
 				return $this->getPath(null, $lang);
-			} else {
+			else
 				return null;
-			}
 		}
 	}
 
@@ -158,7 +156,7 @@ class File extends Field
 
 		if ($this->options['multilang']) {
 			$saving = true;
-			foreach ($this->model->_Multilang->langs as $lang) {
+			foreach (\Model\Multilang\Ml::getLangs() as $lang) {
 				if (is_array($data) and array_key_exists($lang, $data)) {
 					if (!$this->saveWithLang($data[$lang], $lang))
 						$saving = false;
@@ -394,9 +392,8 @@ class File extends Field
 		$paths = [];
 		foreach ($this->paths as $i => $p) {
 			if ($this->options['multilang']) {
-				foreach ($this->model->_Multilang->langs as $lang) {
+				foreach (\Model\Multilang\Ml::getLangs() as $lang)
 					$paths[$i . '-' . $lang] = $this->getPath($i, $lang);
-				}
 			} else {
 				$paths[$i] = $this->getPath($i);
 			}
@@ -419,14 +416,14 @@ class File extends Field
 	}
 
 	/**
-	 * @param string $lang
+	 * @param string|null $lang
 	 * @return bool
 	 */
 	public function delete(string $lang = null): bool
 	{
 		foreach ($this->paths as $i => $p) {
 			if ($this->options['multilang'] and !$lang) {
-				foreach ($this->model->_Multilang->langs as $l) {
+				foreach (\Model\Multilang\Ml::getLangs() as $l) {
 					$path = $this->getPath($i, $l);
 					if (file_exists(INCLUDE_PATH . $path) and !is_dir(INCLUDE_PATH . $path))
 						unlink(INCLUDE_PATH . $path);
