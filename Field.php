@@ -127,7 +127,7 @@ class Field
 				} else {
 					if (!is_array($this->options['value']))
 						$this->options['value'] = [];
-					$this->options['value'][$this->model->_Multilang->lang] = $v;
+					$this->options['value'][\Model\Multilang\Ml::getLang()] = $v;
 				}
 			}
 		} else {
@@ -153,7 +153,7 @@ class Field
 				return $this->options['value'];
 			} else {
 				if ($lang === null)
-					$lang = $this->model->_Multilang->lang;
+					$lang = \Model\Multilang\Ml::getLang();
 				if (isset($this->options['value'][$lang]))
 					return $this->options['value'][$lang];
 				else
