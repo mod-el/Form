@@ -6,13 +6,13 @@ use Model\ImgResize\ImgResize;
 class File extends Field
 {
 	/** @var array[] */
-	protected $paths = [];
+	protected array $paths = [];
 
 	/**
 	 * Class File constructor.
 	 * @param string $nome
 	 * @param array $options
-	 * @throws \Model\Core\Exception
+	 * @throws \Exception
 	 */
 	public function __construct(string $nome, array $options = [])
 	{
@@ -143,16 +143,14 @@ class File extends Field
 	}
 
 	/**
-	 * @param mixed $data
+	 * @param array|null $data
 	 * @return bool
 	 * @throws \Exception
-	 * @throws \Model\Core\Exception
 	 */
-	public function save($data = null): bool
+	public function save(?array $data = null): bool
 	{
-		if ($data === null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error'] === 0) {
+		if ($data === null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error'] === 0)
 			$data = $this->reArrayFiles($_FILES[$this->options['name']]);
-		}
 
 		if ($this->options['multilang']) {
 			$saving = true;
@@ -169,17 +167,16 @@ class File extends Field
 	}
 
 	/**
-	 * @param array $data
-	 * @param string $lang
+	 * @param array|null $data
+	 * @param string|null $lang
 	 * @return bool
 	 * @throws \Exception
-	 * @throws \Model\Core\Exception
 	 */
 	private function saveWithLang(array $data = null, string $lang = null): bool
 	{
-		if ($data === null) {
+		if ($data === null)
 			return $this->delete($lang);
-		}
+
 		if (!$data)
 			return true;
 
@@ -197,6 +194,9 @@ class File extends Field
 		if (isset($file['tmp_name'])) {
 			$temp_file = $file['tmp_name'];
 			$method = 'file';
+		} elseif (isset($file['admin_upload'])) {
+			$temp_file = INCLUDE_PATH . 'app-data' . DIRECTORY_SEPARATOR . 'temp-admin-files' . DIRECTORY_SEPARATOR . $file['admin_upload'];
+			$method = 'post';
 		} elseif (isset($file['file'])) {
 			$temp_file = INCLUDE_PATH . 'app-data' . DIRECTORY_SEPARATOR . $this->model->_User_Admin->id . ($fileext ? '.' . $fileext : ''); // TODO: svincolarlo dall'admin
 			$scrittura = file_put_contents($temp_file, base64_decode($file['file']));
