@@ -143,11 +143,11 @@ class File extends Field
 	}
 
 	/**
-	 * @param array|null $data
+	 * @param mixed $data
 	 * @return bool
 	 * @throws \Exception
 	 */
-	public function save(?array $data = null): bool
+	public function save(mixed $data = null): bool
 	{
 		if ($data === null and isset($_FILES[$this->options['name']]) and $_FILES[$this->options['name']]['error'] === 0)
 			$data = $this->reArrayFiles($_FILES[$this->options['name']]);

@@ -701,10 +701,10 @@ class Field
 	}
 
 	/**
-	 * @param array|null $data
+	 * @param mixed $data
 	 * @return bool
 	 */
-	public function save(?array $data = null): bool
+	public function save(mixed $data = null): bool
 	{
 		return true;
 	}
