@@ -1,6 +1,7 @@
 <?php namespace Model\Form;
 
 use Model\Core\Core;
+use Model\Db\Db;
 
 class Field
 {
@@ -278,16 +279,22 @@ class Field
 			if ($this->options['order_by'] !== false) {
 				$qry_options['order_by'] = $this->options['order_by'];
 			} else {
-				if (is_array($this->options['text-field'])) {
-					$qry_options['order_by'] = implode(',', $this->options['text-field']);
-				} elseif (is_string($this->options['text-field'])) {
+				if (is_array($this->options['text-field']))
 					$qry_options['order_by'] = $this->options['text-field'];
-				}
+				elseif (is_string($this->options['text-field']))
+					$qry_options['order_by'] = $this->options['text-field'];
 			}
 
 			$where = $this->options['where'];
-			if ($this->form and !$ignoreDepending and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']]))
-				$where[$this->options['depending-on']['db']] = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
+			if ($this->form and !$ignoreDepending and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
+				$parentValue = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
+				if ($parentValue === null) {
+					$tableModel = Db::getConnection()->getTable($this->options['table']);
+					if (!$tableModel->columns[$this->options['depending-on']['db']]['null'])
+						$parentValue = 0;
+				}
+				$where[$this->options['depending-on']['db']] = $parentValue;
+			}
 
 			// I only select requested fields, so I can take advantages of eventual db indexes, if any
 			if (!is_string($this->options['text-field']) and is_callable($this->options['text-field'])) {
