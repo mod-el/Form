@@ -1,7 +1,7 @@
 <?php namespace Model\Form\Fields;
 
 use Model\Form\Field;
-use Model\ImgResize\ImgResize;
+use Model\Images\Image;
 
 class File extends Field
 {
@@ -250,10 +250,9 @@ class File extends Field
 
 			if ($imgConversionOptions) {
 				if (!$img)
-					$img = new ImgResize($temp_file);
+					$img = new Image($temp_file);
 
-				if (!$img->save(INCLUDE_PATH . $path, $imgConversionOptions))
-					$this->model->error('Unable to save image');
+				$img->save(INCLUDE_PATH . $path, $imgConversionOptions);
 			} else {
 				switch ($method) {
 					case 'post':
