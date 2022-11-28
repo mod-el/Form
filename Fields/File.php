@@ -377,10 +377,14 @@ class File extends Field
 	 */
 	private function retrieveFieldWithLang(string $field, string $lang = null): ?string
 	{
-		if ($lang === null or !class_exists('\\Model\\Multilang\\Ml') or $lang === \Model\Multilang\Ml::getLang()) // In case of multilang fields, I have to retrieve the correct field from the database
+		if ($lang === null or !class_exists('\\Model\\Multilang\\Ml') or $lang === \Model\Multilang\Ml::getLang()) {
+			// In case of multilang fields, I have to retrieve the correct field from the database
 			return $this->form->options['element'][$field]; // If the language is the current one, then I just need the element
-		else // If it's not the current language, I'll have to make another query to find out the info in the correct language
-			return $this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['field' => $field, 'lang' => $lang]) ?: null;
+		} else {
+			// If it's not the current language, I'll have to make another query to find out the info in the correct language
+			$check = $this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['lang' => $lang]);
+			return $check ? $check[$field] : null;
+		}
 	}
 
 	/**
