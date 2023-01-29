@@ -95,7 +95,7 @@ class Form implements \ArrayAccess
 			], $options);
 
 			if (class_exists('\\Model\\Multilang\\Ml')) {
-				$mlTables = \Model\Multilang\Ml::getTables($this->model->_Db->getConnection());
+				$mlTables = \Model\Multilang\Ml::getTables(\Model\Db\Db::getConnection());
 				if ($options['multilang'] === null) {
 					if (isset($mlTables[$this->options['table']]) and in_array($options['field'], $mlTables[$this->options['table']]['fields']))
 						$options['multilang'] = true;
@@ -251,7 +251,7 @@ class Form implements \ArrayAccess
 						$options['id-field'] = $fk['ref_column'];
 
 					if (!$options['text-field']) {
-						$db = $this->model->_Db->getConnection();
+						$db = \Model\Db\Db::getConnection();
 
 						$options['text-field'] = null;
 						$ref_table = $db->getTable($options['table']);
