@@ -111,15 +111,14 @@ class Form implements \ArrayAccess
 					$options['multilang'] = false;
 			}
 
+			$db = \Model\Db\Db::getConnection();
+
 			if ($this->options['table'] and $options['multilang'])
 				$table = $this->options['table'] . $mlTables[$this->options['table']]['table_suffix'];
 			else
 				$table = $this->options['table'];
 
-			$tableModel = $table ? $this->model->_Db->getTable($table) : false;
-			if ($table and $tableModel === false)
-				$this->model->error('Missing table model. Please generate cache.');
-
+			$tableModel = $table ? $db->getTable($table) : null;
 			if ($tableModel and isset($tableModel->columns[$options['field']])) {
 				$column = $tableModel->columns[$options['field']];
 				if ($options['nullable'] === null)
@@ -138,7 +137,7 @@ class Form implements \ArrayAccess
 							$fk = $column['foreign_keys'][0];
 
 							if (!$options['type']) {
-								if ($this->model->_Db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch'))
+								if ($db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch'))
 									$options['type'] = 'instant-search';
 								else
 									$options['type'] = 'select';
@@ -146,7 +145,7 @@ class Form implements \ArrayAccess
 
 							if (in_array($options['type'], ['radio', 'select', 'instant-search']) and $options['depending-on'] === null) {
 								$refTable = $options['table'] ?: $fk['ref_table'];
-								$refTableModel = $this->model->_Db->getTable($refTable);
+								$refTableModel = $db->getTable($refTable);
 
 								$possibleParents = [];
 								foreach ($this->dataset as $d) {

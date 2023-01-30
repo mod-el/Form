@@ -382,7 +382,7 @@ class File extends Field
 			return $this->form->options['element'][$field]; // If the language is the current one, then I just need the element
 		} else {
 			// If it's not the current language, I'll have to make another query to find out the info in the correct language
-			$check = $this->model->_Db->select($this->form->options['table'], $this->form->options['element']['id'], ['lang' => $lang]);
+			$check = \Model\Db\Db::getConnection()->select($this->form->options['table'], $this->form->options['element']['id'], ['lang' => $lang]);
 			return $check ? $check[$field] : null;
 		}
 	}

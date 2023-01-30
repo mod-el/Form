@@ -282,7 +282,7 @@ class Field
 				if (is_array($this->options['text-field']))
 					$qry_options['order_by'] = $this->options['text-field'];
 				elseif (is_string($this->options['text-field']))
-					$qry_options['order_by'] = $this->options['text-field'];
+					$qry_options['order_by'] = [$this->options['text-field']];
 			}
 
 			$where = $this->options['where'];
@@ -315,7 +315,7 @@ class Field
 			if ($qry_options['fields'])
 				$qry_options['fields'] = array_unique(array_merge($qry_options['fields'], $this->options['additional-fields']));
 
-			$q = $this->model->_Db->select_all($this->options['table'], $where, $qry_options);
+			$q = \Model\Db\Db::getConnection()->selectAll($this->options['table'], $where, $qry_options);
 			foreach ($q as $r) {
 				// I take the id field
 				$id = $r[$this->options['id-field']];
