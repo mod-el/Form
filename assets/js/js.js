@@ -665,7 +665,6 @@ function buildFormField(name, options = {}) {
 class FormManager {
 	constructor(name, options = {}) {
 		this.name = name;
-		this.version = 1;
 		this.cp_token = null;
 		this.fields = new Map()
 		this.changedValues = {};
@@ -702,8 +701,6 @@ class FormManager {
 	}
 
 	async build(cont, data) {
-		if (data.version)
-			this.version = data.version;
 		if (data.cp_token)
 			this.cp_token = data.cp_token;
 
