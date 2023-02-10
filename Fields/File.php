@@ -227,7 +227,7 @@ class File extends Field
 		}
 
 		if ($this->form->options['element'])
-			$this->form->options['element']->update($updateArr);
+			$this->form->options['element']->save($updateArr, ['afterSave' => false]);
 
 		$img = false;
 
