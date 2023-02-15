@@ -111,14 +111,14 @@ class Form implements \ArrayAccess
 					$options['multilang'] = false;
 			}
 
-			$db = \Model\Db\Db::getConnection();
+			$db = class_exists('\\Model\\Db\\Db') ? \Model\Db\Db::getConnection() : null;
 
 			if ($this->options['table'] and $options['multilang'])
 				$table = $this->options['table'] . $mlTables[$this->options['table']]['table_suffix'];
 			else
 				$table = $this->options['table'];
 
-			$tableModel = $table ? $db->getTable($table) : null;
+			$tableModel = ($db and $table) ? $db->getTable($table) : null;
 			if ($tableModel and isset($tableModel->columns[$options['field']])) {
 				$column = $tableModel->columns[$options['field']];
 				if ($options['nullable'] === null)
@@ -250,8 +250,6 @@ class Form implements \ArrayAccess
 						$options['id-field'] = $fk['ref_column'];
 
 					if (!$options['text-field']) {
-						$db = \Model\Db\Db::getConnection();
-
 						$options['text-field'] = null;
 						$ref_table = $db->getTable($options['table']);
 						$refTable_columns = $ref_table->columns;
