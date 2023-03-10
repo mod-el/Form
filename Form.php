@@ -136,14 +136,7 @@ class Form implements \ArrayAccess
 						if ($column['foreign_keys']) {
 							$fk = $column['foreign_keys'][0];
 
-							if (!$options['type']) {
-								if ($db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch'))
-									$options['type'] = 'instant-search';
-								else
-									$options['type'] = 'select';
-							}
-
-							if (in_array($options['type'], ['radio', 'select', 'instant-search']) and $options['depending-on'] === null) {
+							if ((!$options['type'] or in_array($options['type'], ['radio', 'select', 'instant-search'])) and $options['depending-on'] === null) {
 								$refTable = $options['table'] ?: $fk['ref_table'];
 								$refTableModel = $db->getTable($refTable);
 
@@ -179,6 +172,13 @@ class Form implements \ArrayAccess
 									$options['depending-on']['name'] = $options['depending-on']['datum']->options['name'];
 									unset($options['depending-on']['datum']);
 								}
+							}
+
+							if (!$options['type']) {
+								if ($db->count($fk['ref_table'], $options['where']) > 50 and !$options['depending-on'] and $this->model->moduleExists('InstantSearch'))
+									$options['type'] = 'instant-search';
+								else
+									$options['type'] = 'select';
 							}
 						} else {
 							if (!$options['type'])
