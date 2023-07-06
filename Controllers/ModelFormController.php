@@ -12,21 +12,23 @@ class ModelFormController extends Controller
 			switch ($this->model->getRequest(1)) {
 				case 'options':
 					$input = Model::getInput();
-					if (!isset($input['table'], $input['field'], $input['db-field'], $input['parent'], $input['token']) or empty($input['field']) or empty($input['parent']) or empty($input['db-field']) or empty($input['token']))
+					if (!isset($input['table'], $input['field'], $input['token']) or empty($input['field']) or empty($input['token']))
 						die('Missing data');
 
 					$form = new Form(['model' => $this->model]);
-					$form->add($input['parent']['field'], [
-						'type' => 'select',
-						'table' => $input['parent']['table'] ?: null,
-						'id-field' => $input['parent']['id-field'] ?: 'id',
-						'text-field' => $input['parent']['text-field'],
-						'separator' => $input['parent']['separator'],
-						'order_by' => $input['parent']['order_by'] ?: null,
-						'where' => $input['parent']['where'] ?: [],
-						'options' => $input['parent']['options'] ?? false,
-						'additionals' => $input['parent']['additionals'] ?: [],
-					]);
+					if (!empty($input['parent'])) {
+						$form->add($input['parent']['field'], [
+							'type' => 'select',
+							'table' => $input['parent']['table'] ?: null,
+							'id-field' => $input['parent']['id-field'] ?: 'id',
+							'text-field' => $input['parent']['text-field'],
+							'separator' => $input['parent']['separator'],
+							'order_by' => $input['parent']['order_by'] ?: null,
+							'where' => $input['parent']['where'] ?: [],
+							'options' => $input['parent']['options'] ?? false,
+							'additionals' => $input['parent']['additionals'] ?: [],
+						]);
+					}
 
 					$form->add($input['field'], [
 						'type' => 'select',
@@ -37,10 +39,10 @@ class ModelFormController extends Controller
 						'order_by' => $input['order_by'] ?: null,
 						'where' => $input['where'] ?: [],
 						'additionals' => $input['additionals'] ?: [],
-						'depending-on' => [
+						'depending-on' => (!empty($input['parent']) and !empty($input['db-field'])) ? [
 							'name' => $input['parent']['field'],
 							'db' => $input['db-field'],
-						],
+						] : null,
 					]);
 
 					$token = $form[$input['field']]->makeToken();
