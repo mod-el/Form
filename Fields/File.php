@@ -20,9 +20,9 @@ class File extends Field
 			$options = ['path' => $options];
 
 		if (isset($options['path'])) {
-			$options['paths'] = array(
-				array('path' => $options['path']),
-			);
+			$options['paths'] = [
+				['path' => $options['path']],
+			];
 			unset($options['path']);
 
 			if (isset($options['mime'])) {
@@ -44,7 +44,8 @@ class File extends Field
 			'paths' => [], // Paths where the file has to be stored (can be multiple paths and, in case of images, stored in different sizes and formats)
 			'ext_db' => false, // If the extension of the file is not costant, you need to save it in a database field; specify here the column name
 			'name_db' => false, // Need to save the name of the file, also?
-			'accepted' => false, // Accept only some file types?
+			'accepted' => null, // Accepts only some file types?
+			'accepted_ext' => null, // Accepts only some extensions?
 			'external' => null, // There is a db field to optionally retrieve the image from an external url?
 		], $options);
 
@@ -185,11 +186,14 @@ class File extends Field
 		if (!isset($file['name'], $file['type']))
 			return false;
 
-		if ($this->options['accepted'] and !in_array($file['type'], $this->options['accepted']))
-			$this->model->error('Unaccepted file format');
-
 		$filename = pathinfo($file['name'], PATHINFO_FILENAME);
 		$fileext = pathinfo($file['name'], PATHINFO_EXTENSION);
+
+		if ($this->options['accepted'] and !in_array($file['type'], $this->options['accepted']))
+			$this->model->error('Unaccepted file format (' . $file['type'] . ')');
+
+		if ($this->options['accepted_ext'] and !in_array($fileext, $this->options['accepted_ext']))
+			$this->model->error('Unaccepted file type (' . $fileext . ')');
 
 		if (isset($file['tmp_name'])) {
 			$temp_file = $file['tmp_name'];
