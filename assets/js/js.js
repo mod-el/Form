@@ -337,6 +337,8 @@ function fileSetValue(v, user_triggered) {
 		user_triggered = true;
 
 	var mainBox = this.parentNode;
+	if (mainBox.classList.contains('file-input-cnt')) mainBox = mainBox.parentNode;
+
 	var fileBoxCont = mainBox.querySelector('.file-box-cont');
 	var fileBox = mainBox.querySelector('[data-file-cont]');
 	var fileTools = mainBox.querySelector('.file-tools');
@@ -348,6 +350,7 @@ function fileSetValue(v, user_triggered) {
 		v = null;
 
 	if (v) {
+		if (!mainBox.classList.contains('has-file')) mainBox.classList.add('has-file');
 		fileBoxCont.style.display = 'block';
 		fileTools.style.display = 'block';
 		this.style.display = 'none';
@@ -395,6 +398,7 @@ function fileSetValue(v, user_triggered) {
 			})(this));
 		}
 	} else {
+		if (mainBox.classList.contains('has-file')) mainBox.classList.remove('has-file');
 		fileTools.style.display = 'none';
 		fileBoxCont.style.display = 'none';
 		fileBox.removeAttribute('data-file-path');
@@ -1274,7 +1278,7 @@ class FieldSelect extends Field {
 		if (useCache && reloadingOptionsCache.get(k)) {
 			this.setOptions(reloadingOptionsCache.get(k));
 		} else {
-			let response = await ajax(PATH + 'model-form/options', {}, payload, {json:  true});
+			let response = await ajax(PATH + 'model-form/options', {}, payload, {json: true});
 
 			if (response && response.options) {
 				reloadingOptionsCache.set(k, response.options);
@@ -1301,6 +1305,7 @@ class FieldFile extends Field {
 		super(name, options);
 
 		this.cont = null;
+		this.input = null;
 
 		this.addEventListener('append', () => {
 			if (this.cont && this.cont.querySelector('.file-box'))
@@ -1308,10 +1313,33 @@ class FieldFile extends Field {
 		});
 	}
 
-	getSingleNode(lang = null) {
-		let attributes = this.options['attributes'];
+	getDragAndDropOptions(attributes = {}) {
+		let options = {};
 
+		if (attributes.hasOwnProperty('drag-and-drop-area')) {
+			options['drag-and-drop-area'] = attributes['drag-and-drop-area'];
+			delete attributes['drag-and-drop-area'];
+		} else
+			options['drag-and-drop-area'] = false;
+
+		if (attributes.hasOwnProperty('drag-and-drop')) {
+			options['drag-and-drop'] = attributes['drag-and-drop'];
+			delete attributes['drag-and-drop'];
+		} else
+			options['drag-and-drop'] = true;
+
+		if (attributes.hasOwnProperty('copy-and-past')) {
+			options['copy-and-past'] = attributes['copy-and-past'];
+			delete attributes['copy-and-past'];
+		} else
+			options['copy-and-past'] = false;
+
+		return options;
+	}
+
+	getBoxAttributes(attributes = {}) {
 		let boxAttributes = {};
+
 		if (attributes.hasOwnProperty('style')) {
 			boxAttributes.style = attributes.style;
 			delete attributes.style;
@@ -1321,29 +1349,116 @@ class FieldFile extends Field {
 			delete attributes.class;
 		}
 
+		return boxAttributes;
+	}
+
+	getSingleNode(lang = null) {
+		let attributes = this.options['attributes'];
+
+		let boxAttributes = this.getBoxAttributes(attributes);
+		let ddOptions = this.getDragAndDropOptions(attributes);
+
 		this.cont = document.createElement('div');
 		this.cont.setAttribute('data-file-box', this.name);
 
-		let input = document.createElement('input');
-		input.type = 'file';
-		input.name = this.name;
-		input.setAttribute('data-getvalue-function', 'fileGetValue');
-		input.setAttribute('data-setvalue-function', 'fileSetValue');
-		input.addEventListener('change', function () {
+		this.setupInput(attributes, lang);
+		this.setupDragAndDrop(ddOptions);
+		this.addBoxToContainer(boxAttributes);
+		this.addToolsToContainer();
+
+		return this.cont;
+	}
+
+	setupDragAndDrop(options = {}) {
+		if (!options['drag-and-drop']) return;
+
+		this.cont.classList.add('file-dd');
+
+		// Impedisce il comportamento predefinito di navigare quando si trascina un file
+		['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+			this.cont.addEventListener(eventName, (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+			}, false);
+		});
+
+		// Evidenzia l'area di drop quando il file viene trascinato sopra
+		['dragenter', 'dragover'].forEach(eventName => {
+			this.cont.addEventListener(eventName, () => this.cont.classList.add('file-dd-highlight'), false);
+		});
+
+		['dragleave', 'drop'].forEach(eventName => {
+			this.cont.addEventListener(eventName, () => this.cont.classList.remove('file-dd-highlight'), false);
+		});
+
+		const handleFiles = (files = []) => {
+			if (files.length <= 0) return;
+			const list = new DataTransfer();
+			list.items.add(files[0]);
+			this.input.files = list.files;
+			this.input.dispatchEvent(new Event('change'));
+		};
+
+		this.cont.addEventListener('drop', (e) => {
+			let dt = e.dataTransfer;
+			let files = [...(dt.files || [])];
+			handleFiles(files);
+		}, false);
+
+		const hasDdArea = options['drag-and-drop-area'];
+
+		if (hasDdArea) {
+			const area = document.createElement('div');
+			area.className = 'file-dd-area';
+			area.innerText = 'Trascina e rilascia un file per caricare';
+			area.addEventListener('click', () => this.input.click());
+			this.cont.insertBefore(area, this.cont.firstChild);
+		} else {
+			this.cont.classList.add('file-dd-no-area');
+		}
+
+		const hasCopyAndPast = options['copy-and-past'];
+
+		if (hasCopyAndPast) {
+			document.addEventListener('paste', (e) => {
+				const items = (e.clipboardData || window.clipboardData).items;
+				for (let item of items) {
+					if (item.kind === 'file') {
+						const file = item.getAsFile();
+						handleFiles([file]);
+					}
+				}
+			}, false);
+		}
+
+	}
+
+	setupInput(attributes = {}, lang = null) {
+		this.input = document.createElement('input');
+		this.input.type = 'file';
+		this.input.name = this.name;
+		this.input.setAttribute('data-getvalue-function', 'fileGetValue');
+		this.input.setAttribute('data-setvalue-function', 'fileSetValue');
+		this.input.addEventListener('change', function () {
 			if (typeof this.files[0] !== 'undefined')
 				fileSetValue.call(this, this.files[0]);
 		});
 
-		super.assignAttributes(input, attributes);
-		super.assignEvents(input, attributes, lang);
+		super.assignAttributes(this.input, attributes);
+		super.assignEvents(this.input, attributes, lang);
 
-		this.cont.appendChild(input);
+		const cnt = document.createElement('div');
+		cnt.className = 'file-input-cnt';
+		cnt.appendChild(this.input);
+		this.cont.appendChild(cnt);
+	}
+
+	addBoxToContainer(attributes = {}) {
 
 		let box = document.createElement('div');
 		box.className = 'file-box-cont';
 		box.style.display = 'none';
-		super.assignAttributes(box, boxAttributes);
-		this.cont.appendChild(box);
+		super.assignAttributes(box, attributes);
 
 		let innerBox = document.createElement('div');
 		innerBox.className = 'file-box';
@@ -1353,11 +1468,15 @@ class FieldFile extends Field {
 			if (innerBox.hasAttribute('data-file-path'))
 				window.open(innerBox.getAttribute('data-file-path'));
 			else
-				input.click();
+				this.input.click();
 		});
 		innerBox.innerHTML = 'Upload';
 		box.appendChild(innerBox);
 
+		this.cont.appendChild(box);
+	}
+
+	addToolsToContainer() {
 		let tools = document.createElement('div');
 		tools.className = 'file-tools';
 		tools.style.display = 'none';
@@ -1367,7 +1486,7 @@ class FieldFile extends Field {
 		newTool.addEventListener('click', event => {
 			event.preventDefault();
 			emptyExternalFileInput(this.cont);
-			input.click();
+			this.input.click();
 		});
 		newTool.innerHTML = '<img src="' + PATHBASE + 'model/Form/assets/img/upload.png" alt="" /> Carica nuovo';
 		tools.appendChild(newTool);
@@ -1385,8 +1504,6 @@ class FieldFile extends Field {
 		tools.appendChild(deleteTool);
 
 		this.cont.appendChild(tools);
-
-		return this.cont;
 	}
 
 	async setValue(v, trigger = true) {
