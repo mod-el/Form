@@ -192,7 +192,7 @@ class File extends Field
 		if ($this->options['accepted'] and !in_array($file['type'], $this->options['accepted']))
 			$this->model->error('Unaccepted file format (' . $file['type'] . ')');
 
-		if ($this->options['accepted_ext'] and !in_array($fileext, $this->options['accepted_ext']))
+		if ($this->options['accepted_ext'] and !in_array(strtolower($fileext), $this->options['accepted_ext']))
 			$this->model->error('Unaccepted file type (' . $fileext . ')');
 
 		if (isset($file['tmp_name'])) {
