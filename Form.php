@@ -961,10 +961,10 @@ $template = ' . var_export($template, true) . ';
 	 *
 	 * @param int $w
 	 * @param array $fields
-	 * @param int $maxRows
+	 * @param int|null $maxRows
 	 * @return array
 	 */
-	private function putFieldsInContainers(int $w, array &$fields, int $maxRows = null): array
+	private function putFieldsInContainers(int $w, array &$fields, ?int $maxRows = null): array
 	{
 		$conts = [];
 

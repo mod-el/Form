@@ -96,7 +96,7 @@ class Field
 	/**
 	 * When cloning, "depending" relationships get wiped
 	 */
-	function __clone()
+	public function __clone()
 	{
 		$this->depending_children = [];
 		$this->options['depending-on'] = null;
@@ -105,7 +105,7 @@ class Field
 	/**
 	 * @param Form $form
 	 */
-	public function setForm(Form $form)
+	public function setForm(Form $form): void
 	{
 		$this->options['form'] = $form;
 		$this->form = $form;
@@ -115,9 +115,9 @@ class Field
 	 * Sets the current value
 	 *
 	 * @param mixed $v
-	 * @param string $lang
+	 * @param string|null $lang
 	 */
-	public function setValue($v, string $lang = null)
+	public function setValue(mixed $v, ?string $lang = null): void
 	{
 		if ($this->options['multilang']) {
 			if ($lang) {
@@ -141,10 +141,10 @@ class Field
 	 * ("password" type fields are never showed in the form)
 	 * For multilang fields, if no $lang is passed, the current one will be used; if false is passed, an array with all languages will be returned
 	 *
-	 * @param string|bool $lang
+	 * @param string|bool|null $lang
 	 * @return mixed
 	 */
-	public function getValue($lang = null)
+	public function getValue(string|bool|null $lang = null): mixed
 	{
 		if ($this->options['type'] === 'password')
 			return null;
@@ -473,9 +473,9 @@ class Field
 	 * Actually renders the field with a given language (called as many times as the number of languages by render() method)
 	 *
 	 * @param array $attributes
-	 * @param string $lang
+	 * @param string|null $lang
 	 */
-	protected function renderWithLang(array $attributes, string $lang = null)
+	protected function renderWithLang(array $attributes, ?string $lang = null): void
 	{
 		if ($this->form and $this->form->options['print']) {
 			echo entities($this->getText(['lang' => $lang]), true);
@@ -577,7 +577,7 @@ class Field
 	 * @param array $options
 	 * @param mixed $value
 	 */
-	private function renderSelectOptions(array $options, $value)
+	private function renderSelectOptions(array $options, mixed $value): void
 	{
 		foreach ($options as $id => $opt) {
 			if (is_array($opt)) {
@@ -720,7 +720,7 @@ class Field
 	 * @param string|null $lang
 	 * @return bool
 	 */
-	public function delete(string $lang = null): bool
+	public function delete(?string $lang = null): bool
 	{
 		return true;
 	}

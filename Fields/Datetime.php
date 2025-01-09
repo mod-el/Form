@@ -28,7 +28,7 @@ class Datetime extends Field
 	 * @param array $attributes
 	 * @param string|null $lang
 	 */
-	protected function renderWithLang(array $attributes, string $lang = null)
+	protected function renderWithLang(array $attributes, ?string $lang = null): void
 	{
 		$value = $this->getValue($lang);
 		$value = $value ? date_create($value) : null;
