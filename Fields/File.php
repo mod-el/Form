@@ -62,9 +62,9 @@ class File extends Field
 
 	/**
 	 * @param array $attributes
-	 * @param string $lang
+	 * @param string|null $lang
 	 */
-	public function renderWithLang(array $attributes, string $lang = null)
+	protected function renderWithLang(array $attributes, ?string $lang = null): void
 	{
 		$name = $attributes['name'];
 		unset($attributes['name']);

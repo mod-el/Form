@@ -4,7 +4,7 @@ use Model\Form\Field;
 
 class Custom extends Field
 {
-	public function renderWithLang(array $attributes, string $lang = null)
+	protected function renderWithLang(array $attributes, ?string $lang = null): void
 	{
 		echo $this->getText(['lang' => $lang]);
 	}
