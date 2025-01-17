@@ -118,10 +118,10 @@ class File extends Field
 	}
 
 	/**
-	 * @param string $lang
+	 * @param string|bool|null $lang
 	 * @return mixed
 	 */
-	public function getValue($lang = null)
+	public function getValue(string|bool|null $lang = null): mixed
 	{
 		if ($this->options['multilang'] and $lang === false) {
 			$values = [];

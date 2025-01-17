@@ -22,7 +22,7 @@ class Custom extends Field
 		}
 	}
 
-	public function getValue($lang = null)
+	public function getValue(string|bool|null $lang = null): mixed
 	{
 		return $this->getText(['lang' => $lang]);
 	}
