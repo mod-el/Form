@@ -173,7 +173,7 @@ class File extends Field
 	 * @return bool
 	 * @throws \Exception
 	 */
-	private function saveWithLang(array $data = null, string $lang = null): bool
+	private function saveWithLang(?array $data = null, ?string $lang = null): bool
 	{
 		if ($data === null)
 			return $this->delete($lang);
@@ -329,12 +329,12 @@ class File extends Field
 	}
 
 	/**
-	 * @param int|string $i
-	 * @param string $lang
+	 * @param string|null $i
+	 * @param string|null $lang
 	 * @param array $data
 	 * @return string|null
 	 */
-	public function getPath(string $i = null, string $lang = null, array $data = []): ?string
+	public function getPath(?string $i = null, ?string $lang = null, array $data = []): ?string
 	{
 		if (count($this->paths) === 0)
 			return null;
@@ -379,7 +379,7 @@ class File extends Field
 	 * @param string|null $lang
 	 * @return string|null
 	 */
-	private function retrieveFieldWithLang(string $field, string $lang = null): ?string
+	private function retrieveFieldWithLang(string $field, ?string $lang = null): ?string
 	{
 		if ($lang === null or !class_exists('\\Model\\Multilang\\Ml') or $lang === \Model\Multilang\Ml::getLang()) {
 			// In case of multilang fields, I have to retrieve the correct field from the database
@@ -409,10 +409,10 @@ class File extends Field
 	}
 
 	/**
-	 * @param string $lang
+	 * @param string|null $lang
 	 * @return bool
 	 */
-	public function fileExists(string $lang = null): bool
+	public function fileExists(?string $lang = null): bool
 	{
 		$path = $this->getPath(null, $lang);
 		if ($path === null)
@@ -426,7 +426,7 @@ class File extends Field
 	 * @param string|null $lang
 	 * @return bool
 	 */
-	public function delete(string $lang = null): bool
+	public function delete(?string $lang = null): bool
 	{
 		foreach ($this->paths as $i => $p) {
 			if ($this->options['multilang'] and !$lang) {
