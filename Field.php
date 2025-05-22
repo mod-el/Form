@@ -199,40 +199,36 @@ class Field
 			case 'select':
 			case 'radio':
 				$this->loadSelectOptions();
-				return $this->getTextFromSelect($this->options['options'], $value);
-				break;
+				return $this->getTextFromSelect($this->options['options'], $value) ?: '';
+
 			case 'date':
 				$data = $value ? date_create($value) : false;
 				return $data ? $data->format($options['dateFormat']) : '';
-				break;
+
 			case 'price':
 				switch ($options['priceFormat']) {
 					case 'vd':
 						return number_format($value, 2, ',', '.') . '€';
-						break;
+
 					case 'vp':
 						return '€ ' . number_format($value, 2, ',', '.');
-						break;
+
 					case 'pd':
 						return number_format($value, 2, '.', '') . '€';
-						break;
+
 					case 'pp':
 						return '€ ' . number_format($value, 2, '.', '');
-						break;
 				}
-				break;
+
 			case 'checkbox':
 				return $this->getValue() ? 'Sì' : 'No';
-				break;
+
 			case 'point':
 				return $value[1] . ' - ' . $value[0];
-				break;
-			default:
-				return $value;
-				break;
-		}
 
-		return '';
+			default:
+				return (string)$value;
+		}
 	}
 
 	/**
@@ -240,22 +236,22 @@ class Field
 	 *
 	 * @param array $options
 	 * @param $value
-	 * @return bool|string
+	 * @return string|null
 	 */
-	private function getTextFromSelect(array $options, $value)
+	private function getTextFromSelect(array $options, $value): ?string
 	{
 		foreach ($options as $id => $opt) {
 			if (is_array($opt)) {
 				$text = $this->getTextFromSelect($opt, $value);
-				if ($text !== false)
+				if ($text !== null)
 					return $text;
 			} else {
 				if ((string)$id === (string)$value)
-					return $opt;
+					return $opt ?: '';
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	/**
