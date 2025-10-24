@@ -8,7 +8,7 @@ class RouterProvider extends AbstractRouterProvider
 	{
 		return [
 			[
-				'pattern' => '/model-form',
+				'pattern' => 'model-form',
 				'controller' => 'ModelForm',
 			],
 		];
