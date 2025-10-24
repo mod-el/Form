@@ -44,21 +44,4 @@ class Config extends Module_Config
 		}
 		return true;
 	}
-
-	/**
-	 * Rules for general form actions controller
-	 *
-	 * @return array
-	 */
-	public function getRules(): array
-	{
-		return [
-			'rules' => [
-				'model-form',
-			],
-			'controllers' => [
-				'ModelForm',
-			],
-		];
-	}
 }
