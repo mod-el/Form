@@ -383,7 +383,7 @@ class Field
 				if ($this->options['depending-on'] or $this->depending_children)
 					$this->model->error('Multilang fields cannot be depending on another field, nor have children fields');
 
-				$def_lang = $this->model->_Multilang->options['default'];
+				$def_lang = \Model\Multilang\Ml::getLang();
 				$originalName = $attributes['name'];
 
 				echo '<div class="multilang-field-container">';

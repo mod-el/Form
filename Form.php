@@ -1167,7 +1167,7 @@ $template = ' . var_export($template, true) . ';
 	 */
 	public function renderLangSelector(): void
 	{
-		$def_lang = $this->model->_Multilang->options['default'];
+		$def_lang = \Model\Multilang\Ml::getLang();
 
 		echo '<div class="lang-switch-cont">';
 		foreach (\Model\Multilang\Ml::getLangs() as $l)
