@@ -201,6 +201,15 @@ class File extends Field
 		} elseif (isset($file['admin_upload'])) {
 			$temp_file = INCLUDE_PATH . 'app-data' . DIRECTORY_SEPARATOR . 'temp-admin-files' . DIRECTORY_SEPARATOR . $file['admin_upload'];
 			$method = 'post';
+
+			$attempts = 0;
+			while (!file_exists($temp_file)) {
+				sleep(1); // In some cases, the file is not immediately available (network filesystems, etc.); wait a second and try again
+				$attempts++;
+
+				if ($attempts >= 5)
+					throw new \Exception('Temporary file not found: ' . $temp_file);
+			}
 		} elseif (isset($file['file'])) {
 			$temp_file = INCLUDE_PATH . 'app-data' . DIRECTORY_SEPARATOR . $this->model->_User_Admin->id . ($fileext ? '.' . $fileext : ''); // TODO: svincolarlo dall'admin
 			$scrittura = file_put_contents($temp_file, base64_decode($file['file']));
