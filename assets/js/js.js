@@ -865,6 +865,10 @@ class Field {
 			return {...this.value};
 	}
 
+	async getText() {
+		return this.getValue();
+	}
+
 	focus(lang = null) {
 		this.getNode().then(obj => {
 			let node;
@@ -1199,6 +1203,15 @@ class FieldSelect extends Field {
 		}
 
 		return super.setValue(v, trigger);
+	}
+
+	async getText() {
+		let v = await this.getValue();
+		let option = this.options['options'].find(option => option.id == v);
+		if (option)
+			return option.text;
+		else
+			return null;
 	}
 
 	getSingleNode(lang = null) {
