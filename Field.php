@@ -353,7 +353,7 @@ class Field
 	public function render(array $attributes = [], bool $return = false): ?string
 	{
 		if ($this->form and $this->form->options['render-only-placeholders']) {
-			$ret = '<div data-fieldplaceholder="' . entities($this->options['name']) . '"></div>';
+			$ret = '<div data-fieldplaceholder="' . entities($this->form->options['placeholders-prefix'] . $this->options['name']) . '"></div>';
 			if ($return) {
 				return $ret;
 			} else {

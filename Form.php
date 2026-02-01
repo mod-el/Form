@@ -29,6 +29,7 @@ class Form implements \ArrayAccess
 			'wrap-names' => null,
 			'print' => false,
 			'render-only-placeholders' => false,
+			'placeholders-prefix' => '',
 			'bootstrap' => false,
 		], $options);
 

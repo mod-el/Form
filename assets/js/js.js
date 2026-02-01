@@ -709,7 +709,7 @@ class FormManager {
 			this.cp_token = data.cp_token;
 
 		for (let k of Object.keys(data.fields)) {
-			let fieldCont = cont.querySelector('[data-fieldplaceholder="' + k + '"]');
+			let fieldCont = cont.querySelector('[data-fieldplaceholder="' + (this.options['placeholders_prefix'] || '') + k + '"]');
 			if (!fieldCont)
 				continue;
 
