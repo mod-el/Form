@@ -335,7 +335,7 @@ function handleFileInputChange() {
 
 function openCropperModal(file, config) {
 	return new Promise(function (resolve) {
-		if (typeof Cropper === 'undefined') {
+		if (typeof customElements === 'undefined' || !customElements.get('cropper-canvas')) {
 			alert('Cropper.js is not loaded');
 			resolve(null);
 			return;
@@ -349,15 +349,71 @@ function openCropperModal(file, config) {
 			const modal = document.createElement('div');
 			modal.className = 'cropper-modal';
 
-			const canvasCnt = document.createElement('div');
-			canvasCnt.className = 'cropper-modal-canvas';
-			const img = document.createElement('img');
-			img.src = e.target.result;
-			img.style.maxWidth = '100%';
-			canvasCnt.appendChild(img);
-
 			const toolbar = document.createElement('div');
 			toolbar.className = 'cropper-modal-toolbar';
+
+			const canvasCnt = document.createElement('div');
+			canvasCnt.className = 'cropper-modal-canvas';
+
+			const ratios = Array.isArray(config.ratios) ? config.ratios : null;
+			let initialAspect = NaN;
+			if (typeof config.aspectRatio === 'number')
+				initialAspect = config.aspectRatio;
+			else if (ratios) {
+				const def = config.default || ratios[0];
+				initialAspect = parseRatio(def);
+			}
+
+			const cropperCanvas = document.createElement('cropper-canvas');
+			cropperCanvas.setAttribute('background', '');
+			cropperCanvas.style.width = '100%';
+			cropperCanvas.style.height = '100%';
+
+			const cropperImage = document.createElement('cropper-image');
+			cropperImage.setAttribute('src', e.target.result);
+			cropperImage.setAttribute('alt', '');
+			cropperImage.setAttribute('rotatable', '');
+			cropperImage.setAttribute('scalable', '');
+			cropperImage.setAttribute('translatable', '');
+
+			const cropperShade = document.createElement('cropper-shade');
+
+			const outerHandle = document.createElement('cropper-handle');
+			outerHandle.setAttribute('action', 'move');
+			outerHandle.setAttribute('plain', '');
+
+			const cropperSelection = document.createElement('cropper-selection');
+			cropperSelection.setAttribute('initial-coverage', '0.8');
+			cropperSelection.setAttribute('movable', '');
+			cropperSelection.setAttribute('resizable', '');
+			if (!isNaN(initialAspect))
+				cropperSelection.setAttribute('aspect-ratio', String(initialAspect));
+
+			const grid = document.createElement('cropper-grid');
+			grid.setAttribute('role', 'grid');
+			grid.setAttribute('covered', '');
+			cropperSelection.appendChild(grid);
+
+			const crosshair = document.createElement('cropper-crosshair');
+			crosshair.setAttribute('centered', '');
+			cropperSelection.appendChild(crosshair);
+
+			const innerMoveHandle = document.createElement('cropper-handle');
+			innerMoveHandle.setAttribute('action', 'move');
+			innerMoveHandle.setAttribute('theme-color', 'rgba(255, 255, 255, 0.35)');
+			cropperSelection.appendChild(innerMoveHandle);
+
+			for (const action of ['n-resize', 'e-resize', 's-resize', 'w-resize', 'ne-resize', 'nw-resize', 'se-resize', 'sw-resize']) {
+				const h = document.createElement('cropper-handle');
+				h.setAttribute('action', action);
+				cropperSelection.appendChild(h);
+			}
+
+			cropperCanvas.appendChild(cropperImage);
+			cropperCanvas.appendChild(cropperShade);
+			cropperCanvas.appendChild(outerHandle);
+			cropperCanvas.appendChild(cropperSelection);
+			canvasCnt.appendChild(cropperCanvas);
 
 			const actions = document.createElement('div');
 			actions.className = 'cropper-modal-actions';
@@ -377,27 +433,6 @@ function openCropperModal(file, config) {
 			overlay.appendChild(modal);
 			document.body.appendChild(overlay);
 
-			const ratios = Array.isArray(config.ratios) ? config.ratios : null;
-			let initialAspect = NaN;
-			if (typeof config.aspectRatio === 'number')
-				initialAspect = config.aspectRatio;
-			else if (ratios) {
-				const def = config.default || ratios[0];
-				initialAspect = parseRatio(def);
-			}
-
-			let cropper;
-			let settled = false;
-
-			img.onload = function () {
-				cropper = new Cropper(img, {
-					aspectRatio: initialAspect,
-					viewMode: 1,
-					autoCropArea: 1,
-					background: false,
-				});
-			};
-
 			if (ratios) {
 				for (const r of ratios) {
 					const btn = document.createElement('button');
@@ -407,8 +442,9 @@ function openCropperModal(file, config) {
 					if (r === (config.default || ratios[0]))
 						btn.classList.add('selected');
 					btn.addEventListener('click', function () {
-						if (!cropper) return;
-						cropper.setAspectRatio(parseRatio(r));
+						const newRatio = parseRatio(r);
+						cropperSelection.aspectRatio = newRatio;
+						cropperSelection.$change(cropperSelection.x, cropperSelection.y, cropperSelection.width, cropperSelection.height, newRatio);
 						const buttons = toolbar.querySelectorAll('button');
 						for (const b of buttons)
 							b.classList.remove('selected');
@@ -418,8 +454,9 @@ function openCropperModal(file, config) {
 				}
 			}
 
+			let settled = false;
+
 			function cleanup() {
-				if (cropper) cropper.destroy();
 				document.removeEventListener('keydown', onKey);
 				if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
 			}
@@ -432,32 +469,30 @@ function openCropperModal(file, config) {
 			}
 
 			function confirm() {
-				if (settled || !cropper) return;
+				if (settled) return;
 
-				if (typeof config.minWidth === 'number' || typeof config.minHeight === 'number') {
-					const data = cropper.getData(true);
-					if (typeof config.minWidth === 'number' && data.width < config.minWidth) {
+				cropperSelection.$toCanvas().then(function (canvas) {
+					if (!canvas) {
+						cancel();
+						return;
+					}
+
+					if (typeof config.minWidth === 'number' && canvas.width < config.minWidth) {
 						alert('L\'area selezionata è troppo piccola (larghezza minima: ' + config.minWidth + 'px)');
 						return;
 					}
-					if (typeof config.minHeight === 'number' && data.height < config.minHeight) {
+					if (typeof config.minHeight === 'number' && canvas.height < config.minHeight) {
 						alert('L\'area selezionata è troppo piccola (altezza minima: ' + config.minHeight + 'px)');
 						return;
 					}
-				}
 
-				const canvas = cropper.getCroppedCanvas();
-				if (!canvas) {
-					cancel();
-					return;
-				}
-
-				const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-				canvas.toBlob(function (blob) {
-					settled = true;
-					cleanup();
-					resolve(blob);
-				}, mime, mime === 'image/jpeg' ? 0.92 : undefined);
+					const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+					canvas.toBlob(function (blob) {
+						settled = true;
+						cleanup();
+						resolve(blob);
+					}, mime, mime === 'image/jpeg' ? 0.92 : undefined);
+				});
 			}
 
 			function onKey(ev) {
