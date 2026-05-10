@@ -370,7 +370,6 @@ function openCropperModal(file, config) {
 			cropperCanvas.style.height = '100%';
 
 			const cropperImage = document.createElement('cropper-image');
-			cropperImage.setAttribute('src', e.target.result);
 			cropperImage.setAttribute('alt', '');
 			cropperImage.setAttribute('rotatable', '');
 			cropperImage.setAttribute('scalable', '');
@@ -414,6 +413,15 @@ function openCropperModal(file, config) {
 			cropperCanvas.appendChild(outerHandle);
 			cropperCanvas.appendChild(cropperSelection);
 			canvasCnt.appendChild(cropperCanvas);
+
+			cropperImage.setAttribute('src', e.target.result);
+			cropperImage.$ready(function () {
+				requestAnimationFrame(function () {
+					cropperImage.$center('contain');
+					cropperSelection.$reset();
+					cropperSelection.$center();
+				});
+			});
 
 			const actions = document.createElement('div');
 			actions.className = 'cropper-modal-actions';
