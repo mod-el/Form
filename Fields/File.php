@@ -107,6 +107,20 @@ class File extends Field
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getJavascriptDescription(): array
+	{
+		$response = parent::getJavascriptDescription();
+
+		$cropperConfig = $this->buildCropperConfig();
+		if ($cropperConfig !== null)
+			$response['cropper'] = $cropperConfig;
+
+		return $response;
+	}
+
+	/**
 	 * Builds the resolved Cropper config to be passed to the JS layer.
 	 * Returns null when cropper is disabled.
 	 *

@@ -13,9 +13,6 @@
 	"js": [
 		"https://unpkg.com/cropperjs"
 	],
-	"css": [
-		"https://unpkg.com/cropperjs/dist/cropper.min.css"
-	],
 	"file-types": {
 		"Field": {
 			"folder": "Fields",

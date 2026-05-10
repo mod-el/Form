@@ -1638,6 +1638,12 @@ class FieldFile extends Field {
 		this.input.name = this.name;
 		this.input.setAttribute('data-getvalue-function', 'fileGetValue');
 		this.input.setAttribute('data-setvalue-function', 'fileSetValue');
+
+		if (this.options['cropper']) {
+			const cropperConfig = this.options['cropper'] === true ? {} : this.options['cropper'];
+			attributes['data-cropper'] = JSON.stringify(cropperConfig);
+		}
+
 		this.input.addEventListener('change', function () {
 			handleFileInputChange.call(this);
 		});
