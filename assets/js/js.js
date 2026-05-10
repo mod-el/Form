@@ -300,6 +300,192 @@ function switchFieldLang(cont, lang) {
 	changedHtml();
 }
 
+function handleFileInputChange() {
+	if (typeof this.files[0] === 'undefined')
+		return;
+
+	const file = this.files[0];
+	const cropperAttr = this.getAttribute('data-cropper');
+
+	if (cropperAttr && file.type && file.type.indexOf('image/') === 0 && file.type !== 'image/svg+xml') {
+		let config;
+		try {
+			config = JSON.parse(cropperAttr);
+		} catch (e) {
+			config = {};
+		}
+
+		const input = this;
+		openCropperModal(file, config).then(function (blob) {
+			if (!blob) {
+				input.value = '';
+				return;
+			}
+
+			const dt = new DataTransfer();
+			dt.items.add(new File([blob], file.name, {type: blob.type || file.type}));
+			input.files = dt.files;
+			fileSetValue.call(input, input.files[0]);
+		});
+		return;
+	}
+
+	fileSetValue.call(this, file);
+}
+
+function openCropperModal(file, config) {
+	return new Promise(function (resolve) {
+		if (typeof Cropper === 'undefined') {
+			alert('Cropper.js is not loaded');
+			resolve(null);
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onload = function (e) {
+			const overlay = document.createElement('div');
+			overlay.className = 'cropper-modal-overlay';
+
+			const modal = document.createElement('div');
+			modal.className = 'cropper-modal';
+
+			const canvasCnt = document.createElement('div');
+			canvasCnt.className = 'cropper-modal-canvas';
+			const img = document.createElement('img');
+			img.src = e.target.result;
+			img.style.maxWidth = '100%';
+			canvasCnt.appendChild(img);
+
+			const toolbar = document.createElement('div');
+			toolbar.className = 'cropper-modal-toolbar';
+
+			const actions = document.createElement('div');
+			actions.className = 'cropper-modal-actions';
+			const cancelBtn = document.createElement('button');
+			cancelBtn.type = 'button';
+			cancelBtn.textContent = 'Annulla';
+			const confirmBtn = document.createElement('button');
+			confirmBtn.type = 'button';
+			confirmBtn.textContent = 'Conferma';
+			confirmBtn.className = 'primary';
+			actions.appendChild(cancelBtn);
+			actions.appendChild(confirmBtn);
+
+			modal.appendChild(toolbar);
+			modal.appendChild(canvasCnt);
+			modal.appendChild(actions);
+			overlay.appendChild(modal);
+			document.body.appendChild(overlay);
+
+			const ratios = Array.isArray(config.ratios) ? config.ratios : null;
+			let initialAspect = NaN;
+			if (typeof config.aspectRatio === 'number')
+				initialAspect = config.aspectRatio;
+			else if (ratios) {
+				const def = config.default || ratios[0];
+				initialAspect = parseRatio(def);
+			}
+
+			let cropper;
+			let settled = false;
+
+			img.onload = function () {
+				cropper = new Cropper(img, {
+					aspectRatio: initialAspect,
+					viewMode: 1,
+					autoCropArea: 1,
+					background: false,
+				});
+			};
+
+			if (ratios) {
+				for (const r of ratios) {
+					const btn = document.createElement('button');
+					btn.type = 'button';
+					btn.textContent = r === 'free' ? 'Libero' : r;
+					btn.setAttribute('data-ratio', r);
+					if (r === (config.default || ratios[0]))
+						btn.classList.add('selected');
+					btn.addEventListener('click', function () {
+						if (!cropper) return;
+						cropper.setAspectRatio(parseRatio(r));
+						const buttons = toolbar.querySelectorAll('button');
+						for (const b of buttons)
+							b.classList.remove('selected');
+						btn.classList.add('selected');
+					});
+					toolbar.appendChild(btn);
+				}
+			}
+
+			function cleanup() {
+				if (cropper) cropper.destroy();
+				document.removeEventListener('keydown', onKey);
+				if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+			}
+
+			function cancel() {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				resolve(null);
+			}
+
+			function confirm() {
+				if (settled || !cropper) return;
+
+				if (typeof config.minWidth === 'number' || typeof config.minHeight === 'number') {
+					const data = cropper.getData(true);
+					if (typeof config.minWidth === 'number' && data.width < config.minWidth) {
+						alert('L\'area selezionata è troppo piccola (larghezza minima: ' + config.minWidth + 'px)');
+						return;
+					}
+					if (typeof config.minHeight === 'number' && data.height < config.minHeight) {
+						alert('L\'area selezionata è troppo piccola (altezza minima: ' + config.minHeight + 'px)');
+						return;
+					}
+				}
+
+				const canvas = cropper.getCroppedCanvas();
+				if (!canvas) {
+					cancel();
+					return;
+				}
+
+				const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+				canvas.toBlob(function (blob) {
+					settled = true;
+					cleanup();
+					resolve(blob);
+				}, mime, mime === 'image/jpeg' ? 0.92 : undefined);
+			}
+
+			function onKey(ev) {
+				if (ev.key === 'Escape') cancel();
+				else if (ev.key === 'Enter') confirm();
+			}
+
+			cancelBtn.addEventListener('click', cancel);
+			confirmBtn.addEventListener('click', confirm);
+			overlay.addEventListener('click', function (ev) {
+				if (ev.target === overlay) cancel();
+			});
+			document.addEventListener('keydown', onKey);
+		};
+		reader.readAsDataURL(file);
+	});
+}
+
+function parseRatio(r) {
+	if (r === 'free' || r === null || typeof r === 'undefined') return NaN;
+	if (typeof r === 'number') return r;
+	const parts = String(r).split(':');
+	if (parts.length !== 2) return NaN;
+	const w = parseFloat(parts[0]), h = parseFloat(parts[1]);
+	if (!w || !h) return NaN;
+	return w / h;
+}
+
 function fileGetValue() {
 	var promises = [];
 	for (i = 0; i < this.files.length; i++) {
@@ -1453,8 +1639,7 @@ class FieldFile extends Field {
 		this.input.setAttribute('data-getvalue-function', 'fileGetValue');
 		this.input.setAttribute('data-setvalue-function', 'fileSetValue');
 		this.input.addEventListener('change', function () {
-			if (typeof this.files[0] !== 'undefined')
-				fileSetValue.call(this, this.files[0]);
+			handleFileInputChange.call(this);
 		});
 
 		super.assignAttributes(this.input, attributes);

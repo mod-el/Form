@@ -177,3 +177,87 @@
 	width: 100%;
 	display: inline-block;
 }
+
+/*===== CROPPER MODAL ===== */
+.cropper-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.7);
+	z-index: 10000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+
+.cropper-modal {
+	background: #FFF;
+	border-radius: 6px;
+	padding: 15px;
+	width: 90vw;
+	max-width: 1000px;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+
+.cropper-modal-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	margin-bottom: 10px;
+}
+
+.cropper-modal-toolbar button {
+	padding: 5px 12px;
+	border: solid #CCC 1px;
+	background: #F5F5F5;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.cropper-modal-toolbar button.selected {
+	background: #5d8fdf;
+	color: #FFF;
+	border-color: #285aab;
+}
+
+.cropper-modal-canvas {
+	flex: 1 1 auto;
+	min-height: 300px;
+	max-height: 65vh;
+	overflow: hidden;
+	background: #222;
+}
+
+.cropper-modal-canvas img {
+	display: block;
+	max-width: 100%;
+}
+
+.cropper-modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.cropper-modal-actions button {
+	padding: 8px 18px;
+	border: solid #CCC 1px;
+	background: #F5F5F5;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.cropper-modal-actions button.primary {
+	background: #5d8fdf;
+	color: #FFF;
+	border-color: #285aab;
+}

@@ -47,6 +47,7 @@ class File extends Field
 			'accepted' => null, // Accepts only some file types?
 			'accepted_ext' => null, // Accepts only some extensions?
 			'external' => null, // There is a db field to optionally retrieve the image from an external url?
+			'cropper' => null, // Optional Cropper.js editor: null/false = off; true = enabled with smart defaults (auto-locks aspect to first path's w/h if both set); array = explicit config (aspectRatio, ratios, default, minWidth, minHeight)
 		], $options);
 
 		parent::__construct($nome, $options);
@@ -81,8 +82,13 @@ class File extends Field
 
 		$is_image = $this->isImage();
 
+		$cropperAttr = '';
+		$cropperConfig = $this->buildCropperConfig();
+		if ($cropperConfig !== null)
+			$cropperAttr = ' data-cropper="' . htmlspecialchars(json_encode($cropperConfig), ENT_QUOTES) . '"';
+
 		echo '<div data-file-box="' . $name . '">';
-		echo '<input type="file" name="' . $name . '" ' . ($is_image ? 'style="display: none"' : '') . ' id="file-input-' . $name . '" ' . $this->implodeAttributes($attributes) . ' onchange="if(typeof this.files[0]!=\'undefined\') fileSetValue.call(this, this.files[0])" data-getvalue-function="fileGetValue" data-setvalue-function="fileSetValue" />';
+		echo '<input type="file" name="' . $name . '" ' . ($is_image ? 'style="display: none"' : '') . ' id="file-input-' . $name . '" ' . $this->implodeAttributes($attributes) . ' onchange="handleFileInputChange.call(this)" data-getvalue-function="fileGetValue" data-setvalue-function="fileSetValue"' . $cropperAttr . ' />';
 		echo '<div class="file-box-cont" ' . (!$is_image ? 'style="display: none"' : '') . ' ' . $this->implodeAttributes($attributesBox) . '><div class="file-box" data-file-cont onclick="document.getElementById(\'file-input-' . $name . '\').click(); return false">Upload</div></div>';
 		echo '<div class="file-tools" style="display: none">
 				<a href="#" onclick="emptyExternalFileInput(this.parentNode.parentNode); document.getElementById(\'file-input-' . $name . '\').click(); return false"><img src="' . PATH . 'model/Form/assets/img/upload.png" alt="" /> Carica nuovo</a>
@@ -98,6 +104,29 @@ class File extends Field
 		if ($v) {
 			echo '<script>fileSetValue.call(document.getElementById(\'file-input-' . $name . '\'), ' . json_encode($v) . ', false)</script>';
 		}
+	}
+
+	/**
+	 * Builds the resolved Cropper config to be passed to the JS layer.
+	 * Returns null when cropper is disabled.
+	 *
+	 * @return array|null
+	 */
+	private function buildCropperConfig(): ?array
+	{
+		$cropper = $this->options['cropper'];
+		if (!$cropper)
+			return null;
+
+		$config = is_array($cropper) ? $cropper : [];
+
+		if (!isset($config['aspectRatio']) and empty($config['ratios'])) {
+			$first = reset($this->paths);
+			if (is_array($first) and !empty($first['w']) and !empty($first['h']))
+				$config['aspectRatio'] = $first['w'] / $first['h'];
+		}
+
+		return $config;
 	}
 
 	/**
