@@ -1129,7 +1129,7 @@ $template = ' . var_export($template, true) . ';
 				if ($options['check-missing'] and !isset($values[$d->options['name']]) and !in_array($d->options['type'], ['checkbox', 'radio', 'file']))
 					$this->model->error('"' . $d->options['name'] . '" field missing"!');
 
-				if (!isset($values[$d->options['name']]) or trim($values[$d->options['name']]) === '') {
+				if (!isset($values[$d->options['name']]) or (is_string($values[$d->options['name']]) and trim($values[$d->options['name']]) === '')) {
 					if ($options['check-mandatory'] and $d->options['required'])
 						$this->model->error('"' . $d->options['name'] . '" field is mandatory.');
 				} else {
