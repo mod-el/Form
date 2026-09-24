@@ -1345,6 +1345,10 @@ class FieldDatetime extends Field {
 		this.dateNode = document.createElement('input');
 		this.dateNode.type = 'date';
 		this.dateNode.addEventListener('change', () => {
+			// Optional time to auto-fill when a date is picked and the time is still empty (used e.g. by admin list filters)
+			if (this.dateNode.value && !this.timeNode.value && this.options['default-time'])
+				this.timeNode.value = this.options['default-time'];
+
 			this.updateInputValue();
 		});
 
