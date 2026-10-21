@@ -284,6 +284,8 @@ class Field
 			$where = $this->options['where'];
 			if ($this->form and !$ignoreDepending and $this->options['depending-on'] and isset($this->form->getDataset()[$this->options['depending-on']['name']])) {
 				$parentValue = $this->form->getDataset()[$this->options['depending-on']['name']]->getValue();
+				if ($parentValue === false or $parentValue === '') // Unset/empty parent (e.g. options reloaded after clearing it) means no parent
+					$parentValue = null;
 				if ($parentValue === null) {
 					$tableModel = Db::getConnection()->getTable($this->options['table']);
 					if (!$tableModel->columns[$this->options['depending-on']['db']]['null'])
